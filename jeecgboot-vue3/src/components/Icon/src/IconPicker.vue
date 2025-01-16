@@ -155,6 +155,7 @@
     }
   );
 
+
   //update-begin---author:wangshuai ---date:20230522  for：【issues/4947】菜单编辑页面菜单图标选择模板，每页显示数量切换无效，输入框后面的图标点击之后清空数据------------
   //update-begin---author:wangshuai---date:2024-05-08---for:【QQYUN-8924】图标库选择组件不如vue2的方便---
   /**
@@ -186,7 +187,7 @@
    * 图标弹窗确定事件
    */
   function handleOk() {
-    currentSelect.value = iconListRef.value.getIcon();
+    currentSelect.value = selectIcon.value;
     iconOpen.value = false;
   }
 

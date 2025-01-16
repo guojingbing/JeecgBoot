@@ -455,7 +455,9 @@ export function useMethods(props: JVxeTableProps, { emit }, data: JVxeDataProps,
   /** 获取表格表单里的值 */
   function getValues(callback, rowIds) {
     let tableData = getTableData({ rowIds: rowIds });
-    callback('', tableData);
+    // update-begin--author:liaozhiyang---date:20241227---for：【issues/7631】JVxeTable组件的getValues回调函数参数修正
+    callback(tableData, tableData);
+    // update-end--author:liaozhiyang---date:20241227---for：【issues/7631】JVxeTable组件的getValues回调函数参数修正
   }
 
   type getTableDataOptions = {

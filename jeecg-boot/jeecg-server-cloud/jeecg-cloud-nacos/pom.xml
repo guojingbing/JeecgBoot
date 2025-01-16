@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jeecg-cloud-nacos</artifactId>
-    <name>mscloud-cloud-nacos</name>
+    <name>jeecg-cloud-nacos</name>
     <description>nacos启动模块</description>
     <version>3.7.2</version>
 

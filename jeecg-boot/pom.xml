@@ -209,6 +209,7 @@
 				<artifactId>jeecg-system-biz</artifactId>
 				<version>${jeecgboot.version}</version>
 			</dependency>
+
 			<!-- jeecg tools -->
 			<dependency>
 				<groupId>org.jeecgframework.boot</groupId>
@@ -276,12 +277,11 @@
 				<artifactId>jeecg-boot-starter-lock</artifactId>
 				<version>${jeecgboot.version}</version>
 			</dependency>
-			<!--rabbitmq消息队列 -->
-			<!-- 【.20240627 版本后缀表示是临时版本，修复了MQ的问题】Shutdown Signal: channel error; protocol method: #method<channel.close>(reply-code=406, reply-text=PRECONDITION_FAILED - unknown delivery tag 1, class-id=60, method-id=80) -->
+			<!--rabbitmq消息队列-->
 			<dependency>
 				<groupId>org.jeecgframework.boot</groupId>
 				<artifactId>jeecg-boot-starter-rabbitmq</artifactId>
-				<version>3.7.0.20240627</version>
+				<version>${jeecgboot.version}</version>
 			</dependency>
 			<!--rocketmq-->
 			<dependency>
@@ -442,7 +442,7 @@
 			<dependency>
 				<groupId>org.jeecgframework.jimureport</groupId>
 				<artifactId>jimureport-spring-boot-starter</artifactId>
-				<version>1.9.3</version>
+				<version>${jimureport-spring-boot-starter.version}</version>
 				<exclusions>
 					<exclusion>
 						<artifactId>autopoi-web</artifactId>
@@ -457,19 +457,19 @@
 			<dependency>
 				<groupId>org.jeecgframework.jimureport</groupId>
 				<artifactId>jimureport-nosql-starter</artifactId>
-				<version>1.9.3</version>
+				<version>${jimureport-spring-boot-starter.version}</version>
 			</dependency>
-			<!-- 积木BI大屏-->
+			<!-- 积木BI大屏和仪表盘 -->
 			<dependency>
 				<groupId>org.jeecgframework.jimureport</groupId>
 				<artifactId>jimubi-spring-boot-starter</artifactId>
-				<version>1.9.1</version>
+				<version>${jimureport-spring-boot-starter.version}</version>
 			</dependency>
-			<!-- chatgpt -->
+			<!-- AI集成 -->
 			<dependency>
 				<groupId>org.jeecgframework.boot</groupId>
 				<artifactId>jeecg-boot-starter-chatgpt</artifactId>
-				<version>${jeecgboot.version}</version>
+				<version>3.7.3</version>
 			</dependency>
 			<!--flyway 支持 mysql5.7+、MariaDB10.3.16-->
 			<!--mysql5.6，需要把版本号改成5.2.1-->
