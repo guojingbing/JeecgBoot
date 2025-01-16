@@ -2,21 +2,25 @@ package org.jeecg.modules.base.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.LogDTO;
 import org.jeecg.common.constant.enums.ClientTerminalTypeEnum;
-import org.jeecg.common.util.BrowserUtils;
-import org.jeecg.modules.base.mapper.BaseCommonMapper;
-import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.BrowserUtils;
 import org.jeecg.common.util.IpUtils;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.common.util.oConvertUtils;
+import org.jeecg.modules.base.mapper.BaseCommonMapper;
+import org.jeecg.modules.base.service.BaseCommonService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Description: common实现类
@@ -98,6 +102,13 @@ public class BaseCommonServiceImpl implements BaseCommonService {
         addLog(logContent, logType, operateType, null);
     }
 
-
-
+    @Override
+    public List<Map<String, Object>> getDictItemsByDictCode(String dictCode, String itemCode){
+        List<Map<String, Object>> list = baseCommonMapper.selectDictItemsByDictCode(dictCode);
+        if(StringUtils.isNotBlank(itemCode)){
+            List<Map<String, Object>> subList=list.stream().filter(o->o.get("item_code")!=null&&o.get("item_code").toString().equalsIgnoreCase(itemCode)).collect(Collectors.toList());
+            return subList;
+        }
+        return list;
+    }
 }

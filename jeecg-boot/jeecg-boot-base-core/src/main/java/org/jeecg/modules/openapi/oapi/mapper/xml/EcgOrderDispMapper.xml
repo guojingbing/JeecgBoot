@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.openapi.oapi.mapper.EcgOrderDispMapper">
+    <select id="selectDispByRep" resultType="java.util.HashMap">
+        SELECT
+        a.*
+        FROM
+        busi_cust_ecg_order_disp a
+        WHERE 1=1
+        <if test="repId!=null and repId!=''">
+            AND a.oauth_rep_id=#{repId}
+        </if>
+    </select>
+
+    <update id="updateDispRep">
+		UPDATE busi_cust_ecg_order_disp SET rep_file_download_url = #{downloadUrl} where oauth_rep_id = #{repId}
+	</update>
+</mapper>

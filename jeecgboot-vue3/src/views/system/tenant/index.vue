@@ -25,7 +25,7 @@
           :disabled="selectedRowKeys.length === 0"
           >邀请用户加入</a-button
         >
-        <a-button
+        <!-- <a-button
           preIcon="ant-design:plus-outlined"
           type="primary"
           @click="handlePack"
@@ -33,10 +33,18 @@
           :disabled="selectedRowKeys.length === 0"
           >套餐</a-button
         >
+        <a-button
+          preIcon="ant-design:edit-outlined"
+          type="primary"
+          @click="handleArea"
+          style="margin-right: 5px"
+          :disabled="selectedRowKeys.length === 0"
+          >区域授权</a-button
+        > -->
         <a-button type="primary" @click="recycleBinClick" preIcon="ant-design:hdd-outlined">回收站</a-button>
       </template>
       <template #action="{ record }">
-        <TableAction :actions="getActions(record)" />
+        <TableAction :actions="getActions(record)" :dropDownActions="getDropDownAction(record)" />
       </template>
     </BasicTable>
     <TenantModal @register="registerModal" @success="reload" />
@@ -44,13 +52,15 @@
     <TenantUserModal @register="registerTenUserModal" />
     <!--  产品包  -->
     <TenantPackList @register="registerPackModal" />
+    <!--  区域授权  -->
+    <TenantAreaModal @register="registerAreaModal" />
     <!--  租户回收站  -->
     <TenantRecycleBinModal @register="registerRecycleBinModal" @success="reload" />
   </div>
 </template>
 <script lang="ts" name="system-tenant" setup>
   import { ref, unref } from 'vue';
-  import { BasicTable, TableAction } from '/@/components/Table';
+  import { BasicTable, TableAction, ActionItem } from '/@/components/Table';
   import { useModal } from '/@/components/Modal';
   import { getTenantList, deleteTenant, batchDeleteTenant, invitationUserJoin } from './tenant.api';
   import { columns, searchFormSchema } from './tenant.data';
@@ -61,6 +71,7 @@
   import TenantUserModal from './components/TenantUserList.vue';
   import TenantPackList from './pack/TenantPackList.vue';
   import TenantRecycleBinModal from './components/TenantRecycleBinModal.vue';
+  import TenantAreaModal from './components/TenantAreaModal.vue';
 
   const { createMessage } = useMessage();
   const [registerModal, { openModal }] = useModal();
@@ -68,6 +79,7 @@
   const [registerTenUserModal, { openModal: tenUserOpenModal }] = useModal();
   const [registerPackModal, { openModal: packModal }] = useModal();
   const [registerRecycleBinModal, { openModal: recycleBinModal }] = useModal();
+  const [registerAreaModal, { openModal: areaModal }] = useModal();
 
   // 列表页面公共参数、方法
   const { prefixCls, tableContext } = useListPage({
@@ -82,7 +94,7 @@
       },
       actionColumn:{
         width: 150,
-        fixed:'right'
+        fixed: 'right',
       }
     },
   });
@@ -98,6 +110,38 @@
         label: '编辑',
         onClick: handleEdit.bind(null, record),
       },
+      // {
+      //   label: '区域授权',
+      //   onClick: handleArea.bind(null, record),
+      // },
+      // {
+      //   label: '删除',
+      //   popConfirm: {
+      //     title: '是否确认删除',
+      //     placement: 'left',
+      //     confirm: handleDelete.bind(null, record),
+      //   },
+      // },
+      {
+        label: '用户',
+        onClick: handleSeeUser.bind(null, record.id),
+      },
+    ];
+  }
+
+  /**
+   * 下拉操作栏
+   */
+  function getDropDownAction(record): ActionItem[] {
+    return [
+      {
+        label: '设置套餐',
+        onClick: handlePack.bind(null, record),
+      },
+      {
+        label: '区域授权',
+        onClick: handleArea.bind(null, record),
+      },
       {
         label: '删除',
         popConfirm: {
@@ -105,10 +149,6 @@
           placement: 'left',
           confirm: handleDelete.bind(null, record),
         },
-      },
-      {
-        label: '用户',
-        onClick: handleSeeUser.bind(null, record.id),
       },
     ];
   }
@@ -179,15 +219,38 @@
   /**
    * 新增产品包
    */
-  function handlePack() {
-    if (unref(selectedRowKeys).length > 1) {
-      createMessage.warn('请选择一个');
-      return;
-    }
+  function handlePack(record) {
+    // if (unref(selectedRowKeys).length > 1) {
+    //   createMessage.warn('请选择一个');
+    //   return;
+    // }
+    // packModal(true, {
+    //   tenantId: unref(selectedRowKeys.value.join(',')),
+    //   //我的租户显示新增和编辑产品包
+    //   showPackAddAndEdit: true,
+    // });
     packModal(true, {
-      tenantId: unref(selectedRowKeys.value.join(',')),
+      tenantId: record.id,
       //我的租户显示新增和编辑产品包
-      showPackAddAndEdit: true
+      showPackAddAndEdit: true,
+    });
+  }
+
+  /**
+   * 区域授权
+   */
+  function handleArea(record) {
+    // if (unref(selectedRowKeys).length > 1) {
+    //   createMessage.warn('请选择一个');
+    //   return;
+    // }
+    // areaModal(true, {
+    //   tenantId: unref(selectedRowKeys.value.join(',')),
+    //   //我的租户显示新增和编辑产品包
+    //   showPackAddAndEdit: true,
+    // });
+    areaModal(true, {
+      tenantId: record.id,
     });
   }
 

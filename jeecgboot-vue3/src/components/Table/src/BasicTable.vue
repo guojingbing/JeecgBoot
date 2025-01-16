@@ -406,9 +406,7 @@
         getProps.value.defaultExpandAllRows && expandAll();
       })
       // update-end--author:sunjianlei---date:20231226---for：【issues/945】BasicTable组件设置默认展开不生效
-      // update-begin--author:liaozhiyang---date:20241225---for：【issues/7588】选择后自动刷新表格
-      expose({ ...tableAction, handleSearchInfoChange });
-      // update-end--author:liaozhiyang---date:20241225---for：【issues/7588】选择后自动刷新表格
+      expose(tableAction);
 
       emit('register', tableAction, formActions);
 

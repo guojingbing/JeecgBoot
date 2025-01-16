@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.cust.common.mapper.SysCommAttachItemMapper">
+    <select id="getAttachItemsByBussiDataId" resultType="java.util.HashMap">
+        SELECT
+        a.*
+        FROM
+        sys_comm_attach_item a
+        INNER JOIN sys_comm_attach b ON a.attach_id = b.id
+        WHERE
+        1=1
+        <if test="bussi!=null and bussi!=''">
+            AND b.bussi=#{bussi}
+        </if>
+        <if test="bussiDataId!=null and bussiDataId!=''">
+            AND b.bussi_data_id=#{bussiDataId}
+        </if>
+    </select>
+</mapper>

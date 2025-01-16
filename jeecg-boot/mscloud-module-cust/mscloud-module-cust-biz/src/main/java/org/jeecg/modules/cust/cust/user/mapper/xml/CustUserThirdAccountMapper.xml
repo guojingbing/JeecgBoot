@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.cust.cust.user.mapper.CustUserThirdAccountMapper">
+    <select id="loadList4API" resultType="java.util.HashMap">
+        SELECT
+        id,
+        team_type teamType,
+        team_name teamName,
+        address,
+        ifnull(team_status,0) teamStatus,
+        ifnull(use_status,0) useStatus,
+        user_id userId,
+        latitude,
+        longitude,
+        adcode,
+        country,
+        province,
+        city,
+        district,
+        <if test="lng!=null">
+            ( st_distance ( point ( longitude, latitude ), point (#{lng},#{lat}) ) * 111195) dist
+        </if>
+        <if test="lng==null or lng==''">
+            0 dist
+        </if>
+        FROM
+        nshare_user_team
+        WHERE 1=1
+        <if test="userId!=null and userId!=''">
+            AND user_id=#{userId}
+        </if>
+        <if test="userId==null or userId==''">
+            <if test="shopId!=null and shopId!=''">
+                AND (team_type=1 OR team_type=2 AND user_id IN(SELECT user_id FROM nshare_distri_shop_admin WHERE shop_id=#{shopId}))
+            </if>
+            AND ifnull(team_status,0)=1
+            AND ifnull(use_status,0)=1
+        </if>
+        <if test="searchKey!=null and searchKey!=''">
+            AND ifnull(team_name,'') like '%${searchKey}%'
+        </if>
+        ORDER BY
+        dist ASC,
+        ifnull(team_status,0) DESC,
+        ifnull(use_status,0) DESC
+    </select>
+</mapper>

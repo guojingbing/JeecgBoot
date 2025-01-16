@@ -19,6 +19,14 @@ import java.util.Set;
  * @Version V1.0
  */
 public interface ISysBaseAPI extends CommonAPI {
+    /**
+     * 区域树查询
+     * @param deep 可选，为空时查询所有基本
+     * @param tenantId 可选，不为空时查询租户授权的和可授权给租户的（同一区域不能同时授权给多个租户）
+     * @param onlyAuthorized 可选，为true时只返回租户授权的区域
+     * @return
+     */
+    List<Map<String, Object>> queryAreaTreeWithDeep(Integer deep, String tenantId, Boolean onlyAuthorized);
 
     //=======OLD 系统消息推送接口============================
     /**

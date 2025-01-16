@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.mapper.ZxecgCustUserReportMapper">
+    <select id="getUserReport" parameterType="java.util.HashMap" resultType="org.jeecg.modules.zxecg.vo.ZxecgUserReportVo">
+		SELECT a.rep_id,a.rep_no,DATE_FORMAT(a.report_date, '%Y-%m-%d') report_date,1 conclusion_type,b.doctor_conclusion rep_conclusion,a.pdf_file_path
+		FROM cust_user_ecg_report a
+		LEFT JOIN cust_user_ecg_report_statistics b ON a.rep_id=b.rep_id
+		WHERE a.user_id = #{ userId } AND ifnull(a.report_status,0)=2
+		<if test="repDate!=null">
+			AND DATE_FORMAT(a.report_date, '%Y-%m-%d') = #{ repDate }
+		</if>
+		ORDER BY a.ecg_end_time DESC
+		LIMIT 1
+	</select>
+</mapper>

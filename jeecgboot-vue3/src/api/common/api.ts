@@ -14,12 +14,23 @@ enum Api {
   getDictItems = '/sys/dict/getDictItems/',
   getTableList = '/sys/user/queryUserComponentData',
   getCategoryData = '/sys/category/loadAllData',
+
+  //按level深度获取系统区域树
+  getAreaTree = '/sys/area/tree',
 }
 
 /**
  * 上传父路径
  */
 export const uploadUrl = `${baseUploadUrl}/sys/common/upload`;
+
+/**
+ * 区域列表
+ * @param params
+ */
+export const getAreaTree = (params) => {
+  return defHttp.get({ url: Api.getAreaTree, params });
+};
 
 /**
  * 职务列表

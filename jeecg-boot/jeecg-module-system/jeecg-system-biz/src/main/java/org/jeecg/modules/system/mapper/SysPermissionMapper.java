@@ -81,4 +81,11 @@ public interface SysPermissionMapper extends BaseMapper<SysPermission> {
 	 */
 	@InterceptorIgnore(tenantLine = "true")
     List<SysPermission> queryPermissionByTestRoleId();
+
+	/**
+	 * 获取租户套餐权限
+	 * @param tenantId
+	 * @return
+	 */
+	List<SysPermission> queryTenantPermissionList(@Param("tenantId") Integer tenantId);
 }

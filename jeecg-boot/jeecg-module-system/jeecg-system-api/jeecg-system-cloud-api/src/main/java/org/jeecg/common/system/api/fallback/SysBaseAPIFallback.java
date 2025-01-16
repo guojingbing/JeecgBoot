@@ -25,6 +25,12 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
     private Throwable cause;
 
     @Override
+    public List<Map<String, Object>> queryAreaTreeWithDeep(Integer deep, String tenantId, Boolean onlyAuthorized){
+        log.error("区域树获取失败 {}", cause);
+        return null;
+    }
+
+    @Override
     public void sendSysAnnouncement(MessageDTO message) {
         log.error("发送消息失败 {}", cause);
     }

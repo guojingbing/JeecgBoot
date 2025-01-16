@@ -103,7 +103,7 @@ export const isRoleExist = (params) => {
 /**
  * 根据角色查询树信息
  */
-export const queryTreeListForRole = () => defHttp.get({ url: Api.queryTreeListForRole });
+export const queryTreeListForRole = (params) => defHttp.get({ url: Api.queryTreeListForRole, params });
 /**
  * 查询角色权限
  */

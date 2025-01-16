@@ -91,6 +91,22 @@ public interface CommonConstant {
     public static String PREFIX_USER_SHIRO_CACHE  = "shiro:cache:org.jeecg.config.shiro.ShiroRealm.authorizationCache:";
     /** 登录用户Token令牌缓存KEY前缀 */
     String PREFIX_USER_TOKEN  = "prefix_user_token:";
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * 客户端用户Token令牌缓存KEY前缀
+     */
+    public static final String PREFIX_CUST_USER_TOKEN = "prefix_cust_user_token_";
+    /**
+     * OPENAPI用户Token令牌缓存KEY前缀
+     */
+    public static final String PREFIX_OAPI_USER_TOKEN = "prefix_oapi_user_token_";
+    /** OPENAPI刷新令牌前缀 */
+    public static final String PREFIX_OAPI_USER_REFRESH_TOKEN  = "prefix_oapi_user_refresh_token_";
+    /** OPENAPI授权对象IP白名单缓存前缀 */
+    public static final String PREFIX_OAPI_IP  = "prefix_oapi_ip_";
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //    /** Token缓存时间：3600秒即一小时 */
 //    int  TOKEN_EXPIRE_TIME  = 3600;
 
@@ -619,14 +635,23 @@ public interface CommonConstant {
     */
    String VERIFY_ORIGINAL_PHONE = "verifyOriginalPhone";
 
-   /**
-    * 修改手机号
-    */
-   String UPDATE_PHONE = "updatePhone";
-   //update-end---author:wangshuai---date:2024-04-07---for:修改手机号常量---
-    
-   /**
-    * 修改手机号验证码请求次数超出
-    */
-   Integer PHONE_SMS_FAIL_CODE = 40002;
+    /**
+     * 修改手机号
+     */
+    String UPDATE_PHONE = "updatePhone";
+    //update-end---author:wangshuai---date:2024-04-07---for:修改手机号常量---
+
+    /**
+     * 修改手机号验证码请求次数超出
+     */
+    Integer PHONE_SMS_FAIL_CODE = 40002;
+
+    public class OpenApi {
+        //调用外部接口token的redis缓存key前缀
+        public static final String API_BUSI_TOKEN_KEY_PREFIX = "external_access_token";
+    }
+
+    public class CustUserThirdAccountType {
+        public final static String WX_MP = "wx_mp";
+    }
 }

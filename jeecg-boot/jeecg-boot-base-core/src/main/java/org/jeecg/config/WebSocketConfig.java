@@ -5,6 +5,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 /**
  * @Description: WebSocketConfig
@@ -34,5 +35,12 @@ public class WebSocketConfig {
         bean.addUrlPatterns("/taskCountSocket/*", "/websocket/*","/eoaSocket/*","/eoaNewChatSocket/*", "/newsWebsocket/*", "/dragChannelSocket/*", "/vxeSocket/*");
         return bean;
     }
-
+    @Bean
+    public ServletServerContainerFactoryBean createWebSocketContainer() {
+        ServletServerContainerFactoryBean bean = new ServletServerContainerFactoryBean();
+        bean.setMaxTextMessageBufferSize(1024 * 1024);
+        bean.setMaxBinaryMessageBufferSize(1024 * 1024);
+        bean.setMaxSessionIdleTimeout(15*60000L);
+        return bean;
+    }
 }

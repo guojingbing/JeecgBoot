@@ -80,7 +80,7 @@
     setDrawerProps({ confirmLoading: false, loading: true });
     roleId.value = data.roleId;
     //初始化数据
-    const roleResult = await queryTreeListForRole();
+    const roleResult = await queryTreeListForRole({ roleId: unref(roleId) });
     // update-begin--author:liaozhiyang---date:20240228---for：【QQYUN-8355】角色权限配置的菜单翻译
     treeData.value = translateTitle(roleResult.treeList);
     // update-end--author:liaozhiyang---date:20240228---for：【QQYUN-8355】角色权限配置的菜单翻译

@@ -7,8 +7,6 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.jeecg.modules.system.entity.SysDepart;
 import org.jeecg.modules.system.entity.SysUser;
-import org.jeecg.modules.system.model.SysDepartTreeModel;
-import org.jeecg.modules.system.model.TreeModel;
 import org.jeecg.modules.system.vo.SysDepartExportVo;
 import org.jeecg.modules.system.vo.SysUserDepVo;
 import org.jeecg.modules.system.vo.lowapp.ExportDepartVo;
@@ -175,7 +173,15 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 	 * 获取租户id和部门父id获取的部门数据
 	 * @param tenantId
 	 * @param parentId
+	 * @param idList
 	 * @return
 	 */
-    List<SysDepartExportVo> getSysDepartList(@Param("parentId") String parentId,@Param("tenantId") Integer tenantId, List<String> idList);
+	List<SysDepartExportVo> getSysDepartList(@Param("parentId") String parentId,@Param("tenantId") Integer tenantId, List<String> idList);
+
+	/**
+	 * 多个id,获取多个部门信息
+	 * @param deptIds
+	 * @return
+	 */
+	List<SysDepart> queryDepartByIds(@Param("deptIds") List<String> deptIds);
 }

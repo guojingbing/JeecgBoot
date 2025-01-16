@@ -223,4 +223,23 @@
 		  and p.del_flag = 0
 	</select>
 
+	<!-- 查询租户套餐权限 -->
+	<select id="queryTenantPermissionList" parameterType="Integer"  resultType="org.jeecg.modules.system.entity.SysPermission">
+		SELECT
+			*
+		FROM
+			sys_permission
+		WHERE
+			del_flag = 0
+			AND id IN (
+			SELECT DISTINCT
+				( permission_id )
+			FROM
+				sys_tenant_pack_perms a
+				INNER JOIN sys_tenant_pack b ON a.pack_id = b.id
+			WHERE
+				b.tenant_id = #{tenantId} )
+		ORDER BY
+		sort_no ASC
+	</select>
 </mapper>

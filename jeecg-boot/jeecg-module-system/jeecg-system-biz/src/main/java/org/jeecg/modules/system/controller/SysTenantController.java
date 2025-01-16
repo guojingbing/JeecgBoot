@@ -23,21 +23,22 @@ import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
 import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.modules.system.entity.*;
-import org.jeecg.modules.system.service.ISysTenantPackService;
-import org.jeecg.modules.system.service.ISysTenantService;
-import org.jeecg.modules.system.service.ISysUserService;
-import org.jeecg.modules.system.service.ISysUserTenantService;
-import org.jeecg.modules.system.service.ISysDepartService;
+import org.jeecg.modules.system.mapper.SysPackPermissionMapper;
+import org.jeecg.modules.system.mapper.SysTenantPackMapper;
+import org.jeecg.modules.system.service.*;
 import org.jeecg.modules.system.vo.SysUserTenantVo;
 import org.jeecg.modules.system.vo.tenant.TenantDepartAuthInfo;
 import org.jeecg.modules.system.vo.tenant.TenantPackModel;
 import org.jeecg.modules.system.vo.tenant.TenantPackUser;
 import org.jeecg.modules.system.vo.tenant.TenantPackUserCount;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 租户配置信息
@@ -65,6 +66,15 @@ public class SysTenantController {
 
     @Autowired
     private ISysDepartService sysDepartService;
+
+    @Autowired
+    private ISysRoleService sysRoleService;
+
+    @Autowired
+    private ISysRolePermissionService sysRolePermissionService;
+
+    @Autowired
+    private ISysPermissionService sysPermissionService;
 
     /**
      * 获取列表数据
@@ -140,6 +150,21 @@ public class SysTenantController {
             sysTenantService.saveTenant(sysTenant);
             //添加默认产品包
             sysTenantPackService.addTenantDefaultPack(sysTenant.getId());
+            //添加默认租户管理员角色，权限使用默认产品包
+            SysRole role=new SysRole();
+            role.setRoleCode(sysTenant.getHouseNumber()+"-Admin");
+            role.setRoleName("租户管理员");
+            role.setTenantId(sysTenant.getId());
+            role.setDescription("添加租户默认创建租户管理员角色");
+            role.setCreateTime(new Date());
+            role.setCreateBy(sysTenant.getCreateBy());
+            role.setUpdateTime(role.getCreateTime());
+            role.setUpdateBy(role.getCreateBy());
+            sysRoleService.save(role);
+
+            //使用租户产品包权限更新角色权限
+            sysRolePermissionService.updateRolePermissionFromTenantPack(role.getId(), sysTenant.getId());
+
             result.success("添加成功！");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -330,6 +355,10 @@ public class SysTenantController {
     @RequiresPermissions("system:tenant:add:pack")
     public Result<String> addPackPermission(@RequestBody SysTenantPack sysTenantPack) {
         sysTenantPackService.addPackPermission(sysTenantPack);
+
+        //使用租户产品包权限更新角色权限
+        sysRolePermissionService.updateRolePermissionFromTenantPack(null, sysTenantPack.getTenantId());
+
         return Result.ok("创建租户产品包成功");
     }
 
@@ -343,6 +372,10 @@ public class SysTenantController {
     @RequiresPermissions("system:tenant:edit:pack")
     public Result<String> editPackPermission(@RequestBody SysTenantPack sysTenantPack) {
         sysTenantPackService.editPackPermission(sysTenantPack);
+
+        //使用租户产品包权限更新角色权限
+        sysRolePermissionService.updateRolePermissionFromTenantPack(null, sysTenantPack.getTenantId());
+
         return Result.ok("修改租户产品包成功");
     }
 
@@ -355,7 +388,14 @@ public class SysTenantController {
     @DeleteMapping("/deleteTenantPack")
     @RequiresPermissions("system:tenant:delete:pack")
     public Result<String> deleteTenantPack(@RequestParam(value = "ids") String ids) {
-        sysTenantPackService.deleteTenantPack(ids);
+        String[] idsArray = ids.split(SymbolConstant.COMMA);
+        if(idsArray!=null&&idsArray.length>0){
+            SysTenantPack pack=sysTenantPackService.getById(idsArray[0]);
+            sysTenantPackService.deleteTenantPack(ids);
+            //使用租户产品包权限更新角色权限
+            sysRolePermissionService.updateRolePermissionFromTenantPack(null, pack.getTenantId());
+        }
+
         return Result.ok("删除租户产品包成功");
     }
     

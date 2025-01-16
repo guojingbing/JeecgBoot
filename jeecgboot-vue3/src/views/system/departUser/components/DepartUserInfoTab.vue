@@ -87,8 +87,6 @@
           ...adaptiveColProps,
           style: { textAlign: 'left' },
         },
-        showResetButton: !!departId.value,
-        showSubmitButton: !!departId.value,
       },
       // 【issues/1064】列设置的 cacheKey
       tableSetting: { cacheKey: 'depart_user_userInfo' },

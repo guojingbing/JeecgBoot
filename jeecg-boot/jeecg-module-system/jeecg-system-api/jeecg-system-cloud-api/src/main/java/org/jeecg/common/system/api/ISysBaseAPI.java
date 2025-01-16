@@ -32,6 +32,15 @@ import java.util.Set;
 @FeignClient(contextId = "sysBaseRemoteApi", value = ServiceNameConstants.SERVICE_SYSTEM, fallbackFactory = SysBaseAPIFallbackFactory.class)
 @ConditionalOnMissingClass("org.jeecg.modules.system.service.impl.SysBaseApiImpl")
 public interface ISysBaseAPI extends CommonAPI {
+    /**
+     * 区域树查询
+     * @param deep 可选，为空时查询所有基本
+     * @param tenantId 可选，不为空时查询租户授权的和可授权给租户的（同一区域不能同时授权给多个租户）
+     * @param onlyAuthorized 可选，为true时只返回租户授权的区域
+     * @return
+     */
+    @GetMapping("/sys/api/getAreaTree")
+    List<Map<String, Object>> queryAreaTreeWithDeep(@RequestParam("deep") Integer deep, @RequestParam("tenantId") String tenantId, @RequestParam("onlyAuthorized") Boolean onlyAuthorized);
 
     /**
      * 1发送系统消息

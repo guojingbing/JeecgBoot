@@ -1,4 +1,5 @@
 import { FormSchema } from '/@/components/Form';
+import { BasicColumn, FormSchema } from '/@/components/Table';
 
 // 部门基础表单
 export function useBasicFormSchema() {
@@ -88,3 +89,36 @@ export const orgCategoryOptions = {
     { value: '3', label: '岗位' },
   ],
 };
+
+// 用户信息 columns
+export const userInfoColumns: BasicColumn[] = [
+  {
+    title: '用户账号',
+    dataIndex: 'username',
+    width: 120,
+  },
+  {
+    title: '用户名称',
+    dataIndex: 'realname',
+    width: 150,
+  },
+  {
+    title: '电话',
+    dataIndex: 'phone',
+    width: 120,
+  },
+  {
+    title: '部门',
+    dataIndex: 'orgCode',
+    width: 200,
+  },
+];
+
+// 用户信息查询条件表单
+export const userInfoSearchFormSchema: FormSchema[] = [
+  {
+    field: 'username',
+    label: '用户账号',
+    component: 'Input',
+  },
+];

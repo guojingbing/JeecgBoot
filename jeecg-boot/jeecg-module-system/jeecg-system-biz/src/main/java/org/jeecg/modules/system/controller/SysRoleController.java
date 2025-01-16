@@ -1,28 +1,24 @@
 package org.jeecg.modules.system.controller;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.base.BaseMap;
 import org.jeecg.common.config.TenantContext;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.constant.SymbolConstant;
 import org.jeecg.common.modules.redis.client.JeecgRedisClient;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
 import org.jeecg.modules.base.service.BaseCommonService;
@@ -36,26 +32,16 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import org.jeecg.common.system.vo.LoginUser;
-import org.apache.shiro.SecurityUtils;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * <p>
@@ -87,6 +73,8 @@ public class SysRoleController {
 	private BaseCommonService baseCommonService;
 	@Autowired
 	private JeecgRedisClient jeecgRedisClient;
+	@Autowired
+	private ISysDepartService sysDepartService;
 	
 	/**
 	  * 分页列表查询 【系统角色，不做租户隔离】
@@ -492,28 +480,53 @@ public class SysRoleController {
 	
 	/**
 	 * 用户角色授权功能，查询菜单权限树
+	 * 若指定角色id，则根据角色归属的租户，查询租户套餐权限内的权限
 	 * @param request
 	 * @return
 	 */
 	@RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
-	public Result<Map<String,Object>> queryTreeList(HttpServletRequest request) {
+	public Result<Map<String,Object>> queryTreeList(@RequestParam(name="departId",required=false) String departId,@RequestParam(name="roleId",required=false) String roleId,HttpServletRequest request) {
 		Result<Map<String,Object>> result = new Result<>();
 		//全部权限ids
 		List<String> ids = new ArrayList<>();
 		try {
-			LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
-			query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
-			query.orderByAsc(SysPermission::getSortNo);
-			List<SysPermission> list = sysPermissionService.list(query);
+			Integer tenantId=null;
+			//指定角色id
+			if(StringUtils.isNotBlank(roleId)){
+				//查询角色归属的租户
+				SysRole role=sysRoleService.getById(roleId);
+				if(role!=null){
+					tenantId=role.getTenantId();
+				}
+			}else if(StringUtils.isNotBlank(departId)){
+				SysDepart depart=sysDepartService.getById(departId);
+				if(depart!=null){
+					tenantId=depart.getTenantId();
+				}
+			}
+			List<SysPermission> list =null;
+			if(tenantId==null||tenantId.intValue()==0){
+				LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
+				query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
+				query.orderByAsc(SysPermission::getSortNo);
+				list = sysPermissionService.list(query);
+			}else{
+				//查询租户套餐包的权限
+				list = sysPermissionService.queryTenantPermissions(tenantId);
+			}
+			if(CollectionUtils.isEmpty(list)){
+				return null;
+			}
+
 			for(SysPermission sysPer : list) {
 				ids.add(sysPer.getId());
 			}
 			List<TreeModel> treeList = new ArrayList<>();
 			getTreeModelList(treeList, list, null);
 			Map<String,Object> resMap = new HashMap(5);
-            //全部树节点数据
+			//全部树节点数据
 			resMap.put("treeList", treeList);
-            //全部树ids
+			//全部树ids
 			resMap.put("ids", ids);
 			result.setResult(resMap);
 			result.setSuccess(true);
@@ -522,7 +535,7 @@ public class SysRoleController {
 		}
 		return result;
 	}
-	
+
 	private void getTreeModelList(List<TreeModel> treeList,List<SysPermission> metaList,TreeModel temp) {
 		for (SysPermission permission : metaList) {
 			String tempPid = permission.getParentId();

@@ -28,4 +28,12 @@ public interface ISysRolePermissionService extends IService<SysRolePermission> {
 	 */
 	public void saveRolePermission(String roleId,String permissionIds,String lastPermissionIds);
 
+	/**
+	 * 使用租户产品包更新角色权限
+	 * 用于更新租户管理员角色的权限：添加/修改租户产品包时触发
+	 * @param roleId
+	 * @param tenantId
+	 */
+	public void updateRolePermissionFromTenantPack(String roleId, Integer tenantId);
+
 }

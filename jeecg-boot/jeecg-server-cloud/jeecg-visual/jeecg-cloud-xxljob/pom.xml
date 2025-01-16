@@ -81,6 +81,13 @@
                 <configuration>
                     <includeSystemScope>true</includeSystemScope>
                     <mainClass>com.xxl.job.admin.XxlJobAdminApplication</mainClass>
+                    <layout>ZIP</layout>
+                    <includes>
+                        <include>
+                            <groupId>nothing</groupId>
+                            <artifactId>nothing</artifactId>
+                        </include>
+                    </includes>
                 </configuration>
             </plugin>
         </plugins>

@@ -8,7 +8,7 @@
   import { defineComponent, ref, unref, computed } from 'vue';
   import { BasicDrawer, useDrawerInner } from '/@/components/Drawer';
   import { BasicForm, useForm } from '/@/components/Form';
-  import { getUserDepartList } from '../../user/user.api';
+  import { getUserDepartList, getUserRoles } from '../../user/user.api';
   import { tenantUserSchema } from '../tenant.data';
   import { saveOrUpdateTenantUser } from '../tenant.api';
 
@@ -42,6 +42,14 @@
         showFooter.value = data?.showFooter ?? true;
         setDrawerProps({ showFooter: showFooter.value });
         if (unref(isUpdate)) {
+          //查角色/赋值/try catch 处理，不然编辑有问题
+          try {
+            const userRoles = await getUserRoles({ userid: data.record.id });
+            if (userRoles && userRoles.length > 0) {
+              data.record.selectedroles = userRoles;
+            }
+          } catch (error) {}
+
           const userDepart = await getUserDepartList({ userId: data.record.id });
           let departData: any = '';
           if (userDepart && userDepart.length > 0) {
@@ -55,6 +63,8 @@
           status.value = data.status;
           await setFieldsValue(formData);
         }
+        //处理角色用户列表情况(和角色列表有关系)
+        data.selectedroles && (await setFieldsValue({ selectedroles: data.selectedroles }));
         // 隐藏底部时禁用整个表单
         setProps({ disabled: !data?.showFooter });
         if(!data?.showFooter){

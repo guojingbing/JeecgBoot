@@ -26,6 +26,8 @@
   <RoleUserTable @register="roleUserDrawer" :disableUserEdit="true"/>
   <!--角色编辑抽屉-->
   <RoleDrawer @register="registerDrawer" @success="reload" :showFooter="showFooter" />
+  <!--角色菜单授权抽屉-->
+  <RolePermissionDrawer @register="rolePermissionDrawer" />
   <!--角色详情-->
   <RoleDesc @register="registerDesc"></RoleDesc>
 </template>
@@ -35,6 +37,7 @@
   import { useDrawer } from '/@/components/Drawer';
   import { useModal } from '/@/components/Modal';
   import RoleDesc from './components/RoleDesc.vue';
+  import RolePermissionDrawer from './components/RolePermissionDrawer.vue';
   import RoleDrawer from './components/RoleDrawer.vue';
   import RoleUserTable from './components/RoleUserTable.vue';
   import { columns, searchFormSchema } from './role.data';
@@ -47,6 +50,7 @@
   const [roleUserDrawer, { openDrawer: openRoleUserDrawer }] = useDrawer();
   const [registerDrawer, { openDrawer }] = useDrawer();
   const [registerModal, { openModal }] = useModal();
+  const [rolePermissionDrawer, { openDrawer: openRolePermissionDrawer }] = useDrawer();
   const [registerDesc, { openDrawer: openRoleDesc }] = useDrawer();
   
   // 列表页面公共参数、方法
@@ -121,6 +125,12 @@
     await batchDeleteRole({ ids: selectedRowKeys.value }, reload);
   }
   /**
+   * 角色授权弹窗
+   */
+  function handlePerssion(record) {
+    openRolePermissionDrawer(true, { roleId: record.id });
+  }
+  /**
    * 角色用户
    */
   function handleUser(record) {
@@ -135,6 +145,10 @@
       {
         label: '用户',
         onClick: handleUser.bind(null, record),
+      },
+      {
+        label: '授权',
+        onClick: handlePerssion.bind(null, record),
       },
     ];
   }

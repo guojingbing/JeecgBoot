@@ -193,4 +193,13 @@
         </if>
         ORDER BY depart_order DESC
     </select>
+
+    <!-- 根据id查询多个部门信息 -->
+    <select id="queryDepartByIds" resultType="org.jeecg.modules.system.entity.SysDepart">
+        select id,depart_name from sys_depart where id in
+        <foreach collection="deptIds" index="index" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>

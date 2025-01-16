@@ -24,6 +24,7 @@ export enum Api {
   getUpdateDepartInfo = '/sys/user/getUpdateDepartInfo',
   doUpdateDepartInfo = '/sys/user/doUpdateDepartInfo',
   changeDepartChargePerson = '/sys/user/changeDepartChargePerson',
+  departAdminUserlist = '/sys/user/departAdminUserList',
 }
 
 /**
@@ -116,7 +117,34 @@ export const doUpdateDepartInfo = (params) => defHttp.put({ url: Api.doUpdateDep
 export const deleteDepart = (id) => defHttp.delete({ url: Api.delete, params:{ id } }, { joinParamsToUrl: true });
 
 /**
- * 设置负责人 取消负责人
+ * 设置、取消部门负责人
  * @param params
  */
 export const changeDepartChargePerson = (params) => defHttp.put({ url: Api.changeDepartChargePerson, params });
+
+/**
+ * 批量取消部门和用户的关联关系
+ */
+export const changeDepartChargePersonBatch = (params, confirm = false) => {
+  return new Promise((resolve, reject) => {
+    const doDelete = () => {
+      resolve(defHttp.put({ url: Api.changeDepartChargePerson, params }, { joinParamsToUrl: false }));
+    };
+    if (confirm) {
+      createConfirm({
+        iconType: 'warning',
+        title: '取消关联',
+        content: '确定要取消关联吗？',
+        onOk: () => doDelete(),
+        onCancel: () => reject(),
+      });
+    } else {
+      doDelete();
+    }
+  });
+};
+
+/**
+ * 查询部门负责人信息
+ */
+export const departAdminUserList = (params) => defHttp.get({ url: Api.departAdminUserlist, params });

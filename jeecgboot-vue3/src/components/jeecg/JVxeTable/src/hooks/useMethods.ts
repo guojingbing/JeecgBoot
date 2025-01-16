@@ -455,9 +455,7 @@ export function useMethods(props: JVxeTableProps, { emit }, data: JVxeDataProps,
   /** 获取表格表单里的值 */
   function getValues(callback, rowIds) {
     let tableData = getTableData({ rowIds: rowIds });
-    // update-begin--author:liaozhiyang---date:20241227---for：【issues/7631】JVxeTable组件的getValues回调函数参数修正
-    callback(tableData, tableData);
-    // update-end--author:liaozhiyang---date:20241227---for：【issues/7631】JVxeTable组件的getValues回调函数参数修正
+    callback('', tableData);
   }
 
   type getTableDataOptions = {
@@ -640,7 +638,7 @@ export function useMethods(props: JVxeTableProps, { emit }, data: JVxeDataProps,
   async function clearSelection() {
     const xTable = getXTable();
     let event = { $table: xTable, target: instanceRef.value };
-    if (['radio', JVxeTypes.rowRadio].includes(props.rowSelectionType ?? '')) {
+    if (props.rowSelectionType === JVxeTypes.rowRadio) {
       await xTable.clearRadioRow();
       handleVxeRadioChange(event);
     } else {
@@ -655,7 +653,7 @@ export function useMethods(props: JVxeTableProps, { emit }, data: JVxeDataProps,
    */
   function getSelectionData(isFull?: boolean) {
     const xTable = getXTable();
-    if (['radio', JVxeTypes.rowRadio].includes(props.rowSelectionType ?? '')) {
+    if (props.rowSelectionType === JVxeTypes.rowRadio) {
       let row = xTable.getRadioRecord(isFull);
       if (isNull(row)) {
         return [];
@@ -742,7 +740,7 @@ export function useMethods(props: JVxeTableProps, { emit }, data: JVxeDataProps,
   async function removeSelection() {
     let xTable = getXTable();
     let res;
-    if (['radio', JVxeTypes.rowRadio].includes(props.rowSelectionType ?? '')) {
+    if (props.rowSelectionType === JVxeTypes.rowRadio) {
       res = await xTable.removeRadioRow();
     } else {
       res = await xTable.removeCheckboxRow();
@@ -859,7 +857,7 @@ export function useMethods(props: JVxeTableProps, { emit }, data: JVxeDataProps,
   function getSelectedData(isFull?: boolean) {
     const xTable = getXTable();
     let rows:any[] = []
-    if (['radio', JVxeTypes.rowRadio].includes(props.rowSelectionType ?? '')) {
+    if (props.rowSelectionType === JVxeTypes.rowRadio) {
       let row = xTable.getRadioRecord(isFull);
       if (isNull(row)) {
         return [];

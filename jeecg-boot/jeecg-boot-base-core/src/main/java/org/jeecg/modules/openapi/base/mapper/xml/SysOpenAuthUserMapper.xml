@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.openapi.base.mapper.SysOpenAuthUserMapper">
+    <select id="selectAuthUsers" resultType="java.util.HashMap">
+        SELECT
+        a.*
+        FROM
+        sys_open_auth_user a
+        WHERE 1=1
+        <if test="id!=null and id!=''">
+            AND a.id=#{userId}
+        </if>
+    </select>
+</mapper>

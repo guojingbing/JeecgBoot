@@ -109,4 +109,11 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	 * @return
 	 */
 	 boolean checkPermDuplication(String id, String url,Boolean alwaysShow);
+
+	/**
+	 * 查询租户套餐权限
+	 * @param tenantId
+	 * @return
+	 */
+	List<SysPermission> queryTenantPermissions(Integer tenantId);
 }

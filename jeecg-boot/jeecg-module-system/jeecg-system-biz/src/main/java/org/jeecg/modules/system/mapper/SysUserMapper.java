@@ -12,6 +12,7 @@ import org.jeecg.modules.system.model.SysUserSysDepartModel;
 import org.jeecg.modules.system.vo.SysUserDepVo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -59,6 +60,13 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
 	List<SysUserDepVo> getDepNamesByUserIds(@Param("userIds")List<String> userIds);
+
+	/**
+	 * 获取用户负责的部门ids
+	 * @param userIds
+	 * @return
+	 */
+	List<Map> getAdmainDeptIdsByUserIds(@Param("userIds")List<String> userIds);
 
 	/**
 	 *  根据部门Ids,查询部门下用户信息
@@ -222,4 +230,13 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 */
 	@Select("select id,phone from sys_user where phone = #{phone} and username = #{username}")
     SysUser getUserByNameAndPhone(@Param("phone") String phone, @Param("username") String username);
+
+	/**
+	 *  根据部门Id,查询部门负责人信息
+	 * @param page
+	 * @param departId
+	 * @param username 用户账号
+	 * @return
+	 */
+	IPage<SysUser> getAdminUserByDeptId(Page page, @Param("departId") String departId, @Param("username") String username);
 }

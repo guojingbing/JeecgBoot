@@ -30,6 +30,9 @@ enum Api {
   //新增、编辑用户租户
   saveUser = '/sys/user/add',
   editUser = '/sys/user/editTenantUser',
+
+  //设置租户区域权限
+  setTenantAreas = '/sys/area/auth/tenant',
 }
 
 /**
@@ -83,6 +86,15 @@ export const batchDeleteTenant = (params, handleSuccess) => {
       });
     },
   });
+};
+
+/**
+ * 设置租户区域权限
+ * @param params
+ */
+export const setTenantAreas = (params) => {
+  let url = Api.setTenantAreas;
+  return defHttp.post({ url: url, params });
 };
 
 /**

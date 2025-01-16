@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.openapi.base.mapper.SysOpenAuthUserApiMapper">
+    <select id="selectListByAuthId" resultType="org.jeecg.modules.openapi.base.entity.SysOpenAuthUserApi">
+        SELECT
+        a.*,
+        sdi.item_text apiName
+        FROM
+        sys_open_auth_user_api a
+        LEFT JOIN sys_dict_item sdi ON sdi.item_value = a.api_code
+        INNER JOIN sys_dict sdd ON sdi.dict_id = sdd.id
+        <if test="type!=null">
+            <choose>
+                <when test='type==1'>
+                    AND sdd.dict_code = 'sys_open_auth_user_api_ecg'
+                </when>
+                <when test='type==2'>
+                    AND sdd.dict_code = 'sys_open_auth_user_api_order'
+                </when>
+            </choose>
+        </if>
+        WHERE 1=1
+        <if test="authId!=null and authId!=''">
+            AND a.auth_id=#{authId}
+        </if>
+        <if test="code!=null">
+            AND a.api_code=#{code}
+        </if>
+    </select>
+</mapper>

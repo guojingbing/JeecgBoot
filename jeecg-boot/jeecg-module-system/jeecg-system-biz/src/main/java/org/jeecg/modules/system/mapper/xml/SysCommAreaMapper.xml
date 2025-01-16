@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.system.mapper.SysCommAreaMapper">
+	<!-- 查询区域树 -->
+	<select id="getAreaTree" resultType="java.util.Map">
+		SELECT
+		area_code,
+		area_name,
+		level,
+		pcode,
+		category
+		FROM
+		sys_comm_area
+		WHERE
+			1=1
+		<if test="level!=null">
+			AND LEVEL <![CDATA[ <= ]]> #{level}
+		</if>
+
+		<if test="tenantId!=null">
+			AND (
+			area_code IN ( SELECT area_code FROM sys_tenant_area WHERE tenant_id = #{ tenantId } )
+			<if test="onlyAuthorized==null">
+				OR area_code NOT IN ( SELECT DISTINCT ( area_code ) FROM sys_tenant_area )
+			</if>
+			)
+		</if>
+	</select>
+</mapper>

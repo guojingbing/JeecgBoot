@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.cust.cust.user.mapper.CustUserMapper">
+    <select id="getUserByThirdUserId" resultType="java.util.HashMap">
+        SELECT
+        a.id,
+        a.user_no userNo,
+        a.user_name userName,
+        a.phone_number phoneNumber,
+        a.avatar,
+        a.province,
+        a.city,
+        a.district,
+        b.bind_status bindStatus
+        FROM cust_user a
+        LEFT JOIN cust_user_third_account b ON a.id=b.user_id
+        WHERE 1=1
+        <if test="thirdType!=null and thirdType!=''">
+            AND third_type=#{thirdType}
+        </if>
+        <if test="appid!=null and appid!=''">
+            AND appid=#{appid}
+        </if>
+        <if test="thirdUserId!=null and thirdUserId!=''">
+            AND third_user_id=#{thirdUserId}
+        </if>
+        ORDER BY
+        b.id DESC
+        LIMIT 1
+    </select>
+</mapper>

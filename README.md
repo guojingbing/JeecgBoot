@@ -42,6 +42,16 @@ Jeecg-Boot低代码开发平台，可以应用在任何J2EE项目的开发中，
 | `jeecg-uniapp` | [配套APP框架](https://github.com/jeecgboot/jeecg-uniapp) 适配多个终端，支持APP、小程序、H5 |
 
 
+开源协议说明
+-----------------------------------
+JeecgBoot开源版本，底层完全开源可以自主开发，遵循Apache2.0协议，详细见 https://github.com/jeecgboot/JeecgBoot#Apache-2.0-1-ov-file
+
+开源协议中文释意如下：
+- 1.JeecgBoot开源版本无任何限制，在遵循本开源协议条款下，允许商用使用，不会造成侵权行为。
+- 2.允许基于本平台软件开展业务系统开发。
+- 3.在任何情况下，您不得使用本软件开发可能被认为与本软件竞争的软件。
+- 4.针对企业用户我们也提供“企业级版本”，详细见 https://jeecg.com/vip
+
 
 技术文档
 -----------------------------------
@@ -49,7 +59,7 @@ Jeecg-Boot低代码开发平台，可以应用在任何J2EE项目的开发中，
 - 官方网站：  [http://www.jeecg.com](http://www.jeecg.com)
 - 在线演示 ：  [在线演示](http://boot3.jeecg.com)   | [APP演示](http://jeecg.com/appIndex)
 - 快速体验： [一分钟体验低代码](https://jeecg.blog.csdn.net/article/details/106079007?spm=1001.2014.3001.5502 "一分钟体验零代码") | [在线体验零代码](https://app.qiaoqiaoyun.com/myapps/index "在线体验零代码")
-- 开发文档：  [文档中心](https://help.jeecg.com) | [AI集成配置(支持DeepSeek)](https://help.jeecg.com/java/ai/aichat.html)
+- 开发文档：  [https://help.jeecg.com](https://help.jeecg.com)
 - 反馈问题：  [在Github上提Issues](https://github.com/jeecgboot/JeecgBoot/issues/new)
 - 新手指南： [快速入门](http://www.jeecg.com/doc/quickstart) | [入门视频](http://jeecg.com/doc/video)
 - QQ交流群 ： ⑩716488839、⑨808791225(满)、其他(满)
@@ -113,19 +123,28 @@ Jeecg-Boot低代码开发平台，可以应用在任何J2EE项目的开发中，
 |   PostgreSQL   |  √   |
 |   MariaDB   |  √   |
 |   MariaDB   |  √   |
+|   MariaDB   |  √   |
 |   达梦   |  √   |
 |   人大金仓   |  √   |
 |   TiDB     |  √   |
 
-#### 支持AI
 
-|  AI模型   |  支持   |
-| --- | --- |
-|   DeepSeek   |  √   |
-|   ChatGTP   |  √   |
 
-AI集成文档： https://help.jeecg.com/java/ai/aichat.html
+#### 分支说明
 
+> 主干master更稳定，如果你对最新技术栈无要求，建议采用主干
+
+###### springboot3分支
+ - 源码地址：https://github.com/jeecgboot/JeecgBoot/tree/springboot3
+ - 架构说明：升级Spring Boot3 & JDK 17 + Undertow + springdoc + fastjson2
+ - [参考文档](https://help.jeecg.com/java/upgrade/springboot3.html)
+ 
+###### springboot3_sas分支
+ - 源码地址：https://github.com/jeecgboot/JeecgBoot/tree/springboot3_sas
+ - 架构说明：在springboot3分支基础上，采用SpringAuthorizationServer替换Shiro
+ - [参考文档](https://help.jeecg.com/java/shengjiSpringSecurity.html)
+ 
+ 
  
 ## 微服务解决方案
 

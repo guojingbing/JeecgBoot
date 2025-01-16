@@ -137,6 +137,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 	@Autowired
 	private IDictTableWhiteListHandler dictTableWhiteListHandler;
 
+	@Resource
+	private SysCommAreaMapper areaMapper;
+
+	@Override
+	public List<Map<String, Object>> queryAreaTreeWithDeep(Integer deep, String tenantId, Boolean onlyAuthorized){
+		return areaMapper.getAreaTree(deep, tenantId, onlyAuthorized);
+	}
+
 	@Override
 	//@SensitiveDecode
 	public LoginUser getUserByName(String username) {

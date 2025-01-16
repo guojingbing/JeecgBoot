@@ -16,7 +16,6 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.aspect.annotation.PermissionData;
-import org.jeecg.common.base.BaseMap;
 import org.jeecg.common.config.TenantContext;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.constant.SymbolConstant;
@@ -780,6 +779,48 @@ public class SysUserController {
         return result;
     }
 
+    /**
+     * 部门负责人列表
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "/departAdminUserList", method = RequestMethod.GET)
+    public Result<IPage<SysUser>> departAdminUserList(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+                                                 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
+        Result<IPage<SysUser>> result = new Result<IPage<SysUser>>();
+        Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
+        String deptId = req.getParameter("deptId");
+        String username = req.getParameter("username");
+
+        if(StringUtils.isBlank(deptId)){
+            result.setSuccess(true);
+            result.setResult(null);
+            return result;
+        }
+
+        IPage<SysUser> pageList = sysUserService.getAdminUserByDeptId(page,deptId,username);
+        //批量查询用户的所属部门
+        //step.1 先拿到全部的 useids
+        //step.2 通过 useids，一次性查询用户的所属部门名字
+        List<String> userIds = pageList.getRecords().stream().map(SysUser::getId).collect(Collectors.toList());
+        if(userIds!=null && userIds.size()>0){
+            Map<String, String> useDepNames = sysUserService.getAdminDeptNamesByUserIds(userIds);
+            pageList.getRecords().forEach(item -> {
+                //批量查询用户的所属部门
+                item.setOrgCode(useDepNames.get(item.getId()));
+            });
+        }
+        //update-begin---author:wangshuai ---date:20221223  for：[QQYUN-3371]租户逻辑改造，改成关系表------------
+        //设置租户id
+        page.setRecords(userTenantService.setUserTenantIds(page.getRecords()));
+        //update-end---author:wangshuai ---date:20221223  for：[QQYUN-3371]租户逻辑改造，改成关系表------------
+        result.setSuccess(true);
+        result.setResult(pageList);
+
+        return result;
+    }
 
     /**
      * 根据 orgCode 查询用户，包括子部门下的用户
@@ -1790,7 +1831,9 @@ public class SysUserController {
             return result.error500("非当前租户下的用户，不允许修改！");
         }
         String departs = req.getParameter("selecteddeparts");
-        sysUserService.editTenantUser(sysUser,tenantId,departs,null);
+        String roles = req.getParameter("selectedroles");
+
+        sysUserService.editTenantUser(sysUser,tenantId,departs,roles);
         return Result.ok("修改成功");
     }
 

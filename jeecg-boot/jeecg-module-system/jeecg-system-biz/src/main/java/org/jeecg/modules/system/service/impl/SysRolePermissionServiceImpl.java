@@ -1,19 +1,26 @@
 package org.jeecg.modules.system.service.impl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.util.IpUtils;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.common.util.oConvertUtils;
-import org.jeecg.modules.system.entity.SysRolePermission;
+import org.jeecg.modules.system.entity.*;
+import org.jeecg.modules.system.mapper.SysRoleMapper;
 import org.jeecg.modules.system.mapper.SysRolePermissionMapper;
+import org.jeecg.modules.system.mapper.SysTenantMapper;
+import org.jeecg.modules.system.service.ISysPermissionService;
 import org.jeecg.modules.system.service.ISysRolePermissionService;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,6 +34,14 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Service
 public class SysRolePermissionServiceImpl extends ServiceImpl<SysRolePermissionMapper, SysRolePermission> implements ISysRolePermissionService {
+	@Autowired
+	private ISysPermissionService sysPermissionService;
+	@Autowired
+	private SysTenantMapper sysTenantMapper;
+	@Autowired
+	private SysRoleMapper sysRoleMapper;
+	@Autowired
+	private SysRolePermissionMapper sysRolePermissionMapper;
 
 	@Override
 	public void saveRolePermission(String roleId, String permissionIds) {
@@ -84,6 +99,39 @@ public class SysRolePermissionServiceImpl extends ServiceImpl<SysRolePermissionM
 			for (String permissionId : delete) {
 				this.remove(new QueryWrapper<SysRolePermission>().lambda().eq(SysRolePermission::getRoleId, roleId).eq(SysRolePermission::getPermissionId, permissionId));
 			}
+		}
+	}
+
+	@Override
+	public void updateRolePermissionFromTenantPack(String roleId, Integer tenantId){
+//		List<String> lastPermissionIdList=null;
+	    if(StringUtils.isBlank(roleId)){
+	    	if(tenantId==null){
+	    		return;
+			}
+			//查询租户管理员角色
+			SysTenant sysTenant = sysTenantMapper.querySysTenant(tenantId);
+			if(sysTenant==null){
+				return;
+			}
+			//查询租户管理员角色
+			SysRole role=sysRoleMapper.getRoleNoTenant(sysTenant.getHouseNumber()+"-Admin");
+			if(role==null){
+				return;
+			}
+			roleId=role.getId();
+//			LambdaQueryWrapper<SysRolePermission> query = new QueryWrapper<SysRolePermission>().lambda().eq(SysRolePermission::getRoleId, roleId);
+//			List<SysRolePermission> rolePermissions=sysRolePermissionMapper.selectList(query);
+//			lastPermissionIdList = rolePermissions.stream().map(SysRolePermission::getPermissionId).collect(Collectors.toList());
+        }
+		//删除角色原有权限
+		this.remove(new QueryWrapper<SysRolePermission>().lambda().eq(SysRolePermission::getRoleId, roleId));
+		//查询租户产品包权限
+		List<SysPermission> permissions=sysPermissionService.queryTenantPermissions(tenantId);
+		if(!CollectionUtils.isEmpty(permissions)){
+			List<String> permissionIdList = permissions.stream().map(SysPermission::getId).collect(Collectors.toList());
+			//保存角色权限
+			saveRolePermission(roleId, String.join(",",permissionIdList), null);
 		}
 	}
 	

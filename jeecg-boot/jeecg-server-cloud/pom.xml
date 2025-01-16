@@ -12,15 +12,15 @@
     <artifactId>jeecg-server-cloud</artifactId>
     <packaging>pom</packaging>
     <name>JEECG SERVER CLOUD</name>
-    
+
     <modules>
         <module>jeecg-cloud-gateway</module>
         <module>jeecg-cloud-nacos</module>
         <module>jeecg-system-cloud-start</module>
-        <module>jeecg-demo-cloud-start</module>
-        
+        <module>mscloud-demo-cloud-start</module>
+        <module>mscloud-cust-cloud-start</module>
+        <module>mscloud-iagent-cloud-start</module>
         <!-- 监控和测试例子 -->
         <module>jeecg-visual</module>
     </modules>
-
 </project>

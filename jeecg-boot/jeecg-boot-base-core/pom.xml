@@ -8,6 +8,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>jeecg-boot-base-core</artifactId>
+	<version>3.7.2</version>
 
 	<repositories>
 		<repository>
@@ -149,7 +150,7 @@
 		<dependency>
 			<groupId>org.jeecgframework</groupId>
 			<artifactId>kingbase8</artifactId>
-			<version>9.0.0</version>
+			<version>${kingbase8.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<!--达梦数据库驱动 版本号1-3-26-2023.07.26-197096-20046-ENT -->
@@ -293,6 +294,13 @@
 		<dependency>
 			<groupId>org.jeecgframework.boot</groupId>
 			<artifactId>jeecg-boot-starter-chatgpt</artifactId>
+		</dependency>
+
+		<!--限流-->
+		<dependency>
+			<groupId>io.github.forezp</groupId>
+			<artifactId>distributed-limit-core</artifactId>
+			<version>${forezp.version}</version>
 		</dependency>
 	</dependencies>
 </project>

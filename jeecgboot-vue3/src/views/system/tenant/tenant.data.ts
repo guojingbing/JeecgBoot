@@ -2,6 +2,7 @@ import { BasicColumn, FormSchema } from '/@/components/Table';
 import { getAutoScrollContainer } from '/@/utils/common/compUtils';
 import { render } from "/@/utils/common/renderUtils";
 import { rules } from "/@/utils/helper/validator";
+import { getAllRolesList } from '.././user/user.api';
 
 export const columns: BasicColumn[] = [
   {
@@ -442,6 +443,18 @@ export const tenantUserSchema: FormSchema[] = [
       return !!values.id;
     },
   },
+  {
+    label: '角色',
+    field: 'selectedroles',
+    component: 'ApiSelect',
+    componentProps: {
+      mode: 'multiple',
+      api: getAllRolesList,
+      labelField: 'roleName',
+      valueField: 'id',
+      immediate: false,
+    },
+  },
   { field: 'selecteddeparts', label: '部门', component: 'JSelectDept', componentProps: { checkStrictly: true } },
   {
     field: 'post',
@@ -456,6 +469,5 @@ export const tenantUserSchema: FormSchema[] = [
       return [{ required: true, message: '请输入工号' }, { ...rules.duplicateCheckRule('sys_user', 'work_no', model, schema, false)[0] }];
     },
   },
-  { field: 'relTenantIds', label: '租户', component: 'Input',show:false },
-  { field: 'selectedroles', label: '角色', component: 'Input',show:false },
+  { field: 'relTenantIds', label: '租户', component: 'Input', show: false },
 ];

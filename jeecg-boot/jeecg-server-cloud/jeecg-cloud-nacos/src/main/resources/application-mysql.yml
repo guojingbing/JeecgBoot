@@ -13,11 +13,11 @@ spring:
 db:
   num: 1
   password:
-    '0': ${MYSQL-PWD:root}
+    '0': ${MYSQL-PWD:zxyl2016@yt}
   url:
-    '0': jdbc:mysql://${MYSQL-HOST:jeecg-boot-mysql}:${MYSQL-PORT:3306}/${MYSQL-DB:nacos}?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    '0': jdbc:mysql://zxrds-prod.rwlb.rds.aliyuncs.com:4407/zxdb_ms_nacos?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
   user:
-    '0': ${MYSQL-USER:root}
+    '0': ${MYSQL-USER:zxdb}
 management:
   metrics:
     export:

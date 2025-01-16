@@ -24,5 +24,23 @@
             #{dto.clientType,jdbcType=VARCHAR}
         )
     </insert>
-
+    <select id="selectDictItemsByDictCode" resultType="java.util.HashMap">
+        SELECT
+        a.*
+        FROM
+        sys_dict_item a LEFT JOIN sys_dict b ON a.dict_id=b.id
+        WHERE
+        1 = 1 AND ifnull(a.status,0)=1
+        <if test="dictCode!=null">
+            AND b.dict_code=#{dictCode}
+        </if>
+        ORDER BY
+        sort_order ASC
+    </select>
+    <!-- 通过字典code获取字典数据 -->
+    <select id="queryDictItemsByCode" parameterType="String"  resultType="org.jeecg.common.system.vo.DictModel">
+		   select s.item_value as "value",s.item_text as "text" from sys_dict_item s
+		   where dict_id = (select id from sys_dict where dict_code = #{code})
+		   order by s.sort_order asc
+	</select>
 </mapper>

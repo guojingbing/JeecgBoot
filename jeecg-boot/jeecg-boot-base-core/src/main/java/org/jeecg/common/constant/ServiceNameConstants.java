@@ -37,6 +37,14 @@ public interface ServiceNameConstants {
 	 * 微服务名：joa模块
 	 */
 	String SERVICE_JOA = "jeecg-joa";
+	/**
+	 * 微服务名： CUST模块
+	 */
+	String SERVICE_CUST = "jeecg-cust";
+	/**
+	 * 微服务名： IAGENT模块
+	 */
+	String SERVICE_IAGENT = "jeecg-iagent";
 	
 //	/**
 //	 * 微服务名：online在线模块

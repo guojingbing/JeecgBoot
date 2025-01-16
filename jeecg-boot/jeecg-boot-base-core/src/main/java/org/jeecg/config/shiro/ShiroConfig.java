@@ -13,8 +13,10 @@ import org.crazycake.shiro.*;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.JeecgBaseConfig;
+import org.jeecg.config.shiro.filters.APITokenFilter;
 import org.jeecg.config.shiro.filters.CustomShiroFilterFactoryBean;
 import org.jeecg.config.shiro.filters.JwtFilter;
+import org.jeecg.config.shiro.filters.OAPITokenFilter;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -167,6 +169,7 @@ public class ShiroConfig {
 
         //websocket排除
         filterChainDefinitionMap.put("/websocket/**", "anon");//系统通知和公告
+        filterChainDefinitionMap.put("/iagentWebsocket/**", "anon");//智能体websocket
         filterChainDefinitionMap.put("/newsWebsocket/**", "anon");//CMS模块
         filterChainDefinitionMap.put("/vxeSocket/**", "anon");//JVxeTable无痕刷新示例
 
@@ -180,12 +183,41 @@ public class ShiroConfig {
         // 企业微信证书排除
         filterChainDefinitionMap.put("/WW_verify*", "anon");
 
+        //小程序免登录操作接口
+        filterChainDefinitionMap.put("/cust/api/u/login", "anon");
+        filterChainDefinitionMap.put("/cust/api/u/logout", "anon");
+        filterChainDefinitionMap.put("/cust/api/u/sendata", "anon");
+        filterChainDefinitionMap.put("/cust/api/u/info", "anon");
+        filterChainDefinitionMap.put("/cust/api/u/werundata", "anon");
+
         // 添加自己的过滤器并且取名为jwt
         Map<String, Filter> filterMap = new HashMap<String, Filter>(1);
         //如果cloudServer为空 则说明是单体 需要加载跨域配置【微服务跨域切换】
         Object cloudServer = env.getProperty(CommonConstant.CLOUD_SERVER_KEY);
         filterMap.put("jwt", new JwtFilter(cloudServer==null));
+        // 添加小程序登录过滤器并且取名为apijwt，用于过滤需要登录的小程序接口
+        filterMap.put("apijwt", new APITokenFilter());
+        //添加openapi权限验证过滤器并且取名为oapijwt，用于过滤需要权限验证的openapi接口
+        filterMap.put("oapijwt", new OAPITokenFilter());
         shiroFilterFactoryBean.setFilters(filterMap);
+
+        filterChainDefinitionMap.put("/sys/common/cust/upload/**", "apijwt");
+
+        //小程序文件上传接口需要登录
+        filterChainDefinitionMap.put("/cust/api/comm/upload", "apijwt");
+        //小程序通用接口不需要登录验证
+        filterChainDefinitionMap.put("/cust/api/comm/**", "anon");
+        filterChainDefinitionMap.put("/cust/api/**", "apijwt");
+
+        //iagent测试接口
+        filterChainDefinitionMap.put("/iagent/test/**", "anon");
+
+        //通用OPENAPI
+        filterChainDefinitionMap.put("/oapi/auth", "anon");
+        filterChainDefinitionMap.put("/oapi/token", "anon");
+        filterChainDefinitionMap.put("/oapi/refreshToken", "anon");
+        filterChainDefinitionMap.put("/oapi/**", "oapijwt");
+
         // <!-- 过滤链定义，从上向下顺序执行，一般将/**放在最为下边
         filterChainDefinitionMap.put("/**", "jwt");
 

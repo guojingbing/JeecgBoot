@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.mapper.ZxecgCustUserMapper">
+    <select id="getUserFriends" parameterType="java.util.HashMap" resultType="org.jeecg.modules.zxecg.vo.ZxecgUserVo">
+		SELECT user_id,user_name
+		FROM cust_userinfo
+		WHERE user_id IN (SELECT fr_user_id FROM cust_user_family_related WHERE ifnull(fr_status,0)=1 AND user_id=#{userId})
+	</select>
+	<select id="getUserInfo" parameterType="java.util.HashMap" resultType="org.jeecg.modules.zxecg.vo.ZxecgUserVo">
+		SELECT user_id,user_name
+		FROM cust_userinfo
+		WHERE user_id=#{userId}
+	</select>
+</mapper>

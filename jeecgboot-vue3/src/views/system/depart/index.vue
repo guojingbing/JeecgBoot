@@ -1,10 +1,10 @@
 <template>
   <a-row :class="['p-4', `${prefixCls}--box`]" type="flex" :gutter="10">
-    <a-col :xl="12" :lg="24" :md="24" style="margin-bottom: 10px">
+    <a-col :xl="12" :lg="24" :md="24" style="margin-bottom: 10px; flex: 1">
       <DepartLeftTree ref="leftTree" @select="onTreeSelect" @rootTreeData="onRootTreeData" />
     </a-col>
-    <a-col :xl="12" :lg="24" :md="24" style="margin-bottom: 10px">
-      <div style="height: 100%;" :class="[`${prefixCls}`]">
+    <a-col :xl="12" :lg="24" :md="24" style="margin-bottom: 10px; flex: 1">
+      <div style="height: 100%" :class="[`${prefixCls}`]">
         <a-tabs v-show="departData != null" defaultActiveKey="base-info">
           <a-tab-pane tab="基本信息" key="base-info" forceRender style="position: relative">
             <div style="padding: 20px">
@@ -14,6 +14,11 @@
           <a-tab-pane tab="部门权限" key="role-info">
             <div style="padding: 0 20px 20px">
               <DepartRuleTab :data="departData" />
+            </div>
+          </a-tab-pane>
+          <a-tab-pane tab="负责人" key="user-info">
+            <div style="padding: 0 20px 20px">
+              <DepartUserInfoTab :data="departData" />
             </div>
           </a-tab-pane>
         </a-tabs>
@@ -31,6 +36,7 @@
   import DepartLeftTree from './components/DepartLeftTree.vue';
   import DepartFormTab from './components/DepartFormTab.vue';
   import DepartRuleTab from './components/DepartRuleTab.vue';
+  import DepartUserInfoTab from './components/DepartUserInfoTab.vue';
 
   const { prefixCls } = useDesign('depart-manage');
   provide('prefixCls', prefixCls);

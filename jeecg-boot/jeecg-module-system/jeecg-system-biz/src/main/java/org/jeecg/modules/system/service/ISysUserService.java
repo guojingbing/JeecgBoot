@@ -142,11 +142,27 @@ public interface ISysUserService extends IService<SysUser> {
 	public IPage<SysUser> getUserByDepIds(Page<SysUser> page, List<String> departIds, String username);
 
 	/**
+	 * 根据部门Id查询部门负责人
+	 * @param page
+	 * @param departId  部门id
+	 * @param username 用户账户名称
+	 * @return
+	 */
+	public IPage<SysUser> getAdminUserByDeptId(Page<SysUser> page, String departId, String username);
+
+	/**
 	 * 根据 userIds查询，查询用户所属部门的名称（多个部门名逗号隔开）
 	 * @param userIds
 	 * @return
 	 */
 	public Map<String,String> getDepNamesByUserIds(List<String> userIds);
+
+	/**
+	 * 获取用户负责部门的名称
+	 * @param userIds
+	 * @return
+	 */
+	public Map<String,String> getAdminDeptNamesByUserIds(List<String> userIds);
 
     /**
      * 根据部门 Id 和 QueryWrapper 查询

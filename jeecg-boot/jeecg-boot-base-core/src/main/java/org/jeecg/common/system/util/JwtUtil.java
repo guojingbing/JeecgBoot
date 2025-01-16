@@ -7,15 +7,6 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Date;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -27,8 +18,17 @@ import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysUserCacheInfo;
 import org.jeecg.common.util.DateUtils;
+import org.jeecg.common.util.RedisUtil;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.common.util.oConvertUtils;
+
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
 
 /**
  * @Author Scott
@@ -37,10 +37,57 @@ import org.jeecg.common.util.oConvertUtils;
  **/
 @Slf4j
 public class JwtUtil {
-
 	/**Token有效期为7天（Token在reids中缓存时间为两倍）*/
 	public static final long EXPIRE_TIME = (7 * 12) * 60 * 60 * 1000;
+	//refresh token
+	public static final long REFRESH_EXPIRE_TIME = 60 * 60 * 1000 * 24 * 3;
+
 	static final String WELL_NUMBER = SymbolConstant.WELL_NUMBER + SymbolConstant.LEFT_CURLY_BRACKET;
+
+
+	/*********************************非框架代码，自定义添加*********************************/
+	/**
+	 * OPENAPI token生成
+	 * @param info
+	 * @param expireSeconds
+	 * @param redisUtil
+	 * @return
+	 */
+	public static String getOAPITokenWithInfo(String info, Integer expireSeconds, RedisUtil redisUtil) {
+		// 生成token
+		String token = JwtUtil.sign(info, info);
+		redisUtil.set(CommonConstant.PREFIX_OAPI_USER_TOKEN + token, token);
+		// 设置token缓存有效时间，默认半小时
+		redisUtil.expire(CommonConstant.PREFIX_OAPI_USER_TOKEN + token, expireSeconds == null ? EXPIRE_TIME : expireSeconds);
+		return token;
+	}
+
+	/**
+	 * 获取token有效时间
+	 * @param token
+	 * @return
+	 */
+	public static Long getTokenExpiredTime(String token) {
+		try {
+			DecodedJWT jwt = JWT.decode(token);
+			return jwt.getClaim("exp").asDate().getTime();
+		} catch (JWTDecodeException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * 验证刷新令牌是否失效
+	 * @param token
+	 * @param redisUtil
+	 * @return
+	 */
+	public static boolean verfiyOpenapiRefreshTokenExp(String token, RedisUtil redisUtil) {
+		// 设置token缓存有效时间
+		return redisUtil.get(CommonConstant.PREFIX_OAPI_USER_REFRESH_TOKEN + token) == null;
+	}
+
+	/*********************************非框架代码，自定义添加*********************************/
 
     /**
      *
@@ -86,6 +133,28 @@ public class JwtUtil {
 			log.error(e.getMessage(), e);
 			return false;
 		}
+	}
+
+	/**
+	 * 验证APP API token是否过期
+	 * @param token
+	 * @param redisUtil
+	 * @return
+	 */
+	public static boolean verfiyMpApiTokenExp(String token, RedisUtil redisUtil){
+		// 设置token缓存有效时间
+		return redisUtil.get(CommonConstant.PREFIX_CUST_USER_TOKEN + token)==null;
+	}
+
+	/**
+	 * 验证OPENAPI token是否过期
+	 * @param token
+	 * @param redisUtil
+	 * @return
+	 */
+	public static boolean verfiyOpenapiTokenExp(String token, RedisUtil redisUtil){
+		// 设置token缓存有效时间
+		return redisUtil.get(CommonConstant.PREFIX_OAPI_USER_TOKEN + token)==null;
 	}
 
 	/**
@@ -294,6 +363,45 @@ public class JwtUtil {
 		//update-end-author:taoyan date:20210330 for:多租户ID作为系统变量
 		if(returnValue!=null){returnValue = returnValue + moshi;}
 		return returnValue;
+	}
+
+	public static String getTokenByCustUserId(String userId, RedisUtil redisUtil){
+		// 生成token
+		String token = JwtUtil.sign(userId, userId);
+		// 设置token缓存有效时间
+		redisUtil.set(CommonConstant.PREFIX_CUST_USER_TOKEN + token, token);
+		redisUtil.expire(CommonConstant.PREFIX_CUST_USER_TOKEN + token, JwtUtil.EXPIRE_TIME / 1000);
+		return token;
+	}
+
+	/**
+	 * 生成refresh签名,3天后过期
+	 * @param username 用户名
+	 * @param secret   用户的密码
+	 * @return 加密的token
+	 */
+	public static String signRefresh(String username, String secret) {
+		Date date = new Date(System.currentTimeMillis() + REFRESH_EXPIRE_TIME);
+		Algorithm algorithm = Algorithm.HMAC256(secret);
+		// 附带username信息
+		return JWT.create().withClaim("username", username).withExpiresAt(date).sign(algorithm);
+
+	}
+
+	/**
+	 * 获取刷新token
+	 * @param info
+	 * @param expireSeconds
+	 * @param redisUtil
+	 * @return
+	 */
+	public static String getOAPIRefreshTokenWithInfo(String info, Integer expireSeconds, RedisUtil redisUtil) {
+		// 生成token
+		String token = JwtUtil.signRefresh(info, info);
+		redisUtil.set(CommonConstant.PREFIX_OAPI_USER_REFRESH_TOKEN + token, token);
+		// 设置token缓存有效时间，默认半小时
+		redisUtil.expire(CommonConstant.PREFIX_OAPI_USER_REFRESH_TOKEN + token, expireSeconds == null ? REFRESH_EXPIRE_TIME : expireSeconds);
+		return token;
 	}
 	
 //	public static void main(String[] args) {

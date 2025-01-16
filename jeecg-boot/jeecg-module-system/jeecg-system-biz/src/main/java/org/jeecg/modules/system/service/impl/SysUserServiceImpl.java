@@ -488,6 +488,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	}
 
 	@Override
+	public IPage<SysUser> getAdminUserByDeptId(Page<SysUser> page, String departId, String username) {
+		return userMapper.getAdminUserByDeptId(page, departId,username);
+	}
+
+	@Override
 	public Map<String, String> getDepNamesByUserIds(List<String> userIds) {
 		List<SysUserDepVo> list = this.baseMapper.getDepNamesByUserIds(userIds);
 
@@ -500,6 +505,63 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 					}
 				}
 		);
+		return res;
+	}
+
+	@Override
+	public Map<String, String> getAdminDeptNamesByUserIds(List<String> userIds) {
+	    //查询用户负责部门信息
+		List<Map> list = this.baseMapper.getAdmainDeptIdsByUserIds(userIds);
+
+		if(CollectionUtils.isEmpty(list)){
+			return null;
+		}
+
+		//获取查询的所有部门id
+		List<String> deptIdList=new ArrayList<>();
+		list.stream().forEach(item -> {
+			String dids=(String)item.get("depart_ids");
+			if(StringUtils.isNotBlank(dids)){
+                String[] departIds=dids.split(",");
+                deptIdList.addAll(Arrays.asList(departIds));
+            }
+		});
+
+        if(CollectionUtils.isEmpty(deptIdList)){
+            return null;
+        }
+        //部门id去重
+        deptIdList.stream().distinct();
+
+        //查询部门信息
+		List<SysDepart> departs=sysDepartMapper.queryDepartByIds(deptIdList);
+		if(CollectionUtils.isEmpty(departs)){
+		    return null;
+        }
+
+		Map<String,String> deptMap=new HashMap<>();
+		for(SysDepart dept:departs){
+		    deptMap.put(dept.getId(),dept.getDepartName());
+        }
+
+		Map<String, String> res = new HashMap(5);
+		list.forEach(item -> {
+		    String userId=(String)item.get("id");
+		    String userAdminDeptIds=(String)item.get("depart_ids");
+		    if(StringUtils.isNotBlank(userAdminDeptIds)){
+                String[] uads=userAdminDeptIds.split(",");
+                List<String> udnList=new ArrayList<>();
+                for(String uad:uads){
+                    String deptName=deptMap.get(uad);
+                    if(StringUtils.isNotBlank(deptName)){
+                        udnList.add(deptName);
+                    }
+                }
+                if(CollectionUtils.isNotEmpty(udnList)){
+                    res.put(userId,String.join(",",udnList));
+                }
+            }
+		});
 		return res;
 	}
 
@@ -1278,53 +1340,59 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	@Override
 	public void changeDepartChargePerson(JSONObject json) {
-		String userId = json.getString("userId");
+//		String userId = json.getString("userId");
+		JSONArray userIds = json.getJSONArray("userIds");
 		String departId = json.getString("departId");
 		boolean status  = json.getBoolean("status");
-		SysUser user = this.getById(userId);
-		if(user!=null){
-			String ids = user.getDepartIds();
-			if(status==true){
-				//设置部门负责人
-				if(oConvertUtils.isEmpty(ids)){
-					//设置为上级
-					user.setUserIdentity(CommonConstant.USER_IDENTITY_2);
-					user.setDepartIds(departId);
-				}else{
-					List<String> list = new ArrayList<String>(Arrays.asList(ids.split(",")));
-					if(list.indexOf(departId)>=0){
-						//啥也不干
-					}else{
-						list.add(departId);
-						String newIds = String.join(",", list);
+		if(userIds==null||userIds.size()<1||StringUtils.isBlank(departId)){
+			return;
+		}
+
+		for(Object uid:userIds){
+			String userId=(String)uid;
+			SysUser user = this.getById(userId);
+			if(user!=null){
+				String ids = user.getDepartIds();
+				if(status==true){
+					//设置部门负责人
+					if(oConvertUtils.isEmpty(ids)){
 						//设置为上级
 						user.setUserIdentity(CommonConstant.USER_IDENTITY_2);
+						user.setDepartIds(departId);
+					}else{
+						List<String> list = new ArrayList<>(Arrays.asList(ids.split(",")));
+						if(list.indexOf(departId)<0){
+							list.add(departId);
+							String newIds = String.join(",", list);
+							//设置为上级
+							user.setUserIdentity(CommonConstant.USER_IDENTITY_2);
+							user.setDepartIds(newIds);
+						}
+					}
+				}else{
+					// 取消负责人
+					if(oConvertUtils.isNotEmpty(ids)){
+						List<String> list = new ArrayList<String>();
+						for(String temp: ids.split(",")){
+							if(oConvertUtils.isEmpty(temp)){
+								continue;
+							}
+							if(!temp.equals(departId)){
+								list.add(temp);
+							}
+						}
+						String newIds = "";
+						if(list.size()>0){
+							newIds = String.join(",", list);
+						}else{
+							//负责部门为空时，说明已经是普通用户
+							user.setUserIdentity(CommonConstant.USER_IDENTITY_1);
+						}
 						user.setDepartIds(newIds);
 					}
 				}
-			}else{
-				// 取消负责人
-				if(oConvertUtils.isNotEmpty(ids)){
-					List<String> list = new ArrayList<String>();
-					for(String temp: ids.split(",")){
-						if(oConvertUtils.isEmpty(temp)){
-							continue;
-						}
-						if(!temp.equals(departId)){
-							list.add(temp);
-						}
-					}
-					String newIds = "";
-					if(list.size()>0){
-						newIds = String.join(",", list);
-					}else{
-						//负责部门为空时，说明已经是普通用户
-						user.setUserIdentity(CommonConstant.USER_IDENTITY_1);
-					}
-					user.setDepartIds(newIds);
-				}
+				this.updateById(user);
 			}
-			this.updateById(user);
 		}
 	}
 
@@ -1363,6 +1431,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		//update-end---author:wangshuai ---date:20230424  for：【QQYUN-5251】人员与部门：部门删除不掉------------
 		//修改用户下的职位
 		this.editUserPosition(sysUser.getId(),sysUser.getPost());
+
+		//处理用户角色 先删后加
+		sysUserRoleMapper.delete(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, user.getId()));
+		if(oConvertUtils.isNotEmpty(roles)) {
+			String[] arr = roles.split(",");
+			for (String roleId : arr) {
+				SysUserRole userRole = new SysUserRole(user.getId(), roleId);
+				sysUserRoleMapper.insert(userRole);
+			}
+		}
 	}
 
 	/**
