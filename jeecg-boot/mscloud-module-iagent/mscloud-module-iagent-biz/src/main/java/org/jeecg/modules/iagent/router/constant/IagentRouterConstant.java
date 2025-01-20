@@ -16,6 +16,7 @@ public class IagentRouterConstant {
     public static String QAROUTER_API_REPORT="REP";
     //必须全部满足
     public static String[] API_ROUTER_REPORT_QUERY_KEYWORDS=new String[]{
-            "查","我","报告"
+//            "查",
+            "我","报告"
     };
 }

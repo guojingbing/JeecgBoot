@@ -9,6 +9,7 @@ import io.reactivex.Flowable;
 import org.jeecg.common.util.SysRedisUtil;
 import org.jeecg.modules.iagent.nls.llm.LLMOperater;
 import org.jeecg.modules.iagent.nls.llm.config.AliyunLLMConfig;
+import org.jeecg.modules.iagent.nls.llm.config.DoubaoLLMConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -24,7 +25,7 @@ import java.util.List;
 @Service
 public class DoubaoLLMOperaterImpl implements LLMOperater {
     @Autowired
-    AliyunLLMConfig config;
+    DoubaoLLMConfig config;
     @Autowired
     private SysRedisUtil sysRedisUtil;
 
@@ -46,10 +47,10 @@ public class DoubaoLLMOperaterImpl implements LLMOperater {
 
     @Override
     public Flowable getAnswerAsync(String userId,String userName,String question,boolean incrementalOutput) throws Exception {
-        String apiKey = "7ef00bf7-cf18-4284-af27-4ee5f1c8669c";
+        String apiKey = config.getApiKey()==null?"7ef00bf7-cf18-4284-af27-4ee5f1c8669c":config.getApiKey();
         ArkService service = ArkService.builder()
                 .apiKey(apiKey)
-                .baseUrl("https://ark.cn-beijing.volces.com/api/v3")
+                .baseUrl(config.getUrl()==null?"https://ark.cn-beijing.volces.com/api/v3":config.getUrl())
                 .build();
         Flowable<BotChatCompletionChunk> flowable=service.streamBotChatCompletion(buildChatReqParams(userId,question))
                 .doOnError(Throwable::printStackTrace);
@@ -119,7 +120,7 @@ public class DoubaoLLMOperaterImpl implements LLMOperater {
         this.setLLMChatHis(userId,"user",question);
 
         return BotChatCompletionRequest.builder()
-                .botId("bot-20241215140240-fttjs")
+                .botId(config.getCharacterId()==null?"bot-20241215140240-fttjs":config.getCharacterId())
                 .messages(streamMessages)
                 .build();
 

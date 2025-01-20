@@ -155,6 +155,7 @@ public class IagentChatWebSocketSingle {
                 boolean isBegin=flag==0?true:false;
                 boolean isEnd=flag==2?true:false;
                 IAliyunSpeechRecognizer recognizer=recognizerPool.get(userId);
+                System.out.println(isBegin+">>>>>>>>>>>>>>>>>>>>>"+isEnd);
                 if(null==recognizer){
                     recognizer= InstanceBeanUtils.getBean(AliyunSpeechRecognizerImpl.class);
                     isBegin=true;
@@ -163,9 +164,9 @@ public class IagentChatWebSocketSingle {
                 }else{
                     SpeechReqProtocol.State state=(SpeechReqProtocol.State)recognizer.getState();
                     boolean isExpired=recognizer.tokenExpired();
-                    log.error(isExpired+":从websocket缓存中获取IAliyunSpeechRecognizer,state:"+state);
+                    log.debug(isExpired+":从websocket缓存中获取IAliyunSpeechRecognizer,state:"+state);
                     if(isExpired||state==SpeechReqProtocol.State.STATE_FAIL){
-                        log.error("从websocket缓存中获取IAliyunSpeechRecognizer，但已失效，重新初始化:"+state);
+                        log.debug("从websocket缓存中获取IAliyunSpeechRecognizer，但已失效，重新初始化:"+state);
                         recognizer= InstanceBeanUtils.getBean(AliyunSpeechRecognizerImpl.class);
                         isBegin=true;
                         recognizer.init();
@@ -175,7 +176,7 @@ public class IagentChatWebSocketSingle {
                 recognizer.executeRecognize(audioStream, null, isBegin, isEnd, new SpeechRecognizerListener() {
                     @Override
                     public void onRecognitionResultChanged(SpeechRecognizerResponse speechRecognizerResponse) {
-//                        System.out.println(speechRecognizerResponse.getRecognizedText());
+//                        log.debug(speechRecognizerResponse.getRecognizedText());
                         WebsocketMessage message=new WebsocketMessage(taskId,speechRecognizerResponse.getRecognizedText(),1,2);
                         pushMessage(userId,message.toString());
                     }
@@ -183,7 +184,7 @@ public class IagentChatWebSocketSingle {
                     @Override
                     public void onRecognitionCompleted(SpeechRecognizerResponse speechRecognizerResponse) {
                         String text=speechRecognizerResponse.getRecognizedText();
-                        System.out.println(text);
+                        log.error("onRecognitionCompleted>>>"+text);
                         WebsocketMessage message=new WebsocketMessage(taskId,text,2,2);
                         pushMessage(userId,message.toString());
                         //判断答案获取路由
@@ -198,21 +199,21 @@ public class IagentChatWebSocketSingle {
                                 private boolean firstRecvBinary = true;
                                 //流式文本语音合成开始
                                 public void onSynthesisStart(FlowingSpeechSynthesizerResponse response) {
-                                    System.out.println("流式文本语音合成开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                    log.debug("流式文本语音合成开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                 }
                                 //服务端检测到了一句话的开始
                                 public void onSentenceBegin(FlowingSpeechSynthesizerResponse response) {
-                                    System.out.println("服务端检测到了一句话的开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                    log.debug("服务端检测到了一句话的开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                 }
                                 //服务端检测到了一句话的结束，获得这句话的起止位置和所有时间戳
                                 public void onSentenceEnd(FlowingSpeechSynthesizerResponse response) {
-                                    System.out.println("服务端检测到了一句话的结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                    log.debug("服务端检测到了一句话的结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                 }
                                 //流式文本语音合成结束
                                 @Override
                                 public void onSynthesisComplete(FlowingSpeechSynthesizerResponse response) {
                                     // 调用onSynthesisComplete时，表示所有TTS数据已经接收完成，所有文本都已经合成音频并返回。
-                                    System.out.println("流式文本语音合成结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                    log.debug("流式文本语音合成结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                     // 向客户端发送音频流
                                     WebsocketMessage streamMessage=new WebsocketMessage(taskId,"语音返回结束",2,3);
                                     pushMessage(userId,streamMessage.toString());
@@ -223,11 +224,11 @@ public class IagentChatWebSocketSingle {
                                     if(firstRecvBinary) {
                                         // 此处计算首包语音流的延迟，收到第一包语音流时，即可以进行语音播放，以提升响应速度（特别是实时交互场景下）。
                                         firstRecvBinary = false;
-                                        System.out.println("音频首包返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                        log.debug("音频首包返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                     }
                                     byte[] bytesArray = new byte[message.remaining()];
                                     message.get(bytesArray, 0, bytesArray.length);
-                                    System.out.println("音频返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                    log.debug("音频返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                     // 向客户端发送音频流
                                     WebsocketMessage streamMessage=new WebsocketMessage(taskId,Base64.encodeToString(bytesArray),1,3);
                                     pushMessage(userId,streamMessage.toString());
@@ -235,12 +236,12 @@ public class IagentChatWebSocketSingle {
                                 //收到语音合成的增量音频时间戳
                                 @Override
                                 public void onSentenceSynthesis(FlowingSpeechSynthesizerResponse response) {
-                                    //                System.out.println("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
+                                    //                log.debug("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
                                 }
                                 @Override
                                 public void onFail(FlowingSpeechSynthesizerResponse response){
                                     // task_id是调用方和服务端通信的唯一标识，当遇到问题时，需要提供此task_id以便排查。
-                                    log.error(
+                                    log.debug(
                                             "session_id: " + getFlowingSpeechSynthesizer().getCurrentSessionId() +
                                                     ", task_id: " + response.getTaskId() +
                                                     //状态码
@@ -256,22 +257,36 @@ public class IagentChatWebSocketSingle {
                                 //调用LLM
                                 Flowable<?> response = llm.getAnswerAsync(userId,userId,text,true);
                                 final String[] llmAnswerContent = {""};
+                                final long[] lastSentTime = {0};
 
                                 response.subscribe(new DisposableSubscriber<Object>() {
                                     @Override
                                     public void onNext(Object chatResult) {
-                                        System.out.println("flowable onNext");
-                                        System.out.println("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                        log.debug("flowable onNext");
+                                        log.debug("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                         String content=null;
                                         if(chatResult instanceof BotChatCompletionChunk){
                                             content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString().trim();
                                         }else if(chatResult instanceof ChatResult){
                                             content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent().trim();
                                         }
-                                        System.out.println(content);
+                                        log.debug(content);
                                         if (StringUtils.isNotBlank(content)) {
+                                            //避免TTS语音合成速度过快，控制TTS语音合成速度
+                                            long now=System.currentTimeMillis();
+//                                            log.error("now>>>"+now);
+//                                            log.error("lastSentTime>>>"+lastSentTime[0]);
+                                            if(lastSentTime[0]>0&&now-lastSentTime[0]<100){
+                                                try {
+//                                                    log.error("sleep>>>"+(100-(now-lastSentTime[0])));
+                                                    Thread.sleep(100-(now-lastSentTime[0]));
+                                                } catch (InterruptedException e) {
+                                                    throw new RuntimeException(e);
+                                                }
+                                            }
                                             //发送到流式音频合成
                                             finalFlowingSpeechSynthesizer.send(content);
+                                            lastSentTime[0]=System.currentTimeMillis();
                                             // 向客户端发送LLM结果文本
                                             WebsocketMessage message=new WebsocketMessage(taskId,content,1,4);
                                             pushMessage(userId,message.toString());
@@ -281,7 +296,7 @@ public class IagentChatWebSocketSingle {
 
                                     @Override
                                     public void onError(Throwable throwable) {
-                                        System.out.println("flowable onError"+throwable.getMessage());
+                                        log.debug("flowable onError"+throwable.getMessage());
                                         try {
                                             //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
                                             finalFlowingSpeechSynthesizer.stop();
@@ -294,12 +309,12 @@ public class IagentChatWebSocketSingle {
 
                                     @Override
                                     public void onComplete() {
-                                        System.out.println("flowable onComplete");
+                                        log.debug("flowable onComplete");
                                         try {
                                             //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
                                             finalFlowingSpeechSynthesizer.stop();
                                             // 向客户端发送LLM结果发送完成标记
-                                            System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LLM结果文本发送完成");
+                                            log.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LLM结果文本发送完成");
                                             WebsocketMessage message=new WebsocketMessage(taskId,"LLM结果文本发送完成",2,4);
                                             pushMessage(userId,message.toString());
                                             llm.setLLMChatHis(userId,llm.DOUBAO_ROLE_ASSISTANT,llmAnswerContent[0]);
@@ -328,26 +343,7 @@ public class IagentChatWebSocketSingle {
                                             msg="您的亲友好像还没有在心管家APP注册呢，请先注册使用哦。";
                                         }
                                     }else{
-//                                        zxecgService=InstanceBeanUtils.getBean(ZxecgServiceImpl.class);
-//                                        ZxecgUserReportVo reportVo=zxecgService.getUserReportInfo(repUserId,repDate);
-//                                        if(reportVo!=null){
-//                                            if(StringUtils.isNotBlank(reportVo.getRepConclusion())){
-//                                                msg="您"+reportVo.getReportDate()+"的报告结论显示：\n";
-//                                                msg+=reportVo.getRepConclusion();
-//                                            }else{
-//                                                msg="您的报告结论尚未生成，您可以稍后再试或联系您的医生获取";
-//                                            }
-//                                        }else{
-//                                            if(repDate==null){
-//                                                repDate="";
-//                                            }
-//                                            if(repUserType.intValue()==1){
-//                                                msg="没有查询到您"+repDate+"的报告信息，请先到心管家APP注册采集信息并申请报告";
-//                                            }else{
-//                                                msg="没有查询到您亲友"+repUserName+repDate+"的报告信息，请先到心管家APP注册采集信息并申请报告";
-//                                            }
-//                                        }
-
+                                        //从开放接口获取报告信息
                                         apiCallService=InstanceBeanUtils.getBean(ZxecgExternalAPICallServiceImpl.class);
                                         Map<String,ZxecgUserReportVo> repMap=apiCallService.getUserRepInfo(repUserId,repDate);
 
@@ -377,18 +373,20 @@ public class IagentChatWebSocketSingle {
                                     msg="报告查询参数解析出现问题。";
                                 }
                                 if(StringUtils.isNotBlank(msg)){
-                                    String[] textArr=msg.split("\n");
-                                    //发送到流式音频合成
-                                    for(String t :textArr) {
-                                        System.out.println(t);
-                                        //发送流式文本数据。
-                                        finalFlowingSpeechSynthesizer.send(t);
-                                        // 向客户端发送LLM结果文本
-                                        pushMessage(userId,new WebsocketMessage(taskId,t,1,4).toString());
-                                    }
                                     try {
+                                        String[] textArr=msg.split("\n");
+                                        //发送到流式音频合成
+                                        for(String t :textArr) {
+                                            log.debug(t);
+                                            //发送流式文本数据。
+                                            finalFlowingSpeechSynthesizer.send(t);
+                                            // 向客户端发送LLM结果文本
+                                            pushMessage(userId,new WebsocketMessage(taskId,t,1,4).toString());
+                                            Thread.sleep(100);
+                                        }
                                         //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
                                         finalFlowingSpeechSynthesizer.stop();
+                                        Thread.sleep(100);
                                         // 向客户端发送LLM结果文本结束标记
                                         pushMessage(userId,new WebsocketMessage(taskId,"LLM结果文本发送完成",extra,2,4).toString());
                                     } catch (Exception e) {
@@ -460,7 +458,7 @@ public class IagentChatWebSocketSingle {
         recognizer.executeRecognize(audioStream, null, isBegin, isEnd, new SpeechRecognizerListener() {
             @Override
             public void onRecognitionResultChanged(SpeechRecognizerResponse speechRecognizerResponse) {
-                System.out.println(speechRecognizerResponse.getRecognizedText());
+                log.debug(speechRecognizerResponse.getRecognizedText());
                 WebsocketMessage message=new WebsocketMessage(taskId,speechRecognizerResponse.getRecognizedText(),1,2);
                 pushMessage(userId,message.toString());
             }
@@ -468,7 +466,7 @@ public class IagentChatWebSocketSingle {
             @Override
             public void onRecognitionCompleted(SpeechRecognizerResponse speechRecognizerResponse) {
                 String text=speechRecognizerResponse.getRecognizedText();
-                System.out.println(speechRecognizerResponse.getRecognizedText());
+                log.debug(speechRecognizerResponse.getRecognizedText());
                 WebsocketMessage message=new WebsocketMessage(taskId,speechRecognizerResponse.getRecognizedText(),2,1);
                 pushMessage(userId,message.toString());
 
@@ -482,25 +480,25 @@ public class IagentChatWebSocketSingle {
                         private boolean firstRecvBinary = true;
                         //流式文本语音合成开始
                         public void onSynthesisStart(FlowingSpeechSynthesizerResponse response) {
-//                    System.out.println("name: " + response.getName() + ", status: " + response.getStatus());
-                            System.out.println("流式文本语音合成开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+//                    log.debug("name: " + response.getName() + ", status: " + response.getStatus());
+                            log.debug("流式文本语音合成开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                         }
                         //服务端检测到了一句话的开始
                         public void onSentenceBegin(FlowingSpeechSynthesizerResponse response) {
-//                    System.out.println("name: " + response.getName() + ", status: " + response.getStatus());
-                            System.out.println("服务端检测到了一句话的开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+//                    log.debug("name: " + response.getName() + ", status: " + response.getStatus());
+                            log.debug("服务端检测到了一句话的开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                         }
                         //服务端检测到了一句话的结束，获得这句话的起止位置和所有时间戳
                         public void onSentenceEnd(FlowingSpeechSynthesizerResponse response) {
-//                    System.out.println("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
-                            System.out.println("服务端检测到了一句话的结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+//                    log.debug("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
+                            log.debug("服务端检测到了一句话的结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                         }
                         //流式文本语音合成结束
                         @Override
                         public void onSynthesisComplete(FlowingSpeechSynthesizerResponse response) {
                             // 调用onSynthesisComplete时，表示所有TTS数据已经接收完成，所有文本都已经合成音频并返回。
-//                    System.out.println("name: " + response.getName() + ", status: " + response.getStatus());
-                            System.out.println("流式文本语音合成结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+//                    log.debug("name: " + response.getName() + ", status: " + response.getStatus());
+                            log.debug("流式文本语音合成结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                             // 向客户端发送音频流
                             WebsocketMessage streamMessage=new WebsocketMessage(taskId,"语音返回结束",2,3);
                             pushMessage(userId,streamMessage.toString());
@@ -511,11 +509,11 @@ public class IagentChatWebSocketSingle {
                             if(firstRecvBinary) {
                                 // 此处计算首包语音流的延迟，收到第一包语音流时，即可以进行语音播放，以提升响应速度（特别是实时交互场景下）。
                                 firstRecvBinary = false;
-                                System.out.println("音频首包返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                log.debug("音频首包返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                             }
                             byte[] bytesArray = new byte[message.remaining()];
                             message.get(bytesArray, 0, bytesArray.length);
-                            System.out.println("音频返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                            log.debug("音频返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                             // 向客户端发送音频流
                             WebsocketMessage streamMessage=new WebsocketMessage(taskId,Base64.encodeToString(bytesArray),1,3);
                             pushMessage(userId,streamMessage.toString());
@@ -523,7 +521,7 @@ public class IagentChatWebSocketSingle {
                         //收到语音合成的增量音频时间戳
                         @Override
                         public void onSentenceSynthesis(FlowingSpeechSynthesizerResponse response) {
-                            //                System.out.println("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
+                            //                log.debug("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
                         }
                         @Override
                         public void onFail(FlowingSpeechSynthesizerResponse response){
@@ -540,21 +538,21 @@ public class IagentChatWebSocketSingle {
                     FlowingSpeechSynthesizer finalFlowingSpeechSynthesizer = flowingSpeechSynthesizer;
 
                     LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
-                    //调用通义星尘LLM
+                    //调用LLM
                     Flowable<?> response = llm.getAnswerAsync("user1234","小明",text,true);
 
                     response.subscribe(new DisposableSubscriber<Object>() {
                         @Override
                         public void onNext(Object chatResult) {
-                            System.out.println("flowable onNext");
-                            System.out.println("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                            log.debug("flowable onNext");
+                            log.debug("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                             String content=null;
                             if(chatResult instanceof BotChatCompletionChunk){
                                 content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString().trim();
                             }else if(chatResult instanceof ChatResult){
                                 content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent().trim();
                             }
-                            System.out.println(content);
+                            log.debug(content);
                             if (StringUtils.isNotBlank(content)) {
                                 //发送到流式音频合成
                                 finalFlowingSpeechSynthesizer.send(content);
@@ -563,7 +561,7 @@ public class IagentChatWebSocketSingle {
 
                         @Override
                         public void onError(Throwable throwable) {
-                            System.out.println("flowable onError"+throwable.getMessage());
+                            log.debug("flowable onError"+throwable.getMessage());
                             try {
                                 //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
                                 finalFlowingSpeechSynthesizer.stop();
@@ -576,7 +574,7 @@ public class IagentChatWebSocketSingle {
 
                         @Override
                         public void onComplete() {
-                            System.out.println("flowable onComplete");
+                            log.debug("flowable onComplete");
                             try {
                                 //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
                                 finalFlowingSpeechSynthesizer.stop();
