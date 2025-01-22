@@ -1,3 +1,5 @@
 spring:
+  application:
+    name: jeecg-nacos
   profiles:
-    active: mysql-dev
+    active: mysql-@profile.name@

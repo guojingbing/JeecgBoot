@@ -13,12 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Slf4j
 @SpringBootApplication
 @EnableFeignClients(basePackages = {"org.jeecg"})
-public class JeecgIagentCloudApplication implements CommandLineRunner {
+public class MscloudIagentCloudApplication implements CommandLineRunner {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     public static void main(String[] args) {
-        SpringApplication.run(JeecgIagentCloudApplication.class, args);
+        SpringApplication.run(MscloudIagentCloudApplication.class, args);
     }
 
     /**

@@ -144,39 +144,6 @@
 			<artifactId>fastjson</artifactId>
 			<version>${fastjson.version}</version>
 		</dependency>
-		<!-- markdown -->
-		<!--<dependency>
-			<groupId>org.pegdown</groupId>
-			<artifactId>pegdown</artifactId>
-			<version>${pegdown.version}</version>
-		</dependency>-->
-		<!--markdown 解析 https://github.com/commonmark/commonmark-java -->
-		<dependency>
-			<groupId>org.commonmark</groupId>
-			<artifactId>commonmark</artifactId>
-			<version>${commonmark.version}</version>
-		</dependency>
-
-		<!-- jsoup -->
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-			<version>1.12.1</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.64</version>
-		</dependency>
-
-		<!-- tencentyun -->
-		<dependency>
-			<groupId>com.github.tencentyun</groupId>
-			<artifactId>tls-sig-api-v2</artifactId>
-			<version>2.0</version>
-		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
