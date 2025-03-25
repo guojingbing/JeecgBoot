@@ -5,7 +5,7 @@
     <artifactId>jeecg-cloud-nacos</artifactId>
     <name>jeecg-cloud-nacos</name>
     <description>nacos启动模块</description>
-    <version>3.7.2</version>
+    <version>3.7.3</version>
 
 <!--    <parent>-->
 <!--        <groupId>org.springframework.boot</groupId>-->
@@ -16,7 +16,7 @@
     <parent>
         <artifactId>jeecg-server-cloud</artifactId>
         <groupId>org.jeecgframework.boot</groupId>
-        <version>3.7.2</version>
+        <version>3.7.3</version>
     </parent>
 
     <repositories>

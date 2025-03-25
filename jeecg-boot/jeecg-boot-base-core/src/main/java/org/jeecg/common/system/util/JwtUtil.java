@@ -7,6 +7,15 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -29,6 +38,16 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
 
 /**
  * @Author Scott
@@ -37,6 +56,7 @@ import java.util.Date;
  **/
 @Slf4j
 public class JwtUtil {
+
 	/**Token有效期为7天（Token在reids中缓存时间为两倍）*/
 	public static final long EXPIRE_TIME = (7 * 12) * 60 * 60 * 1000;
 	//refresh token
@@ -266,6 +286,16 @@ public class JwtUtil {
 		} else {
 			key = key;
 		}
+		//update-begin---author:chenrui ---date:20250107  for：[QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
+		// 是否存在字符串标志
+		boolean multiStr;
+		if(oConvertUtils.isNotEmpty(key) && key.trim().matches("^\\[\\w+]$")){
+			key = key.substring(1,key.length()-1);
+			multiStr = true;
+		} else {
+            multiStr = false;
+        }
+		//update-end---author:chenrui ---date:20250107  for：[QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
 		//替换为当前系统时间(年月日)
 		if (key.equals(DataBaseConstant.SYS_DATE)|| key.toLowerCase().equals(DataBaseConstant.SYS_DATE_TABLE)) {
 			returnValue = DateUtils.formatDate();
@@ -334,11 +364,30 @@ public class JwtUtil {
 			if(user==null){
 				//TODO 暂时使用用户登录部门，存在逻辑缺陷，不是用户所拥有的部门
 				returnValue = sysUser.getOrgCode();
+				//update-begin---author:chenrui ---date:20250107  for：[QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
+				returnValue = multiStr ? "'" + returnValue + "'" : returnValue;
+				//update-end---author:chenrui ---date:20250107  for：[QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
 			}else{
 				if(user.isOneDepart()) {
 					returnValue = user.getSysMultiOrgCode().get(0);
+					//update-begin---author:chenrui ---date:20250107  for：[QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
+					returnValue = multiStr ? "'" + returnValue + "'" : returnValue;
+					//update-end---author:chenrui ---date:20250107  for：[QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
 				}else {
-					returnValue = Joiner.on(",").join(user.getSysMultiOrgCode());
+					//update-begin---author:chenrui ---date:20250107  for：[QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
+					returnValue = user.getSysMultiOrgCode().stream()
+							.filter(Objects::nonNull)
+							//update-begin---author:chenrui ---date:20250224  for：[issues/7288]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
+							.map(orgCode -> {
+								if (multiStr) {
+									return "'" + orgCode + "'";
+								} else {
+									return orgCode;
+								}
+							})
+							//update-end---author:chenrui ---date:20250224  for：[issues/7288]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
+							.collect(Collectors.joining(", "));
+					//update-end---author:chenrui ---date:20250107  for：[QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
 				}
 			}
 		}
@@ -403,7 +452,7 @@ public class JwtUtil {
 		redisUtil.expire(CommonConstant.PREFIX_OAPI_USER_REFRESH_TOKEN + token, expireSeconds == null ? REFRESH_EXPIRE_TIME : expireSeconds);
 		return token;
 	}
-	
+
 //	public static void main(String[] args) {
 //		 String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjUzMzY1MTMsInVzZXJuYW1lIjoiYWRtaW4ifQ.xjhud_tWCNYBOg_aRlMgOdlZoWFFKB_givNElHNw3X0";
 //		 System.out.println(JwtUtil.getUsername(token));

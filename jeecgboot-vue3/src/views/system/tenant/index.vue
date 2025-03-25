@@ -150,6 +150,10 @@
           confirm: handleDelete.bind(null, record),
         },
       },
+      {
+        label: '用户',
+        onClick: handleSeeUser.bind(null, record.id),
+      },
     ];
   }
 
