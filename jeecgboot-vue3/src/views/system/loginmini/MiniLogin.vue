@@ -126,6 +126,8 @@
                       <a title="微信" @click="onThirdLogin('wechat_open')"><WechatFilled /></a>
                     </div>
                   </div>
+          
+          <a-button class="aui-link-login" type="primary" @click="sendMessage">获取数据</a-button>
                 </div>
               </a-form>
             </div>
@@ -151,7 +153,7 @@
 </template>
 <script lang="ts" setup name="login-mini">
   import { getCaptcha, getCodeInfo } from '/@/api/sys/user';
-  import { computed, onMounted, reactive, ref, toRaw, unref } from 'vue';
+  import { computed, onMounted, onUnmounted, reactive, ref, toRaw, unref } from 'vue';
   import codeImg from '/@/assets/images/checkcode.png';
   import { Rule } from '/@/components/Form';
   import { useUserStore } from '/@/store/modules/user';
@@ -424,10 +426,81 @@
       codeRef.value.initFrom();
     }, 300);
   }
+  
+  // 存储服务器发送的消息
+  const messages = ref<string[]>([]);
+  // 用于控制是否正在接收消息
+  let isReceiving = ref(false);
+
+  async function sendMessage() {
+    try {
+      // 发起 POST 请求
+      const response = await fetch('http://test.zxthealth.com:8086/ecg/api/restful/rep/diag/updation', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'oper': '2000025.DIAG',
+          'Cookie': 'JSESSIONID=39F9A8CA8ADD141CE242C9F72D3122AC;path=/;demain=localhost',
+          'X-Access-Token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJUT0tFTl9GTEFHIjoiYWRtaW4iLCJleHAiOjE3NDExNjkwOTl9.6vsxfTw842SCTq0pZv4A-DFBVC-CZG-n3Zx49BTWtF4',
+        },
+        body: JSON.stringify({
+          'repId': 135749,
+          'inDesc': '心慌心悸'
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      // 检查响应是否支持流式读取
+      if (!response.body) {
+        throw new Error('No response body');
+      }
+      console.log('response.body', response.body);
+
+      isReceiving.value = true;
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      while (isReceiving.value) {
+        const { done, value } = await reader.read();
+        if (done) {
+          console.log('done', done);
+          break;
+        }
+
+        const chunk = decoder.decode(value, { stream: true });
+        console.log('chunk', chunk);
+        const events = chunk.split('\n\n');
+        events.forEach((event) => {
+          if (event.trim()) {
+            const dataIndex = event.indexOf('data:');
+            if (dataIndex > -1) {
+              const data = event.slice(dataIndex + 5).trim();
+              if(!!data && data.length > 0){
+                // console.log(data);
+                // const jsonData = JSON.parse(data);
+                // console.log(jsonData.content);
+                // messages.value.push(jsonData.content);
+              }
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('接收 SSE 数据时出错:', error);
+    }
+  }
 
   onMounted(() => {
     //加载验证码
     handleChangeCheckCode();
+    // sendMessage().then();
+  });
+
+  onUnmounted(() => {
+    // 组件卸载时停止接收消息
+    isReceiving.value = false;
+    console.log('组件卸载');
   });
 </script>
 

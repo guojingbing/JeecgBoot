@@ -8,7 +8,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.jeecg.common.system.util.JwtUtil;
-import org.jeecg.common.util.RedisUtil;
+import org.jeecg.common.util.SysRedisUtil;
 import org.jeecg.config.shiro.DefContants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
@@ -58,7 +58,7 @@ public class APITokenFilter extends BasicHttpAuthenticationFilter {
 	protected boolean executeLogin(ServletRequest request, ServletResponse response) throws AuthenticationException {
 		ServletContext context = request.getServletContext();
 		ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(context);
-		RedisUtil redisUtil = ctx.getBean(RedisUtil.class);
+		SysRedisUtil redisUtil = ctx.getBean(SysRedisUtil.class);
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 		String token = httpServletRequest.getHeader(DefContants.X_ACCESS_TOKEN);
 		if(StringUtils.isEmpty(token)){

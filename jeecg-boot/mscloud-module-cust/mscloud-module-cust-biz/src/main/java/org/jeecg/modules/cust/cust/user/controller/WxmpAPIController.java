@@ -49,7 +49,7 @@ import java.util.*;
  */
 @Api(tags = "微信小程序平台接口")
 @RestController
-@RequestMapping("/mp/api/wxmp")
+@RequestMapping("/capi/wxmp")
 @Slf4j
 public class WxmpAPIController {
     @Value(value = "${jeecg.path.upload}")

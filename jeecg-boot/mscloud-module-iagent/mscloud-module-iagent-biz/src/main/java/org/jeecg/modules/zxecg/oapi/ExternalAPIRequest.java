@@ -74,11 +74,5 @@ public class ExternalAPIRequest {
         }
     }
     public static void main(String args[]){
-        JSONObject params=new JSONObject();
-        params.put("accessKey","111");
-        params.put("accessSecret","111");
-        ExternalAPIRequest tReq=new ExternalAPIRequest("http://ecg.zxthealth.com:8086/ecg","/oapi/token",params,null);
-        JSONObject data=tReq.reqBodyParams();
-        System.out.println(data);
     }
 }

@@ -26,10 +26,11 @@ enum Api {
   addTenantPackUser = '/sys/tenant/addTenantPackUser',
   //获取用户租户列表
   getTenantPageListByUserId = '/sys/tenant/getTenantPageListByUserId',
-  
+  //获取租户用户角色
+  getUserRole = '/sys/tenant/user/queryUserRole',
   //新增、编辑用户租户
-  saveUser = '/sys/user/add',
-  editUser = '/sys/user/editTenantUser',
+  saveUser = '/sys/tenant/user/add',
+  editUser = '/sys/tenant/user/edit',
 
   //设置租户区域权限
   setTenantAreas = '/sys/area/auth/tenant',
@@ -253,3 +254,9 @@ export const saveOrUpdateTenantUser = (params, isUpdate) => {
   let url = isUpdate ? Api.editUser : Api.saveUser;
   return defHttp.post({ url: url, params },{ joinParamsToUrl: true });
 };
+
+/**
+ * 用户角色接口
+ * @param params
+ */
+export const getUserRoles = (params) => defHttp.get({ url: Api.getUserRole, params }, { errorMessageMode: 'none' });

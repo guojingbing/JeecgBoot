@@ -31,7 +31,7 @@ management:
 nacos:
   core:
     auth:
-      enabled: false
+      enabled: true
       caching:
         enabled: true
       server:

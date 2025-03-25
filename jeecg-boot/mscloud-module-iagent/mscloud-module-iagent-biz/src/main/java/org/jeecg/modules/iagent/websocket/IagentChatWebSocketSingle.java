@@ -9,6 +9,7 @@ import com.alibaba.nls.client.protocol.tts.FlowingSpeechSynthesizerListener;
 import com.alibaba.nls.client.protocol.tts.FlowingSpeechSynthesizerResponse;
 import com.alibaba.xingchen.model.ChatResult;
 import com.volcengine.ark.runtime.model.bot.completion.chat.BotChatCompletionChunk;
+import com.volcengine.ark.runtime.service.ArkService;
 import io.reactivex.Flowable;
 import io.reactivex.subscribers.DisposableSubscriber;
 import lombok.extern.slf4j.Slf4j;
@@ -255,7 +256,10 @@ public class IagentChatWebSocketSingle {
                             if(routerMap.get("router").equals(IagentRouterConstant.QAROUTER_LLM)){
                                 LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
                                 //调用LLM
-                                Flowable<?> response = llm.getAnswerAsync(userId,userId,text,true);
+                                Map llmResult = llm.getAnswerAsync(userId,userId,text,true,0,null,null);
+                                Flowable<?> response=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
+                                ArkService service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
+
                                 final String[] llmAnswerContent = {""};
                                 final long[] lastSentTime = {0};
 
@@ -304,6 +308,9 @@ public class IagentChatWebSocketSingle {
                                             e.printStackTrace();
                                         }finally {
                                             finalFlowingSpeechSynthesizer.close();
+                                            if(service!=null){
+                                                service.shutdownExecutor();
+                                            }
                                         }
                                     }
 
@@ -317,11 +324,14 @@ public class IagentChatWebSocketSingle {
                                             log.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LLM结果文本发送完成");
                                             WebsocketMessage message=new WebsocketMessage(taskId,"LLM结果文本发送完成",2,4);
                                             pushMessage(userId,message.toString());
-                                            llm.setLLMChatHis(userId,llm.DOUBAO_ROLE_ASSISTANT,llmAnswerContent[0]);
+                                            llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_ASSISTANT,llmAnswerContent[0]);
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }finally {
                                             finalFlowingSpeechSynthesizer.close();
+                                            if(service!=null){
+                                                service.shutdownExecutor();
+                                            }
                                         }
                                     }
                                 });
@@ -330,6 +340,8 @@ public class IagentChatWebSocketSingle {
                                 String msg=null;
                                 String extra=null;
                                 Map params=(Map)routerMap.get("params");
+                                //报告查询结果存入LLM聊天记录
+                                boolean writeToLLMHistory=false;
                                 if(!params.isEmpty()){
                                     //查询自己还是亲友报告：1、自己；2、亲友
                                     Integer repUserType=(Integer)params.get("repUserType");
@@ -356,8 +368,10 @@ public class IagentChatWebSocketSingle {
                                                 msg+=doctorRep.getRepConclusion();
                                             }
                                             extra=doctorRep.getPdfUrl();
+                                            writeToLLMHistory=true;
                                         }else if(autoRep!=null){
                                             msg=autoRep.getRepConclusion();
+                                            writeToLLMHistory=true;
                                         }else{
                                             if(repDate==null){
                                                 repDate="";
@@ -373,6 +387,12 @@ public class IagentChatWebSocketSingle {
                                     msg="报告查询参数解析出现问题。";
                                 }
                                 if(StringUtils.isNotBlank(msg)){
+                                    if(writeToLLMHistory){
+                                        //报告查询结果存入LLM聊天记录
+                                        LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
+                                        llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_USER,text);
+                                        llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_ASSISTANT,msg);
+                                    }
                                     try {
                                         String[] textArr=msg.split("\n");
                                         //发送到流式音频合成
@@ -539,7 +559,9 @@ public class IagentChatWebSocketSingle {
 
                     LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
                     //调用LLM
-                    Flowable<?> response = llm.getAnswerAsync("user1234","小明",text,true);
+                    Map llmResult = llm.getAnswerAsync("user1234","小明",text,true,100,null,null);
+                    Flowable<?> response=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
+                    ArkService service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
 
                     response.subscribe(new DisposableSubscriber<Object>() {
                         @Override
@@ -569,6 +591,9 @@ public class IagentChatWebSocketSingle {
                                 e.printStackTrace();
                             }finally {
                                 finalFlowingSpeechSynthesizer.close();
+                                if(service!=null){
+                                    service.shutdownExecutor();
+                                }
                             }
                         }
 
@@ -582,6 +607,9 @@ public class IagentChatWebSocketSingle {
                                 e.printStackTrace();
                             }finally {
                                 finalFlowingSpeechSynthesizer.close();
+                                if(service!=null){
+                                    service.shutdownExecutor();
+                                }
                             }
                         }
                     });

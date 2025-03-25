@@ -186,6 +186,18 @@ public class HttpUtil {
         return  jsonObject;
     }
 
+    public static JSONObject postBodyForJSONObject(String url, Map<String, Object> params, Map<String, Object> headers, JSONObject bodyRaw, String proxyHost, Integer port, int timeout) throws Exception{
+        ResponseData resp=postBodyRaw(url, params, headers, bodyRaw, HttpConstant.CONNECT_TIMEOUT, timeout, HttpConstant.CONNECT_REQ_TIMEOUT, proxyHost, port);
+        if(resp.getCode()!= HttpStatus.SC_OK){
+            return null;
+        }
+        String result = resp.getBody();
+        if(StringUtils.isEmpty(result)){
+            return null;
+        }
+        JSONObject jsonObject = JSONObject.parseObject(result);
+        return  jsonObject;
+    }
     /**
      * 发送post请求,form参数
      *

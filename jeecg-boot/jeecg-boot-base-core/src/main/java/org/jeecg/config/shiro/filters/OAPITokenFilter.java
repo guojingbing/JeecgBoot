@@ -5,7 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
 import org.jeecg.common.system.util.JwtUtil;
-import org.jeecg.common.util.RedisUtil;
+import org.jeecg.common.util.SysRedisUtil;
 import org.jeecg.config.shiro.DefContants;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
@@ -51,7 +51,7 @@ public class OAPITokenFilter extends BasicHttpAuthenticationFilter {
 	protected boolean executeLogin(ServletRequest request, ServletResponse response) throws AuthenticationException {
 		ServletContext context = request.getServletContext();
 		ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(context);
-		RedisUtil redisUtil = ctx.getBean(RedisUtil.class);
+		SysRedisUtil redisUtil = ctx.getBean(SysRedisUtil.class);
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 		String token = httpServletRequest.getHeader(DefContants.X_ACCESS_TOKEN);
 		if(StringUtils.isEmpty(token)){
@@ -78,6 +78,7 @@ public class OAPITokenFilter extends BasicHttpAuthenticationFilter {
 		httpServletResponse.setHeader("Access-control-Allow-Origin", httpServletRequest.getHeader("Origin"));
 		httpServletResponse.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
 		httpServletResponse.setHeader("Access-Control-Allow-Headers", httpServletRequest.getHeader("Access-Control-Request-Headers"));
+
 		// 跨域时会首先发送一个option请求，这里我们给option请求直接返回正常状态
 		if (httpServletRequest.getMethod().equals(RequestMethod.OPTIONS.name())) {
 			httpServletResponse.setStatus(HttpStatus.OK.value());

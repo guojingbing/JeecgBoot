@@ -184,33 +184,32 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/WW_verify*", "anon");
 
         //小程序免登录操作接口
-        filterChainDefinitionMap.put("/cust/api/u/login", "anon");
-        filterChainDefinitionMap.put("/cust/api/u/logout", "anon");
-        filterChainDefinitionMap.put("/cust/api/u/sendata", "anon");
-        filterChainDefinitionMap.put("/cust/api/u/info", "anon");
-        filterChainDefinitionMap.put("/cust/api/u/werundata", "anon");
+        filterChainDefinitionMap.put("/capi/wxmp/u/sendata", "anon");
+        filterChainDefinitionMap.put("/capi/wxmp/u/info", "anon");
+        filterChainDefinitionMap.put("/capi/wxmp/u/werundata", "anon");
+        filterChainDefinitionMap.put("/capi/u/login", "anon");
+        filterChainDefinitionMap.put("/capi/u/logout", "anon");
+
+        //iagent测试接口
+        filterChainDefinitionMap.put("/iagent/test/**", "anon");
 
         // 添加自己的过滤器并且取名为jwt
         Map<String, Filter> filterMap = new HashMap<String, Filter>(1);
         //如果cloudServer为空 则说明是单体 需要加载跨域配置【微服务跨域切换】
         Object cloudServer = env.getProperty(CommonConstant.CLOUD_SERVER_KEY);
         filterMap.put("jwt", new JwtFilter(cloudServer==null));
-        // 添加小程序登录过滤器并且取名为apijwt，用于过滤需要登录的小程序接口
-        filterMap.put("apijwt", new APITokenFilter());
+        // 添加C端登录过滤器并且取名为capijwt，用于过滤需要登录的小程序接口
+        filterMap.put("capijwt", new APITokenFilter());
         //添加openapi权限验证过滤器并且取名为oapijwt，用于过滤需要权限验证的openapi接口
         filterMap.put("oapijwt", new OAPITokenFilter());
         shiroFilterFactoryBean.setFilters(filterMap);
 
-        filterChainDefinitionMap.put("/sys/common/cust/upload/**", "apijwt");
-
+        filterChainDefinitionMap.put("/sys/common/cust/upload/**", "capijwt");
         //小程序文件上传接口需要登录
-        filterChainDefinitionMap.put("/cust/api/comm/upload", "apijwt");
+        filterChainDefinitionMap.put("/capi/comm/upload", "capijwt");
         //小程序通用接口不需要登录验证
-        filterChainDefinitionMap.put("/cust/api/comm/**", "anon");
-        filterChainDefinitionMap.put("/cust/api/**", "apijwt");
-
-        //iagent测试接口
-        filterChainDefinitionMap.put("/iagent/test/**", "anon");
+        filterChainDefinitionMap.put("/capi/comm/**", "anon");
+        filterChainDefinitionMap.put("/capi/**", "capijwt");
 
         //通用OPENAPI
         filterChainDefinitionMap.put("/oapi/auth", "anon");

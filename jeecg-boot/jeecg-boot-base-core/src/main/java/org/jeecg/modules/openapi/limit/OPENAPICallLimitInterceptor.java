@@ -51,7 +51,7 @@ public class OPENAPICallLimitInterceptor implements AsyncHandlerInterceptor {
         String identifier = JwtUtil.getUsername(token);
         if(!userMap.containsKey(identifier)){
             //TODO 写入redis提高效率
-            SysOpenAuthUser owner=ouSer.getById(Long.parseLong(identifier));
+            SysOpenAuthUser owner=ouSer.getById(identifier);
             userMap.put(identifier,owner);
         }
         SysOpenAuthUser owner=userMap.get(identifier);

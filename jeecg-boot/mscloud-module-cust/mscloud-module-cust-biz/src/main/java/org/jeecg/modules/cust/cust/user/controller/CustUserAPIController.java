@@ -49,7 +49,7 @@ import java.util.*;
  */
 @Api(tags = "小程序-近邻分享-用户")
 @RestController
-@RequestMapping("/mp/api/cust/u")
+@RequestMapping("/capi/u")
 @Slf4j
 public class CustUserAPIController {
     @Value(value = "${jeecg.path.upload}")

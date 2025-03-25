@@ -10,8 +10,7 @@ import org.jeecg.modules.iagent.nls.llm.config.AliyunLLMConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Description: 通义星尘LLM
@@ -40,22 +39,40 @@ public class XingchenLLMOperaterImpl implements LLMOperater {
     }
 
     @Override
-    public Flowable getAnswerAsync(String userId,String userName,String question,boolean incrementalOutput) throws Exception {
+    public Map<String, Object> getElansenLLMAnswerAsync(String userId, String userName, String question, boolean incrementalOutput, int withHisNum, String groupFlag, List<?> custHisList) throws Exception {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public Map<String,Object> getAnswerAsync(String userId, String userName, String question, boolean incrementalOutput, int withHisNum, String groupFlag, List<?> custHisList) throws Exception {
         String sseType="enable";
         ApiClient apiClient = config.getApiClient(sseType);
         ChatApiSub api = new ChatApiSub(apiClient);
         Flowable<ChatResult> response = api.streamOut(buildChatReqParams(userId,userName,question,incrementalOutput));
-        return response;
+        Map rmap=new HashMap();
+        rmap.put("flowable",response);
+        rmap.put("service",api);
+        return rmap;
     }
 
     @Override
-    public List<Object> getLLMChatHis(String userId) {
+    public Map<String, Object> getEcgDiagAnswerAsync(String userId, String userName, String question, boolean incrementalOutput, int withHisNum, String groupFlag, List<?> custHisList) throws Exception {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public List<Object> getLLMChatHis(String userId, String groupFlag) {
         return null;
     }
 
     @Override
-    public void setLLMChatHis(String userId, String role, String msg) {
+    public void setLLMChatHis(String userId, String groupFlag, String role, String msg) {
 
+    }
+
+    @Override
+    public Map<String, Object> getAnswerMultiPartsAsync(String userId, String userName, String question,String imageUrl) throws Exception {
+        return Collections.emptyMap();
     }
 
     private ChatReqParams buildChatReqParams(String userId,String userName,String question,boolean incrementalOutput) {

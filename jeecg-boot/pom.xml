@@ -90,6 +90,7 @@
 		<module>jeecg-module-system</module>
 		<module>mscloud-module-cust</module>
         <module>mscloud-module-iagent</module>
+        <module>mscloud-module-openapi</module>
     </modules>
 
 	<repositories>
@@ -565,9 +566,9 @@
 				<!--Nacos配置分组名称-->
 				<config.group>DEFAULT_GROUP</config.group>
 				<!--Nacos用户名-->
-				<config.username></config.username>
+				<config.username>nacos</config.username>
 				<!--Nacos密码-->
-				<config.password></config.password>
+				<config.password>nacos</config.password>
 			</properties>
 		</profile>
 		<!-- 生产 -->
@@ -583,9 +584,9 @@
 				<!--Nacos配置分组名称-->
 				<config.group>DEFAULT_GROUP</config.group>
 				<!--Nacos用户名-->
-				<config.username></config.username>
+				<config.username>nacos</config.username>
 				<!--Nacos密码-->
-				<config.password></config.password>
+				<config.password>nacos</config.password>
             </properties>
         </profile>
 		<!-- SpringCloud运行环境 -->

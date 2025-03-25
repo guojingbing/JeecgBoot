@@ -1,4 +1,4 @@
-package org.jeecg.modules.openapi.oapi.controller;
+package org.jeecg.modules.openapi.controller;
 
 import org.jeecg.modules.openapi.base.entity.SysOpenAuthUser;
 import org.jeecg.modules.openapi.base.service.ISysOpenAuthUserService;
@@ -27,7 +27,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/oapi")
 @Slf4j
-public class OpenAPIController {
+public class BaseOpenController {
     @Autowired
     ISysOpenAuthUserService SOAUserSer;
     @Autowired

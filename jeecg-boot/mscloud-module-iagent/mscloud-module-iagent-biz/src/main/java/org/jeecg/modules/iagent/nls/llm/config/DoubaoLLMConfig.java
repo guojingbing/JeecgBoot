@@ -1,14 +1,12 @@
 package org.jeecg.modules.iagent.nls.llm.config;
 
-import com.alibaba.xingchen.ApiClient;
-import com.alibaba.xingchen.auth.HttpBearerAuth;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 阿里云通义星尘LLM配置
+ * DOUBAO大模型配置
  */
 @Slf4j
 @Configuration
@@ -18,18 +16,24 @@ public class DoubaoLLMConfig {
     private String apiKey;
     @Value("${nls.llm.doubao.url:#{null}}")
     private String url;
+    @Value("${nls.llm.doubao.modelId:#{null}}")
+    private String modelId;
     @Value("${nls.llm.doubao.characterId:#{null}}")
     private String characterId;
     @Value("${nls.llm.doubao.characterName:#{null}}")
     private String characterName;
 
-    public ApiClient getApiClient(String sseType){
-        ApiClient apiClient=new ApiClient();
-        apiClient.setBasePath(url);
-        apiClient.addDefaultHeader("X-DashScope-SSE", sseType); // 开启SSE输出
-        // Configure HTTP bearer authorization: Authorization
-        HttpBearerAuth authorization = (HttpBearerAuth) apiClient.getAuthentication("Authorization");
-        authorization.setBearerToken(apiKey);
-        return apiClient;
-    }
+    @Value("${nls.llm.doubao.ecg.characterId:#{null}}")
+    private String ecgCharacterId;
+    @Value("${nls.llm.doubao.ecg.modelId:#{null}}")
+    private String ecgModelId;
+
+    @Value("${nls.llm.doubao.elansen.characterId:#{null}}")
+    private String elansenCharacterId;
+    @Value("${nls.llm.doubao.elansen.modelId:#{null}}")
+    private String elansenModelId;
+    @Value("${nls.llm.doubao.elansen.ocr.characterId:#{null}}")
+    private String elansenOcrCharacterId;
+    @Value("${nls.llm.doubao.elansen.ocr.modelId:#{null}}")
+    private String elansenOcrModelId;
 }

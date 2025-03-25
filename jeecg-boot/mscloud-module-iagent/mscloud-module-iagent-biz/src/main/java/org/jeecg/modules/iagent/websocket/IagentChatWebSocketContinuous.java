@@ -11,6 +11,7 @@ import com.alibaba.nls.client.protocol.tts.FlowingSpeechSynthesizerListener;
 import com.alibaba.nls.client.protocol.tts.FlowingSpeechSynthesizerResponse;
 import com.alibaba.xingchen.model.ChatResult;
 import com.volcengine.ark.runtime.model.bot.completion.chat.BotChatCompletionChunk;
+import com.volcengine.ark.runtime.service.ArkService;
 import io.reactivex.Flowable;
 import io.reactivex.subscribers.DisposableSubscriber;
 import lombok.extern.slf4j.Slf4j;
@@ -205,20 +206,20 @@ public class IagentChatWebSocketContinuous {
                     //识别出一句话。服务端会智能断句，当识别到一句话结束时会返回此消息。
                     @Override
                     public void onSentenceEnd(SpeechTranscriberResponse response) {
-//                        System.out.println("onSentenceEnd>>>task_id: " + response.getTaskId() +
-//                                ", name: " + response.getName() +
-//                                //状态码“20000000”表示正常识别。
-//                                ", status: " + response.getStatus() +
-//                                //句子编号，从1开始递增。
-//                                ", index: " + response.getTransSentenceIndex() +
-//                                //当前的识别结果。
-//                                ", result: " + response.getTransSentenceText() +
-//                                //置信度
-//                                ", confidence: " + response.getConfidence() +
-//                                //开始时间
-//                                ", begin_time: " + response.getSentenceBeginTime() +
-//                                //当前已处理的音频时长，单位为毫秒。
-//                                ", time: " + response.getTransSentenceTime());
+                        System.out.println("onSentenceEnd>>>task_id: " + response.getTaskId() +
+                                ", name: " + response.getName() +
+                                //状态码“20000000”表示正常识别。
+                                ", status: " + response.getStatus() +
+                                //句子编号，从1开始递增。
+                                ", index: " + response.getTransSentenceIndex() +
+                                //当前的识别结果。
+                                ", result: " + response.getTransSentenceText() +
+                                //置信度
+                                ", confidence: " + response.getConfidence() +
+                                //开始时间
+                                ", begin_time: " + response.getSentenceBeginTime() +
+                                //当前已处理的音频时长，单位为毫秒。
+                                ", time: " + response.getTransSentenceTime());
                         String text=response.getTransSentenceText();
                         WebsocketMessage message=new WebsocketMessage(taskId,text,2,2);
                         pushMessage(userId,message.toString());
@@ -290,7 +291,10 @@ public class IagentChatWebSocketContinuous {
                             if(routerMap.get("router").equals(IagentRouterConstant.QAROUTER_LLM)){
                                 LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
                                 //调用LLM
-                                Flowable<?> llmResponse = llm.getAnswerAsync(userId,userId,text,true);
+                                Map llmResult = llm.getAnswerAsync(userId,userId,text,true,100,null,null);
+                                Flowable<?> llmResponse=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
+                                ArkService service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
+
                                 final String[] llmAnswerContent = {""};
 
                                 llmResponse.subscribe(new DisposableSubscriber<Object>() {
@@ -325,6 +329,9 @@ public class IagentChatWebSocketContinuous {
                                             e.printStackTrace();
                                         }finally {
                                             finalFlowingSpeechSynthesizer.close();
+                                            if(service!=null){
+                                                service.shutdownExecutor();
+                                            }
                                         }
                                     }
 
@@ -338,11 +345,14 @@ public class IagentChatWebSocketContinuous {
                                             System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LLM结果文本发送完成");
                                             WebsocketMessage message=new WebsocketMessage(taskId,"LLM结果文本发送完成",2,4);
                                             pushMessage(userId,message.toString());
-                                            llm.setLLMChatHis(userId,llm.DOUBAO_ROLE_ASSISTANT,llmAnswerContent[0]);
+                                            llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_ASSISTANT,llmAnswerContent[0]);
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                         }finally {
                                             finalFlowingSpeechSynthesizer.close();
+                                            if(service!=null){
+                                                service.shutdownExecutor();
+                                            }
                                         }
                                     }
                                 });
@@ -579,8 +589,10 @@ public class IagentChatWebSocketContinuous {
                     FlowingSpeechSynthesizer finalFlowingSpeechSynthesizer = flowingSpeechSynthesizer;
 
                     LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
-                    //调用通义星尘LLM
-                    Flowable<?> response = llm.getAnswerAsync("user1234","小明",text,true);
+                    //调用LLM
+                    Map llmResult = llm.getAnswerAsync("user1234","小明",text,true,100,null,null);
+                    Flowable<?> response=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
+                    ArkService service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
 
                     response.subscribe(new DisposableSubscriber<Object>() {
                         @Override
@@ -610,6 +622,9 @@ public class IagentChatWebSocketContinuous {
                                 e.printStackTrace();
                             }finally {
                                 finalFlowingSpeechSynthesizer.close();
+                                if(service!=null){
+                                    service.shutdownExecutor();
+                                }
                             }
                         }
 
@@ -623,6 +638,9 @@ public class IagentChatWebSocketContinuous {
                                 e.printStackTrace();
                             }finally {
                                 finalFlowingSpeechSynthesizer.close();
+                                if(service!=null){
+                                    service.shutdownExecutor();
+                                }
                             }
                         }
                     });

@@ -22,5 +22,6 @@
         <module>mscloud-iagent-cloud-start</module>
         <!-- 监控和测试例子 -->
         <module>jeecg-visual</module>
+        <module>mscloud-openapi-cloud-start</module>
     </modules>
 </project>
