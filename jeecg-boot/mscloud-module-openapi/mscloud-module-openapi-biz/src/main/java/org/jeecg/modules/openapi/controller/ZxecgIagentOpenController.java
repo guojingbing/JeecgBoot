@@ -1,16 +1,13 @@
 package org.jeecg.modules.openapi.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.xingchen.model.ChatResult;
 import com.volcengine.ark.runtime.model.bot.completion.chat.BotChatCompletionChunk;
-import com.volcengine.ark.runtime.model.completion.chat.ChatCompletionChunk;
 import com.volcengine.ark.runtime.service.ArkService;
 import io.reactivex.Flowable;
 import io.reactivex.subscribers.DisposableSubscriber;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.jeecg.modules.iagent.nls.common.AliyunNLSTokenUtil;
 import org.jeecg.modules.iagent.nls.llm.LLMOperater;
 import org.jeecg.modules.iagent.nls.llm.config.AliyunLLMConfig;
@@ -72,35 +69,26 @@ public class ZxecgIagentOpenController {
             try {
                 //调用LLM
                 Map llmResult = llm.getEcgDiagAnswerAsync(userFlag,userFlag,question,true,0,groupFlag,null);
-                Flowable<?> response=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
+                Flowable<BotChatCompletionChunk> response=llmResult.get("flowable")==null?null:(Flowable<BotChatCompletionChunk>)llmResult.get("flowable");
                 service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
                 ArkService finalService=service;
 
-                response.subscribe(new DisposableSubscriber<Object>() {
+                response.subscribe(new DisposableSubscriber<BotChatCompletionChunk>() {
                     @Override
-                    public void onNext(Object chatResult) {
-                        String content=null;
-                        if(chatResult instanceof ChatCompletionChunk){
-                            content=((ChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString().trim();
-                        }else if(chatResult instanceof ChatResult){
-                            content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent().trim();
-                        }
-                        if (StringUtils.isNotBlank(content)) {
-                            //发送到流式音频合成
-//                            finalFlowingSpeechSynthesizer.send(content);
-                            index[0]++;
-                            JSONObject object = new JSONObject();
-                            object.put("seq", index[0]);
-                            object.put("content", content);
-                            SseEmitter.SseEventBuilder event = SseEmitter.event()
-                                    .data(object.toJSONString(), MediaType.APPLICATION_JSON)
-                                    .id(String.valueOf(index[0]))
-                                    .name("event-"+index[0]);
-                            try {
-                                emitter.send(event);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                    public void onNext(BotChatCompletionChunk chatResult) {
+                        String content=chatResult.getChoices().get(0).getMessage().getContent().toString();
+                        index[0]++;
+                        JSONObject object = new JSONObject();
+                        object.put("seq", index[0]);
+                        object.put("content", content);
+                        SseEmitter.SseEventBuilder event = SseEmitter.event()
+                                .data(object.toJSONString(), MediaType.APPLICATION_JSON)
+                                .id(String.valueOf(index[0]))
+                                .name("event-"+index[0]);
+                        try {
+                            emitter.send(event);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
 
@@ -161,35 +149,26 @@ public class ZxecgIagentOpenController {
             try {
                 //调用LLM
                 Map llmResult = llm.getAnswerMultiPartsAsync(userFlag,userFlag,question,imageUrl);
-                Flowable<?> response=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
+                Flowable<BotChatCompletionChunk> response=llmResult.get("flowable")==null?null:(Flowable<BotChatCompletionChunk>)llmResult.get("flowable");
                 service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
                 ArkService finalService=service;
 
-                response.subscribe(new DisposableSubscriber<Object>() {
+                response.subscribe(new DisposableSubscriber<BotChatCompletionChunk>() {
                     @Override
-                    public void onNext(Object chatResult) {
-                        String content=null;
-                        if(chatResult instanceof BotChatCompletionChunk){
-                            content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString().trim();
-                        }else if(chatResult instanceof ChatResult){
-                            content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent().trim();
-                        }
-                        if (StringUtils.isNotBlank(content)) {
-                            //发送到流式音频合成
-//                            finalFlowingSpeechSynthesizer.send(content);
-                            index[0]++;
-                            JSONObject object = new JSONObject();
-                            object.put("seq", index[0]);
-                            object.put("content", content);
-                            SseEmitter.SseEventBuilder event = SseEmitter.event()
-                                    .data(object.toJSONString(), MediaType.APPLICATION_JSON)
-                                    .id(String.valueOf(index[0]))
-                                    .name("event-"+index[0]);
-                            try {
-                                emitter.send(event);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                    public void onNext(BotChatCompletionChunk chatResult) {
+                        String content=chatResult.getChoices().get(0).getMessage().getContent().toString();
+                        index[0]++;
+                        JSONObject object = new JSONObject();
+                        object.put("seq", index[0]);
+                        object.put("content", content);
+                        SseEmitter.SseEventBuilder event = SseEmitter.event()
+                                .data(object.toJSONString(), MediaType.APPLICATION_JSON)
+                                .id(String.valueOf(index[0]))
+                                .name("event-"+index[0]);
+                        try {
+                            emitter.send(event);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
 

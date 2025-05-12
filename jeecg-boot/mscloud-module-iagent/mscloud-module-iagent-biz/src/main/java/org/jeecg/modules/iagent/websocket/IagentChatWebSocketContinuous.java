@@ -304,9 +304,9 @@ public class IagentChatWebSocketContinuous {
                                         System.out.println("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                         String content=null;
                                         if(chatResult instanceof BotChatCompletionChunk){
-                                            content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString().trim();
+                                            content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString();
                                         }else if(chatResult instanceof ChatResult){
-                                            content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent().trim();
+                                            content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent();
                                         }
                                         System.out.println(content);
                                         if (StringUtils.isNotBlank(content)) {
@@ -601,9 +601,9 @@ public class IagentChatWebSocketContinuous {
                             System.out.println("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                             String content=null;
                             if(chatResult instanceof BotChatCompletionChunk){
-                                content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString().trim();
+                                content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString();
                             }else if(chatResult instanceof ChatResult){
-                                content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent().trim();
+                                content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent();
                             }
                             System.out.println(content);
                             if (StringUtils.isNotBlank(content)) {
