@@ -7,11 +7,13 @@ import com.alibaba.nls.client.protocol.SampleRateEnum;
 import com.alibaba.nls.client.protocol.tts.FlowingSpeechSynthesizer;
 import com.alibaba.nls.client.protocol.tts.FlowingSpeechSynthesizerListener;
 import com.alibaba.nls.client.protocol.tts.SpeechSynthesizerListener;
+import org.apache.commons.lang3.StringUtils;
 import org.jeecg.modules.iagent.nls.tts.IAliyunTTSSpeechSynthesizer;
 import org.jeecg.modules.iagent.nls.tts.config.AliyunTTSConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -29,6 +31,8 @@ public class AliyunTTSSpeechSynthesizerImpl implements IAliyunTTSSpeechSynthesiz
     private NlsClient client;
     @Autowired
     private AliyunTTSConfig aliyunTTSConfig;
+    @Autowired
+    private Environment environment;
 
 //    public AliyunTTSSpeechSynthesizer() {
 //        this.appKey = aliyunTTSConfig.getAppKey();
@@ -53,6 +57,22 @@ public class AliyunTTSSpeechSynthesizerImpl implements IAliyunTTSSpeechSynthesiz
         String accessKeyId = aliyunTTSConfig.getAccessKeyId();
         String accessKeySecret = aliyunTTSConfig.getAccessKeySecret();
         String url = aliyunTTSConfig.getUrl();
+        String voice = environment.getProperty("nls.tts.voice");
+        if(StringUtils.isNotEmpty(voice)){
+            aliyunTTSConfig.setVoice(voice);
+        }
+        String volume = environment.getProperty("nls.tts.volume");
+        if(StringUtils.isNotEmpty(volume)){
+            aliyunTTSConfig.setVolume(Integer.parseInt(volume));
+        }
+        String pitchRate = environment.getProperty("nls.tts.pitchRate");
+        if(StringUtils.isNotEmpty(pitchRate)){
+            aliyunTTSConfig.setPitchRate(Integer.parseInt(pitchRate));
+        }
+        String speechRate = environment.getProperty("nls.tts.speechRate");
+        if(StringUtils.isNotEmpty(speechRate)){
+            aliyunTTSConfig.setSpeechRate(Integer.parseInt(speechRate));
+        }
 
         AccessToken accessToken = new AccessToken(accessKeyId, accessKeySecret);
         try {
@@ -100,11 +120,12 @@ public class AliyunTTSSpeechSynthesizerImpl implements IAliyunTTSSpeechSynthesiz
             //设置返回音频的采样率
             synthesizer.setSampleRate(SampleRateEnum.SAMPLE_RATE_16K);
             //发音人
-            synthesizer.setVoice("siyue");
+            synthesizer.setVoice(aliyunTTSConfig.getVoice());
+            synthesizer.setVolume(aliyunTTSConfig.getVolume());
             //语调，范围是-500~500，可选，默认是0。
-            synthesizer.setPitchRate(0);
+            synthesizer.setPitchRate(aliyunTTSConfig.getPitchRate());
             //语速，范围是-500~500，默认是0。
-            synthesizer.setSpeechRate(0);
+            synthesizer.setSpeechRate(aliyunTTSConfig.getSpeechRate());
             //设置用于语音合成的文本
             synthesizer.setText(speechText);
             //是否开启字幕功能（返回相应文本的时间戳），默认不开启，需要注意并非所有发音人都支持该参数。
@@ -139,13 +160,13 @@ public class AliyunTTSSpeechSynthesizerImpl implements IAliyunTTSSpeechSynthesiz
             //设置返回音频的采样率。
             synthesizer.setSampleRate(SampleRateEnum.SAMPLE_RATE_16K);
             //发音人。
-            synthesizer.setVoice("siyue");
+            synthesizer.setVoice(aliyunTTSConfig.getVoice());
             //音量，范围是0~100，可选，默认50。
-            synthesizer.setVolume(100);
+            synthesizer.setVolume(aliyunTTSConfig.getVolume());
             //语调，范围是-500~500，可选，默认是0。
-            synthesizer.setPitchRate(0);
+            synthesizer.setPitchRate(aliyunTTSConfig.getPitchRate());
             //语速，范围是-500~500，默认是0。
-            synthesizer.setSpeechRate(0);
+            synthesizer.setSpeechRate(aliyunTTSConfig.getSpeechRate());
             //此方法将以上参数设置序列化为JSON发送给服务端，并等待服务端确认。
             synthesizer.start();
             //设置连续两次发送文本的最小时间间隔（毫秒），如果当前调用send时距离上次调用时间小于此值，则会阻塞并等待直到满足条件再发送文本

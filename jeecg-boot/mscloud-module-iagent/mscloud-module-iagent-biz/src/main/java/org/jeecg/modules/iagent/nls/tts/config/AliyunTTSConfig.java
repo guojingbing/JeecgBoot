@@ -20,4 +20,16 @@ public class AliyunTTSConfig {
     private String accessKeySecret;
     @Value("${nls.tts.url:#{null}}")
     private String url;
+    //音色
+    @Value("${nls.tts.voice:#{'siyue'}}")
+    private String voice;
+    //音量，范围是0~100，默认是50。
+    @Value("${nls.tts.volume:#{50}}")
+    private Integer volume;
+    //语调，范围是-500~500，可选，默认是0。
+    @Value("${nls.tts.pitchRate:#{0}}")
+    private Integer pitchRate;
+    //语速，范围是-500~500，默认是0。
+    @Value("${nls.tts.speechRate:#{0}}")
+    private Integer speechRate;
 }

@@ -139,300 +139,535 @@ public class IagentChatWebSocketSingle {
         }
     }
 
-
     /**
-     * ws接受客户端消息
+     * ws接受客户端消息(Base64内容)
      */
     @OnMessage
     public void onMessage(String message, @PathParam(value = "userId") String userId) {
         if(!"ping".equals(message) && !WebsocketConst.CMD_CHECK.equals(message)){
             JSONObject messageJson=JSONObject.parseObject(message);
-            if(StringUtils.isNotBlank(messageJson.getString("source"))&&messageJson.getString("source").equalsIgnoreCase("chatAudio")){
+            if(StringUtils.isNotBlank(messageJson.getString("source"))){
                 String taskId=messageJson.getString("taskId");
                 String content=messageJson.getString("content");
-                byte[] audioStream=Base64.decode(content);
-
                 int flag=messageJson.getInteger("progress");
                 boolean isBegin=flag==0?true:false;
                 boolean isEnd=flag==2?true:false;
-                IAliyunSpeechRecognizer recognizer=recognizerPool.get(userId);
                 System.out.println(isBegin+">>>>>>>>>>>>>>>>>>>>>"+isEnd);
-                if(null==recognizer){
-                    recognizer= InstanceBeanUtils.getBean(AliyunSpeechRecognizerImpl.class);
-                    isBegin=true;
-                    recognizer.init();
-                    recognizerPool.put(userId,recognizer);
-                }else{
-                    SpeechReqProtocol.State state=(SpeechReqProtocol.State)recognizer.getState();
-                    boolean isExpired=recognizer.tokenExpired();
-                    log.debug(isExpired+":从websocket缓存中获取IAliyunSpeechRecognizer,state:"+state);
-                    if(isExpired||state==SpeechReqProtocol.State.STATE_FAIL){
-                        log.debug("从websocket缓存中获取IAliyunSpeechRecognizer，但已失效，重新初始化:"+state);
+                if(messageJson.getString("source").equalsIgnoreCase("chatAudio")){
+                    byte[] audioStream=Base64.decode(content);
+                    IAliyunSpeechRecognizer recognizer=recognizerPool.get(userId);
+                    if(null==recognizer){
                         recognizer= InstanceBeanUtils.getBean(AliyunSpeechRecognizerImpl.class);
                         isBegin=true;
                         recognizer.init();
                         recognizerPool.put(userId,recognizer);
+                    }else{
+                        SpeechReqProtocol.State state=(SpeechReqProtocol.State)recognizer.getState();
+                        boolean isExpired=recognizer.tokenExpired();
+                        log.debug(isExpired+":从websocket缓存中获取IAliyunSpeechRecognizer,state:"+state);
+                        if(isExpired||state==SpeechReqProtocol.State.STATE_FAIL){
+                            log.debug("从websocket缓存中获取IAliyunSpeechRecognizer，但已失效，重新初始化:"+state);
+                            recognizer= InstanceBeanUtils.getBean(AliyunSpeechRecognizerImpl.class);
+                            isBegin=true;
+                            recognizer.init();
+                            recognizerPool.put(userId,recognizer);
+                        }
                     }
-                }
-                recognizer.executeRecognize(audioStream, null, isBegin, isEnd, new SpeechRecognizerListener() {
-                    @Override
-                    public void onRecognitionResultChanged(SpeechRecognizerResponse speechRecognizerResponse) {
+                    recognizer.executeRecognize(audioStream, null, isBegin, isEnd, new SpeechRecognizerListener() {
+                        @Override
+                        public void onRecognitionResultChanged(SpeechRecognizerResponse speechRecognizerResponse) {
 //                        log.debug(speechRecognizerResponse.getRecognizedText());
-                        WebsocketMessage message=new WebsocketMessage(taskId,speechRecognizerResponse.getRecognizedText(),1,2);
-                        pushMessage(userId,message.toString());
-                    }
+                            WebsocketMessage message=new WebsocketMessage(taskId,speechRecognizerResponse.getRecognizedText(),1,2);
+                            pushMessage(userId,message.toString());
+                        }
 
-                    @Override
-                    public void onRecognitionCompleted(SpeechRecognizerResponse speechRecognizerResponse) {
-                        String text=speechRecognizerResponse.getRecognizedText();
-                        log.error("onRecognitionCompleted>>>"+text);
-                        WebsocketMessage message=new WebsocketMessage(taskId,text,2,2);
-                        pushMessage(userId,message.toString());
-                        //判断答案获取路由
-                        router=InstanceBeanUtils.getBean(IagentQARouterImpl.class);
-                        Map routerMap=router.getQaRouter(text,userId);
+                        @Override
+                        public void onRecognitionCompleted(SpeechRecognizerResponse speechRecognizerResponse) {
+                            String text=speechRecognizerResponse.getRecognizedText();
+                            log.error("onRecognitionCompleted>>>"+text);
+                            WebsocketMessage message=new WebsocketMessage(taskId,text,2,2);
+                            pushMessage(userId,message.toString());
+                            //判断答案获取路由
+                            router=InstanceBeanUtils.getBean(IagentQARouterImpl.class);
+                            Map routerMap=router.getQaRouter(text,userId);
 
-                        IAliyunTTSSpeechSynthesizer ttsSpeechSynthesizer=InstanceBeanUtils.getBean(AliyunTTSSpeechSynthesizerImpl.class);;
-                        FlowingSpeechSynthesizer flowingSpeechSynthesizer= null;
-                        try {
-                            long st=System.currentTimeMillis();
-                            flowingSpeechSynthesizer = ttsSpeechSynthesizer.getFlowingSpeechSynthesizer(new FlowingSpeechSynthesizerListener() {
-                                private boolean firstRecvBinary = true;
-                                //流式文本语音合成开始
-                                public void onSynthesisStart(FlowingSpeechSynthesizerResponse response) {
-                                    log.debug("流式文本语音合成开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                                }
-                                //服务端检测到了一句话的开始
-                                public void onSentenceBegin(FlowingSpeechSynthesizerResponse response) {
-                                    log.debug("服务端检测到了一句话的开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                                }
-                                //服务端检测到了一句话的结束，获得这句话的起止位置和所有时间戳
-                                public void onSentenceEnd(FlowingSpeechSynthesizerResponse response) {
-                                    log.debug("服务端检测到了一句话的结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                                }
-                                //流式文本语音合成结束
-                                @Override
-                                public void onSynthesisComplete(FlowingSpeechSynthesizerResponse response) {
-                                    // 调用onSynthesisComplete时，表示所有TTS数据已经接收完成，所有文本都已经合成音频并返回。
-                                    log.debug("流式文本语音合成结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                                    // 向客户端发送音频流
-                                    WebsocketMessage streamMessage=new WebsocketMessage(taskId,"语音返回结束",2,3);
-                                    pushMessage(userId,streamMessage.toString());
-                                }
-                                //收到语音合成的语音二进制数据
-                                @Override
-                                public void onAudioData(ByteBuffer message) {
-                                    if(firstRecvBinary) {
-                                        // 此处计算首包语音流的延迟，收到第一包语音流时，即可以进行语音播放，以提升响应速度（特别是实时交互场景下）。
-                                        firstRecvBinary = false;
-                                        log.debug("音频首包返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                            IAliyunTTSSpeechSynthesizer ttsSpeechSynthesizer=InstanceBeanUtils.getBean(AliyunTTSSpeechSynthesizerImpl.class);;
+                            FlowingSpeechSynthesizer flowingSpeechSynthesizer= null;
+                            try {
+                                long st=System.currentTimeMillis();
+                                flowingSpeechSynthesizer = ttsSpeechSynthesizer.getFlowingSpeechSynthesizer(new FlowingSpeechSynthesizerListener() {
+                                    private boolean firstRecvBinary = true;
+                                    //流式文本语音合成开始
+                                    public void onSynthesisStart(FlowingSpeechSynthesizerResponse response) {
+                                        log.debug("流式文本语音合成开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                     }
-                                    byte[] bytesArray = new byte[message.remaining()];
-                                    message.get(bytesArray, 0, bytesArray.length);
-                                    log.debug("音频返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                                    // 向客户端发送音频流
-                                    WebsocketMessage streamMessage=new WebsocketMessage(taskId,Base64.encodeToString(bytesArray),1,3);
-                                    pushMessage(userId,streamMessage.toString());
-                                }
-                                //收到语音合成的增量音频时间戳
-                                @Override
-                                public void onSentenceSynthesis(FlowingSpeechSynthesizerResponse response) {
-                                    //                log.debug("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
-                                }
-                                @Override
-                                public void onFail(FlowingSpeechSynthesizerResponse response){
-                                    // task_id是调用方和服务端通信的唯一标识，当遇到问题时，需要提供此task_id以便排查。
-                                    log.debug(
-                                            "session_id: " + getFlowingSpeechSynthesizer().getCurrentSessionId() +
-                                                    ", task_id: " + response.getTaskId() +
-                                                    //状态码
-                                                    ", status: " + response.getStatus() +
-                                                    //错误信息
-                                                    ", status_text: " + response.getStatusText());
-                                }
-                            });
-                            FlowingSpeechSynthesizer finalFlowingSpeechSynthesizer = flowingSpeechSynthesizer;
-
-                            if(routerMap.get("router").equals(IagentRouterConstant.QAROUTER_LLM)){
-                                LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
-                                //调用LLM
-                                Map llmResult = llm.getAnswerAsync(userId,userId,text,true,0,null,null);
-                                Flowable<?> response=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
-                                ArkService service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
-
-                                final String[] llmAnswerContent = {""};
-                                final long[] lastSentTime = {0};
-
-                                response.subscribe(new DisposableSubscriber<Object>() {
-                                    @Override
-                                    public void onNext(Object chatResult) {
-                                        log.debug("flowable onNext");
-                                        log.debug("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                                        String content=null;
-                                        if(chatResult instanceof BotChatCompletionChunk){
-                                            content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString();
-                                        }else if(chatResult instanceof ChatResult){
-                                            content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent();
-                                        }
-                                        log.debug(content);
-                                        if (StringUtils.isNotBlank(content)) {
-                                            //避免TTS语音合成速度过快，控制TTS语音合成速度
-                                            long now=System.currentTimeMillis();
-//                                            log.error("now>>>"+now);
-//                                            log.error("lastSentTime>>>"+lastSentTime[0]);
-                                            if(lastSentTime[0]>0&&now-lastSentTime[0]<100){
-                                                try {
-//                                                    log.error("sleep>>>"+(100-(now-lastSentTime[0])));
-                                                    Thread.sleep(100-(now-lastSentTime[0]));
-                                                } catch (InterruptedException e) {
-                                                    throw new RuntimeException(e);
-                                                }
-                                            }
-                                            //发送到流式音频合成
-                                            finalFlowingSpeechSynthesizer.send(content);
-                                            lastSentTime[0]=System.currentTimeMillis();
-                                            // 向客户端发送LLM结果文本
-                                            WebsocketMessage message=new WebsocketMessage(taskId,content,1,4);
-                                            pushMessage(userId,message.toString());
-                                            llmAnswerContent[0] +=content;
-                                        }
+                                    //服务端检测到了一句话的开始
+                                    public void onSentenceBegin(FlowingSpeechSynthesizerResponse response) {
+                                        log.debug("服务端检测到了一句话的开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                     }
-
-                                    @Override
-                                    public void onError(Throwable throwable) {
-                                        log.debug("flowable onError"+throwable.getMessage());
-                                        try {
-                                            //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
-                                            finalFlowingSpeechSynthesizer.stop();
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }finally {
-                                            finalFlowingSpeechSynthesizer.close();
-                                            if(service!=null){
-                                                service.shutdownExecutor();
-                                            }
-                                        }
+                                    //服务端检测到了一句话的结束，获得这句话的起止位置和所有时间戳
+                                    public void onSentenceEnd(FlowingSpeechSynthesizerResponse response) {
+                                        log.debug("服务端检测到了一句话的结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                     }
-
+                                    //流式文本语音合成结束
                                     @Override
-                                    public void onComplete() {
-                                        log.debug("flowable onComplete");
-                                        try {
-                                            //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
-                                            finalFlowingSpeechSynthesizer.stop();
-                                            // 向客户端发送LLM结果发送完成标记
-                                            log.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LLM结果文本发送完成");
-                                            WebsocketMessage message=new WebsocketMessage(taskId,"LLM结果文本发送完成",2,4);
-                                            pushMessage(userId,message.toString());
-                                            llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_ASSISTANT,llmAnswerContent[0]);
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                        }finally {
-                                            finalFlowingSpeechSynthesizer.close();
-                                            if(service!=null){
-                                                service.shutdownExecutor();
-                                            }
+                                    public void onSynthesisComplete(FlowingSpeechSynthesizerResponse response) {
+                                        // 调用onSynthesisComplete时，表示所有TTS数据已经接收完成，所有文本都已经合成音频并返回。
+                                        log.debug("流式文本语音合成结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                        // 向客户端发送音频流
+                                        WebsocketMessage streamMessage=new WebsocketMessage(taskId,"语音返回结束",2,3);
+                                        pushMessage(userId,streamMessage.toString());
+                                    }
+                                    //收到语音合成的语音二进制数据
+                                    @Override
+                                    public void onAudioData(ByteBuffer message) {
+                                        if(firstRecvBinary) {
+                                            // 此处计算首包语音流的延迟，收到第一包语音流时，即可以进行语音播放，以提升响应速度（特别是实时交互场景下）。
+                                            firstRecvBinary = false;
+                                            log.debug("音频首包返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
                                         }
+                                        byte[] bytesArray = new byte[message.remaining()];
+                                        message.get(bytesArray, 0, bytesArray.length);
+                                        log.debug("音频返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                        // 向客户端发送音频流
+                                        WebsocketMessage streamMessage=new WebsocketMessage(taskId,Base64.encodeToString(bytesArray),1,3);
+                                        pushMessage(userId,streamMessage.toString());
+                                    }
+                                    //收到语音合成的增量音频时间戳
+                                    @Override
+                                    public void onSentenceSynthesis(FlowingSpeechSynthesizerResponse response) {
+                                        //                log.debug("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
+                                    }
+                                    @Override
+                                    public void onFail(FlowingSpeechSynthesizerResponse response){
+                                        // task_id是调用方和服务端通信的唯一标识，当遇到问题时，需要提供此task_id以便排查。
+                                        log.debug(
+                                                "session_id: " + getFlowingSpeechSynthesizer().getCurrentSessionId() +
+                                                        ", task_id: " + response.getTaskId() +
+                                                        //状态码
+                                                        ", status: " + response.getStatus() +
+                                                        //错误信息
+                                                        ", status_text: " + response.getStatusText());
                                     }
                                 });
-                            }else if(routerMap.get("router").equals(IagentRouterConstant.QAROUTER_API)){
-                                //TODO 从正心心电数据库获取报告信息并组装文本交由TTS转换为语音返回
-                                String msg=null;
-                                String extra=null;
-                                Map params=(Map)routerMap.get("params");
-                                //报告查询结果存入LLM聊天记录
-                                boolean writeToLLMHistory=false;
-                                if(!params.isEmpty()){
-                                    //查询自己还是亲友报告：1、自己；2、亲友
-                                    Integer repUserType=(Integer)params.get("repUserType");
-                                    String repUserId=(String)params.get("repUserId");
-                                    String repUserName=(String)params.get("repUserName");
-                                    String repDate=(String)params.get("repDate");
-                                    if(StringUtils.isBlank(repUserName)){
-                                        if(repUserType==1){
-                                            msg="您好像还没有在心管家APP注册呢，请先注册使用哦。";
+                                FlowingSpeechSynthesizer finalFlowingSpeechSynthesizer = flowingSpeechSynthesizer;
+
+                                if(routerMap.get("router").equals(IagentRouterConstant.QAROUTER_LLM)){
+                                    LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
+                                    //调用LLM
+                                    Map llmResult = llm.getAnswerAsync(userId,userId,text,true,0,null,null);
+                                    Flowable<?> response=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
+                                    ArkService service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
+
+                                    final String[] llmAnswerContent = {""};
+                                    final long[] lastSentTime = {0};
+
+                                    response.subscribe(new DisposableSubscriber<Object>() {
+                                        @Override
+                                        public void onNext(Object chatResult) {
+                                            log.debug("flowable onNext");
+                                            log.debug("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                            String content=null;
+                                            if(chatResult instanceof BotChatCompletionChunk){
+                                                content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString();
+                                            }else if(chatResult instanceof ChatResult){
+                                                content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent();
+                                            }
+                                            log.debug(content);
+                                            if (StringUtils.isNotBlank(content)) {
+                                                //避免TTS语音合成速度过快，控制TTS语音合成速度
+                                                long now=System.currentTimeMillis();
+//                                            log.error("now>>>"+now);
+//                                            log.error("lastSentTime>>>"+lastSentTime[0]);
+                                                if(lastSentTime[0]>0&&now-lastSentTime[0]<100){
+                                                    try {
+//                                                    log.error("sleep>>>"+(100-(now-lastSentTime[0])));
+                                                        Thread.sleep(100-(now-lastSentTime[0]));
+                                                    } catch (InterruptedException e) {
+                                                        throw new RuntimeException(e);
+                                                    }
+                                                }
+                                                //发送到流式音频合成
+                                                finalFlowingSpeechSynthesizer.send(content);
+                                                lastSentTime[0]=System.currentTimeMillis();
+                                                // 向客户端发送LLM结果文本
+                                                WebsocketMessage message=new WebsocketMessage(taskId,content,1,4);
+                                                pushMessage(userId,message.toString());
+                                                llmAnswerContent[0] +=content;
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onError(Throwable throwable) {
+                                            log.debug("flowable onError"+throwable.getMessage());
+                                            try {
+                                                //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
+                                                finalFlowingSpeechSynthesizer.stop();
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }finally {
+                                                finalFlowingSpeechSynthesizer.close();
+                                                if(service!=null){
+                                                    service.shutdownExecutor();
+                                                }
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onComplete() {
+                                            log.debug("flowable onComplete");
+                                            try {
+                                                //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
+                                                finalFlowingSpeechSynthesizer.stop();
+                                                // 向客户端发送LLM结果发送完成标记
+                                                log.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LLM结果文本发送完成");
+                                                WebsocketMessage message=new WebsocketMessage(taskId,"LLM结果文本发送完成",2,4);
+                                                pushMessage(userId,message.toString());
+                                                llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_ASSISTANT,llmAnswerContent[0]);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }finally {
+                                                finalFlowingSpeechSynthesizer.close();
+                                                if(service!=null){
+                                                    service.shutdownExecutor();
+                                                }
+                                            }
+                                        }
+                                    });
+                                }else if(routerMap.get("router").equals(IagentRouterConstant.QAROUTER_API)){
+                                    //TODO 从正心心电数据库获取报告信息并组装文本交由TTS转换为语音返回
+                                    String msg=null;
+                                    String extra=null;
+                                    Map params=(Map)routerMap.get("params");
+                                    //报告查询结果存入LLM聊天记录
+                                    boolean writeToLLMHistory=false;
+                                    if(!params.isEmpty()){
+                                        //查询自己还是亲友报告：1、自己；2、亲友
+                                        Integer repUserType=(Integer)params.get("repUserType");
+                                        String repUserId=(String)params.get("repUserId");
+                                        String repUserName=(String)params.get("repUserName");
+                                        String repDate=(String)params.get("repDate");
+                                        if(StringUtils.isBlank(repUserName)){
+                                            if(repUserType==1){
+                                                msg="您好像还没有在心管家APP注册呢，请先注册使用哦。";
+                                            }else{
+                                                msg="您的亲友好像还没有在心管家APP注册呢，请先注册使用哦。";
+                                            }
                                         }else{
-                                            msg="您的亲友好像还没有在心管家APP注册呢，请先注册使用哦。";
+                                            //从开放接口获取报告信息
+                                            apiCallService=InstanceBeanUtils.getBean(ZxecgExternalAPICallServiceImpl.class);
+                                            Map<String,ZxecgUserReportVo> repMap=apiCallService.getUserRepInfo(repUserId,repDate);
+
+                                            ZxecgUserReportVo doctorRep=repMap.get("doctorRep");
+                                            ZxecgUserReportVo autoRep=repMap.get("autoRep");
+
+                                            if(doctorRep!=null){
+                                                if(StringUtils.isNotBlank(doctorRep.getRepConclusion())){
+                                                    msg=""+doctorRep.getReportDate()+"的报告结论显示：\n";
+                                                    msg+=doctorRep.getRepConclusion();
+                                                }
+                                                extra=doctorRep.getPdfUrl();
+                                                writeToLLMHistory=true;
+                                            }else if(autoRep!=null){
+                                                msg=autoRep.getRepConclusion();
+                                                writeToLLMHistory=true;
+                                            }else{
+                                                if(repDate==null){
+                                                    repDate="";
+                                                }
+                                                if(repUserType.intValue()==1){
+                                                    msg="没有查询到您"+repDate+"的报告信息，请先佩戴正心智能心电仪，采集心电数据并申请报告哦。";
+                                                }else{
+                                                    msg="没有查询到您亲友"+repUserName+repDate+"的报告信息，请先佩戴正心智能心电仪，采集心电数据并申请报告哦。";
+                                                }
+                                            }
                                         }
                                     }else{
-                                        //从开放接口获取报告信息
-                                        apiCallService=InstanceBeanUtils.getBean(ZxecgExternalAPICallServiceImpl.class);
-                                        Map<String,ZxecgUserReportVo> repMap=apiCallService.getUserRepInfo(repUserId,repDate);
-
-                                        ZxecgUserReportVo doctorRep=repMap.get("doctorRep");
-                                        ZxecgUserReportVo autoRep=repMap.get("autoRep");
-
-                                        if(doctorRep!=null){
-                                            if(StringUtils.isNotBlank(doctorRep.getRepConclusion())){
-                                                msg=""+doctorRep.getReportDate()+"的报告结论显示：\n";
-                                                msg+=doctorRep.getRepConclusion();
-                                            }
-                                            extra=doctorRep.getPdfUrl();
-                                            writeToLLMHistory=true;
-                                        }else if(autoRep!=null){
-                                            msg=autoRep.getRepConclusion();
-                                            writeToLLMHistory=true;
-                                        }else{
-                                            if(repDate==null){
-                                                repDate="";
-                                            }
-                                            if(repUserType.intValue()==1){
-                                                msg="没有查询到您"+repDate+"的报告信息，请先佩戴正心智能心电仪，采集心电数据并申请报告哦。";
-                                            }else{
-                                                msg="没有查询到您亲友"+repUserName+repDate+"的报告信息，请先佩戴正心智能心电仪，采集心电数据并申请报告哦。";
-                                            }
+                                        msg="报告查询参数解析出现问题。";
+                                    }
+                                    if(StringUtils.isNotBlank(msg)){
+                                        if(writeToLLMHistory){
+                                            //报告查询结果存入LLM聊天记录
+                                            LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
+                                            llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_USER,text);
+                                            llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_ASSISTANT,msg);
                                         }
-                                    }
-                                }else{
-                                    msg="报告查询参数解析出现问题。";
-                                }
-                                if(StringUtils.isNotBlank(msg)){
-                                    if(writeToLLMHistory){
-                                        //报告查询结果存入LLM聊天记录
-                                        LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
-                                        llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_USER,text);
-                                        llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_ASSISTANT,msg);
-                                    }
-                                    try {
-                                        String[] textArr=msg.split("\n");
-                                        //发送到流式音频合成
-                                        for(String t :textArr) {
-                                            log.debug(t);
-                                            //发送流式文本数据。
-                                            finalFlowingSpeechSynthesizer.send(t);
-                                            // 向客户端发送LLM结果文本
-                                            pushMessage(userId,new WebsocketMessage(taskId,t,1,4).toString());
+                                        try {
+                                            String[] textArr=msg.split("\n");
+                                            //发送到流式音频合成
+                                            for(String t :textArr) {
+                                                log.debug(t);
+                                                //发送流式文本数据。
+                                                finalFlowingSpeechSynthesizer.send(t);
+                                                // 向客户端发送LLM结果文本
+                                                pushMessage(userId,new WebsocketMessage(taskId,t,1,4).toString());
+                                                Thread.sleep(100);
+                                            }
+                                            //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
+                                            finalFlowingSpeechSynthesizer.stop();
                                             Thread.sleep(100);
+                                            // 向客户端发送LLM结果文本结束标记
+                                            pushMessage(userId,new WebsocketMessage(taskId,"LLM结果文本发送完成",extra,2,4).toString());
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }finally {
+                                            finalFlowingSpeechSynthesizer.close();
                                         }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            } finally {
+                                //识别完成清理缓存
+                                recognizerPool.remove(userId);
+                            }
+                        }
+
+                        @Override
+                        public void onStarted(SpeechRecognizerResponse speechRecognizerResponse) {
+                        }
+
+                        @Override
+                        public void onFail(SpeechRecognizerResponse speechRecognizerResponse) {
+                            log.error("onFail>>>"+speechRecognizerResponse.getStatus()+":" +speechRecognizerResponse.getStatusText());
+                        }
+                    });
+                }else if(messageJson.getString("source").equalsIgnoreCase("chatText")){
+                    String text=content;
+                    //判断答案获取路由
+                    router=InstanceBeanUtils.getBean(IagentQARouterImpl.class);
+                    Map routerMap=router.getQaRouter(text,userId);
+                    IAliyunTTSSpeechSynthesizer ttsSpeechSynthesizer=InstanceBeanUtils.getBean(AliyunTTSSpeechSynthesizerImpl.class);;
+                    FlowingSpeechSynthesizer flowingSpeechSynthesizer= null;
+                    try {
+                        long st=System.currentTimeMillis();
+                        flowingSpeechSynthesizer = ttsSpeechSynthesizer.getFlowingSpeechSynthesizer(new FlowingSpeechSynthesizerListener() {
+                            private boolean firstRecvBinary = true;
+                            //流式文本语音合成开始
+                            public void onSynthesisStart(FlowingSpeechSynthesizerResponse response) {
+                                log.debug("流式文本语音合成开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                            }
+                            //服务端检测到了一句话的开始
+                            public void onSentenceBegin(FlowingSpeechSynthesizerResponse response) {
+                                log.debug("服务端检测到了一句话的开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                            }
+                            //服务端检测到了一句话的结束，获得这句话的起止位置和所有时间戳
+                            public void onSentenceEnd(FlowingSpeechSynthesizerResponse response) {
+                                log.debug("服务端检测到了一句话的结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                            }
+                            //流式文本语音合成结束
+                            @Override
+                            public void onSynthesisComplete(FlowingSpeechSynthesizerResponse response) {
+                                // 调用onSynthesisComplete时，表示所有TTS数据已经接收完成，所有文本都已经合成音频并返回。
+                                log.debug("流式文本语音合成结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                // 向客户端发送音频流
+                                WebsocketMessage streamMessage=new WebsocketMessage(taskId,"语音返回结束",2,3);
+                                pushMessage(userId,streamMessage.toString());
+                            }
+                            //收到语音合成的语音二进制数据
+                            @Override
+                            public void onAudioData(ByteBuffer message) {
+                                if(firstRecvBinary) {
+                                    // 此处计算首包语音流的延迟，收到第一包语音流时，即可以进行语音播放，以提升响应速度（特别是实时交互场景下）。
+                                    firstRecvBinary = false;
+                                    log.debug("音频首包返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                }
+                                byte[] bytesArray = new byte[message.remaining()];
+                                message.get(bytesArray, 0, bytesArray.length);
+                                log.debug("音频返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                // 向客户端发送音频流
+                                WebsocketMessage streamMessage=new WebsocketMessage(taskId,Base64.encodeToString(bytesArray),1,3);
+                                pushMessage(userId,streamMessage.toString());
+                            }
+                            //收到语音合成的增量音频时间戳
+                            @Override
+                            public void onSentenceSynthesis(FlowingSpeechSynthesizerResponse response) {
+                                //                log.debug("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
+                            }
+                            @Override
+                            public void onFail(FlowingSpeechSynthesizerResponse response){
+                                // task_id是调用方和服务端通信的唯一标识，当遇到问题时，需要提供此task_id以便排查。
+                                log.debug(
+                                        "session_id: " + getFlowingSpeechSynthesizer().getCurrentSessionId() +
+                                                ", task_id: " + response.getTaskId() +
+                                                //状态码
+                                                ", status: " + response.getStatus() +
+                                                //错误信息
+                                                ", status_text: " + response.getStatusText());
+                            }
+                        });
+                        FlowingSpeechSynthesizer finalFlowingSpeechSynthesizer = flowingSpeechSynthesizer;
+
+                        if(routerMap.get("router").equals(IagentRouterConstant.QAROUTER_LLM)){
+                            LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
+                            //调用LLM
+                            Map llmResult = llm.getAnswerAsync(userId,userId,text,true,0,null,null);
+                            Flowable<?> response=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
+                            ArkService service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
+
+                            final String[] llmAnswerContent = {""};
+                            final long[] lastSentTime = {0};
+
+                            response.subscribe(new DisposableSubscriber<Object>() {
+                                @Override
+                                public void onNext(Object chatResult) {
+                                    log.debug("flowable onNext");
+                                    log.debug("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
+                                    String content=null;
+                                    if(chatResult instanceof BotChatCompletionChunk){
+                                        content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString();
+                                    }else if(chatResult instanceof ChatResult){
+                                        content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent();
+                                    }
+                                    log.debug(content);
+                                    if (StringUtils.isNotBlank(content)) {
+                                        //避免TTS语音合成速度过快，控制TTS语音合成速度
+                                        long now=System.currentTimeMillis();
+//                                            log.error("now>>>"+now);
+//                                            log.error("lastSentTime>>>"+lastSentTime[0]);
+                                        if(lastSentTime[0]>0&&now-lastSentTime[0]<100){
+                                            try {
+//                                                    log.error("sleep>>>"+(100-(now-lastSentTime[0])));
+                                                Thread.sleep(100-(now-lastSentTime[0]));
+                                            } catch (InterruptedException e) {
+                                                throw new RuntimeException(e);
+                                            }
+                                        }
+                                        //发送到流式音频合成
+                                        finalFlowingSpeechSynthesizer.send(content);
+                                        lastSentTime[0]=System.currentTimeMillis();
+                                        // 向客户端发送LLM结果文本
+                                        WebsocketMessage message=new WebsocketMessage(taskId,content,1,4);
+                                        pushMessage(userId,message.toString());
+                                        llmAnswerContent[0] +=content;
+                                    }
+                                }
+
+                                @Override
+                                public void onError(Throwable throwable) {
+                                    log.debug("flowable onError"+throwable.getMessage());
+                                    try {
                                         //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
                                         finalFlowingSpeechSynthesizer.stop();
-                                        Thread.sleep(100);
-                                        // 向客户端发送LLM结果文本结束标记
-                                        pushMessage(userId,new WebsocketMessage(taskId,"LLM结果文本发送完成",extra,2,4).toString());
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }finally {
                                         finalFlowingSpeechSynthesizer.close();
+                                        if(service!=null){
+                                            service.shutdownExecutor();
+                                        }
                                     }
                                 }
+
+                                @Override
+                                public void onComplete() {
+                                    log.debug("flowable onComplete");
+                                    try {
+                                        //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
+                                        finalFlowingSpeechSynthesizer.stop();
+                                        // 向客户端发送LLM结果发送完成标记
+                                        log.debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>LLM结果文本发送完成");
+                                        WebsocketMessage message=new WebsocketMessage(taskId,"LLM结果文本发送完成",2,4);
+                                        pushMessage(userId,message.toString());
+                                        llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_ASSISTANT,llmAnswerContent[0]);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }finally {
+                                        finalFlowingSpeechSynthesizer.close();
+                                        if(service!=null){
+                                            service.shutdownExecutor();
+                                        }
+                                    }
+                                }
+                            });
+                        }else if(routerMap.get("router").equals(IagentRouterConstant.QAROUTER_API)){
+                            //TODO 从正心心电数据库获取报告信息并组装文本交由TTS转换为语音返回
+                            String msg=null;
+                            String extra=null;
+                            Map params=(Map)routerMap.get("params");
+                            //报告查询结果存入LLM聊天记录
+                            boolean writeToLLMHistory=false;
+                            if(!params.isEmpty()){
+                                //查询自己还是亲友报告：1、自己；2、亲友
+                                Integer repUserType=(Integer)params.get("repUserType");
+                                String repUserId=(String)params.get("repUserId");
+                                String repUserName=(String)params.get("repUserName");
+                                String repDate=(String)params.get("repDate");
+                                if(StringUtils.isBlank(repUserName)){
+                                    if(repUserType==1){
+                                        msg="您好像还没有在心管家APP注册呢，请先注册使用哦。";
+                                    }else{
+                                        msg="您的亲友好像还没有在心管家APP注册呢，请先注册使用哦。";
+                                    }
+                                }else{
+                                    //从开放接口获取报告信息
+                                    apiCallService=InstanceBeanUtils.getBean(ZxecgExternalAPICallServiceImpl.class);
+                                    Map<String,ZxecgUserReportVo> repMap=apiCallService.getUserRepInfo(repUserId,repDate);
+
+                                    ZxecgUserReportVo doctorRep=repMap.get("doctorRep");
+                                    ZxecgUserReportVo autoRep=repMap.get("autoRep");
+
+                                    if(doctorRep!=null){
+                                        if(StringUtils.isNotBlank(doctorRep.getRepConclusion())){
+                                            msg=""+doctorRep.getReportDate()+"的报告结论显示：\n";
+                                            msg+=doctorRep.getRepConclusion();
+                                        }
+                                        extra=doctorRep.getPdfUrl();
+                                        writeToLLMHistory=true;
+                                    }else if(autoRep!=null){
+                                        msg=autoRep.getRepConclusion();
+                                        writeToLLMHistory=true;
+                                    }else{
+                                        if(repDate==null){
+                                            repDate="";
+                                        }
+                                        if(repUserType.intValue()==1){
+                                            msg="没有查询到您"+repDate+"的报告信息，请先佩戴正心智能心电仪，采集心电数据并申请报告哦。";
+                                        }else{
+                                            msg="没有查询到您亲友"+repUserName+repDate+"的报告信息，请先佩戴正心智能心电仪，采集心电数据并申请报告哦。";
+                                        }
+                                    }
+                                }
+                            }else{
+                                msg="报告查询参数解析出现问题。";
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } finally {
-                            //识别完成清理缓存
-                            recognizerPool.remove(userId);
+                            if(StringUtils.isNotBlank(msg)){
+                                if(writeToLLMHistory){
+                                    //报告查询结果存入LLM聊天记录
+                                    LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
+                                    llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_USER,text);
+                                    llm.setLLMChatHis(userId,null,llm.DOUBAO_ROLE_ASSISTANT,msg);
+                                }
+                                try {
+                                    String[] textArr=msg.split("\n");
+                                    //发送到流式音频合成
+                                    for(String t :textArr) {
+                                        log.debug(t);
+                                        //发送流式文本数据。
+                                        finalFlowingSpeechSynthesizer.send(t);
+                                        // 向客户端发送LLM结果文本
+                                        pushMessage(userId,new WebsocketMessage(taskId,t,1,4).toString());
+                                        Thread.sleep(100);
+                                    }
+                                    //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
+                                    finalFlowingSpeechSynthesizer.stop();
+                                    Thread.sleep(100);
+                                    // 向客户端发送LLM结果文本结束标记
+                                    pushMessage(userId,new WebsocketMessage(taskId,"LLM结果文本发送完成",extra,2,4).toString());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }finally {
+                                    finalFlowingSpeechSynthesizer.close();
+                                }
+                            }
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        //识别完成清理缓存
+                        recognizerPool.remove(userId);
                     }
-
-                    @Override
-                    public void onStarted(SpeechRecognizerResponse speechRecognizerResponse) {
-                    }
-
-                    @Override
-                    public void onFail(SpeechRecognizerResponse speechRecognizerResponse) {
-                        log.error("onFail>>>"+speechRecognizerResponse.getStatus()+":" +speechRecognizerResponse.getStatusText());
-                    }
-                });
+                }
             }
         }else{
             log.error("【系统 WebSocket】收到客户端消息:" + message);
@@ -450,184 +685,6 @@ public class IagentChatWebSocketSingle {
 //        obj.put(WebsocketConst.MSG_TXT, "心跳响应");
 //        this.pushMessage(userId, obj.toJSONString());
 //        //------------------------------------------------------------------------------
-    }
-    /**
-     * ws接受客户端消息
-     */
-    @OnMessage
-    public void onMessage(ByteBuffer message, @PathParam(value = "userId") String userId) {
-        log.error("【系统 WebSocket】收到客户端消息:" + message);
-        String taskId=null;
-        byte[] arr=message.array();
-        byte flag=arr[0];
-        boolean isBegin=false;
-        boolean isEnd=false;
-        if(flag==2){
-            isEnd=true;
-        }else if(flag==0){
-            isBegin=true;
-        }
-        byte[] audioStream = new byte[arr.length-1];
-        System.arraycopy(arr, 1, audioStream, 0, arr.length-1);
-        IAliyunSpeechRecognizer recognizer=recognizerPool.get(userId);
-        if(null==recognizer){
-            recognizer= InstanceBeanUtils.getBean(AliyunSpeechRecognizerImpl.class);
-            isBegin=true;
-            recognizerPool.put(userId,recognizer);
-        }
-        recognizer.executeRecognize(audioStream, null, isBegin, isEnd, new SpeechRecognizerListener() {
-            @Override
-            public void onRecognitionResultChanged(SpeechRecognizerResponse speechRecognizerResponse) {
-                log.debug(speechRecognizerResponse.getRecognizedText());
-                WebsocketMessage message=new WebsocketMessage(taskId,speechRecognizerResponse.getRecognizedText(),1,2);
-                pushMessage(userId,message.toString());
-            }
-
-            @Override
-            public void onRecognitionCompleted(SpeechRecognizerResponse speechRecognizerResponse) {
-                String text=speechRecognizerResponse.getRecognizedText();
-                log.debug(speechRecognizerResponse.getRecognizedText());
-                WebsocketMessage message=new WebsocketMessage(taskId,speechRecognizerResponse.getRecognizedText(),2,1);
-                pushMessage(userId,message.toString());
-
-                IAliyunTTSSpeechSynthesizer ttsSpeechSynthesizer=InstanceBeanUtils.getBean(AliyunTTSSpeechSynthesizerImpl.class);;
-                FlowingSpeechSynthesizer flowingSpeechSynthesizer= null;
-                try {
-                    long st=System.currentTimeMillis();
-                    flowingSpeechSynthesizer = ttsSpeechSynthesizer.getFlowingSpeechSynthesizer(new FlowingSpeechSynthesizerListener() {
-                        //                File f=new File("G:\\flowingTts.wav");
-//                FileOutputStream fout = new FileOutputStream(f);
-                        private boolean firstRecvBinary = true;
-                        //流式文本语音合成开始
-                        public void onSynthesisStart(FlowingSpeechSynthesizerResponse response) {
-//                    log.debug("name: " + response.getName() + ", status: " + response.getStatus());
-                            log.debug("流式文本语音合成开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                        }
-                        //服务端检测到了一句话的开始
-                        public void onSentenceBegin(FlowingSpeechSynthesizerResponse response) {
-//                    log.debug("name: " + response.getName() + ", status: " + response.getStatus());
-                            log.debug("服务端检测到了一句话的开始>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                        }
-                        //服务端检测到了一句话的结束，获得这句话的起止位置和所有时间戳
-                        public void onSentenceEnd(FlowingSpeechSynthesizerResponse response) {
-//                    log.debug("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
-                            log.debug("服务端检测到了一句话的结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                        }
-                        //流式文本语音合成结束
-                        @Override
-                        public void onSynthesisComplete(FlowingSpeechSynthesizerResponse response) {
-                            // 调用onSynthesisComplete时，表示所有TTS数据已经接收完成，所有文本都已经合成音频并返回。
-//                    log.debug("name: " + response.getName() + ", status: " + response.getStatus());
-                            log.debug("流式文本语音合成结束>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                            // 向客户端发送音频流
-                            WebsocketMessage streamMessage=new WebsocketMessage(taskId,"语音返回结束",2,3);
-                            pushMessage(userId,streamMessage.toString());
-                        }
-                        //收到语音合成的语音二进制数据
-                        @Override
-                        public void onAudioData(ByteBuffer message) {
-                            if(firstRecvBinary) {
-                                // 此处计算首包语音流的延迟，收到第一包语音流时，即可以进行语音播放，以提升响应速度（特别是实时交互场景下）。
-                                firstRecvBinary = false;
-                                log.debug("音频首包返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                            }
-                            byte[] bytesArray = new byte[message.remaining()];
-                            message.get(bytesArray, 0, bytesArray.length);
-                            log.debug("音频返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                            // 向客户端发送音频流
-                            WebsocketMessage streamMessage=new WebsocketMessage(taskId,Base64.encodeToString(bytesArray),1,3);
-                            pushMessage(userId,streamMessage.toString());
-                        }
-                        //收到语音合成的增量音频时间戳
-                        @Override
-                        public void onSentenceSynthesis(FlowingSpeechSynthesizerResponse response) {
-                            //                log.debug("name: " + response.getName() + ", status: " + response.getStatus() + ", subtitles: " + response.getObject("subtitles"));
-                        }
-                        @Override
-                        public void onFail(FlowingSpeechSynthesizerResponse response){
-                            // task_id是调用方和服务端通信的唯一标识，当遇到问题时，需要提供此task_id以便排查。
-                            log.error(
-                                    "session_id: " + getFlowingSpeechSynthesizer().getCurrentSessionId() +
-                                            ", task_id: " + response.getTaskId() +
-                                            //状态码
-                                            ", status: " + response.getStatus() +
-                                            //错误信息
-                                            ", status_text: " + response.getStatusText());
-                        }
-                    });
-                    FlowingSpeechSynthesizer finalFlowingSpeechSynthesizer = flowingSpeechSynthesizer;
-
-                    LLMOperater llm=InstanceBeanUtils.getBean(DoubaoLLMOperaterImpl.class);
-                    //调用LLM
-                    Map llmResult = llm.getAnswerAsync("user1234","小明",text,true,100,null,null);
-                    Flowable<?> response=llmResult.get("flowable")==null?null:(Flowable<?>)llmResult.get("flowable");
-                    ArkService service=llmResult.get("service")==null?null:(ArkService)llmResult.get("service");
-
-                    response.subscribe(new DisposableSubscriber<Object>() {
-                        @Override
-                        public void onNext(Object chatResult) {
-                            log.debug("flowable onNext");
-                            log.debug("LLM返回耗时>>>>>>>>>>>>>>>>>>>>:" + (System.currentTimeMillis()-st));
-                            String content=null;
-                            if(chatResult instanceof BotChatCompletionChunk){
-                                content=((BotChatCompletionChunk)chatResult).getChoices().get(0).getMessage().getContent().toString();
-                            }else if(chatResult instanceof ChatResult){
-                                content=((ChatResult)chatResult).getChoices().get(0).getMessages().get(0).getContent();
-                            }
-                            log.debug(content);
-                            if (StringUtils.isNotBlank(content)) {
-                                //发送到流式音频合成
-                                finalFlowingSpeechSynthesizer.send(content);
-                            }
-                        }
-
-                        @Override
-                        public void onError(Throwable throwable) {
-                            log.debug("flowable onError"+throwable.getMessage());
-                            try {
-                                //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
-                                finalFlowingSpeechSynthesizer.stop();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }finally {
-                                finalFlowingSpeechSynthesizer.close();
-                                if(service!=null){
-                                    service.shutdownExecutor();
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onComplete() {
-                            log.debug("flowable onComplete");
-                            try {
-                                //通知服务端流式文本数据发送完毕，阻塞等待服务端处理完成。
-                                finalFlowingSpeechSynthesizer.stop();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }finally {
-                                finalFlowingSpeechSynthesizer.close();
-                                if(service!=null){
-                                    service.shutdownExecutor();
-                                }
-                            }
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onStarted(SpeechRecognizerResponse speechRecognizerResponse) {
-
-            }
-
-            @Override
-            public void onFail(SpeechRecognizerResponse speechRecognizerResponse) {
-
-            }
-        });
     }
 
     /**
