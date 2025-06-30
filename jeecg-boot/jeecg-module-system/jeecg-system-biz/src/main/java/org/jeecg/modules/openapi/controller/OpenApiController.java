@@ -1,24 +1,25 @@
 package org.jeecg.modules.openapi.controller;
 
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.fasterxml.classmate.TypeResolver;
 import com.google.common.collect.Lists;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.util.JwtUtil;
+import org.jeecg.common.util.RedisUtil;
+import org.jeecg.common.util.RestUtil;
 import org.jeecg.modules.openapi.entity.OpenApi;
 import org.jeecg.modules.openapi.entity.OpenApiAuth;
 import org.jeecg.modules.openapi.entity.OpenApiHeader;
 import org.jeecg.modules.openapi.entity.OpenApiParam;
 import org.jeecg.modules.openapi.generator.PathGenerator;
 import org.jeecg.modules.openapi.service.OpenApiAuthService;
-import org.jeecg.modules.openapi.service.OpenApiHeaderService;
-import org.jeecg.modules.openapi.service.OpenApiParamService;
 import org.jeecg.modules.openapi.service.OpenApiService;
 import org.jeecg.modules.openapi.swagger.*;
 import org.jeecg.modules.system.entity.SysUser;
@@ -27,14 +28,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import springfox.documentation.spring.web.DocumentationCache;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @date 2024/12/10 9:11
@@ -46,13 +48,7 @@ public class OpenApiController extends JeecgController<OpenApi, OpenApiService> 
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
-    private OpenApiParamService openApiParamService;
-    @Autowired
-    private OpenApiHeaderService openApiHeaderService;
-    @Autowired
-    private DocumentationCache documentationCache;
-    @Autowired
-    private TypeResolver typeResolver;
+    private RedisUtil redisUtil;
     @Autowired
     private ISysUserService sysUserService;
     @Autowired
@@ -73,10 +69,6 @@ public class OpenApiController extends JeecgController<OpenApi, OpenApiService> 
         QueryWrapper<OpenApi> queryWrapper = QueryGenerator.initQueryWrapper(openApi, req.getParameterMap());
         Page<OpenApi> page = new Page<>(pageNo, pageSize);
         IPage<OpenApi> pageList = service.page(page, queryWrapper);
-        for (OpenApi api : pageList.getRecords()) {
-            api.setParams(openApiParamService.findByApiId(api.getId()));
-            api.setHeaders(openApiHeaderService.findByApiId(api.getId()));
-        }
         return Result.ok(pageList);
     }
 
@@ -88,16 +80,7 @@ public class OpenApiController extends JeecgController<OpenApi, OpenApiService> 
      */
     @PostMapping(value = "/add")
     public Result<?> add(@RequestBody OpenApi openApi) {
-        if (service.save(openApi)) {
-            if (!CollectionUtils.isEmpty(openApi.getHeaders())) {
-                openApiHeaderService.saveBatch(openApi.getHeaders());
-            }
-
-            if (!CollectionUtils.isEmpty(openApi.getParams())) {
-                openApiParamService.saveBatch(openApi.getParams());
-            }
-        }
-
+        service.save(openApi);
         return Result.ok("添加成功！");
     }
 
@@ -109,18 +92,7 @@ public class OpenApiController extends JeecgController<OpenApi, OpenApiService> 
      */
     @PutMapping(value = "/edit")
     public Result<?> edit(@RequestBody OpenApi openApi) {
-        if (service.updateById(openApi)) {
-            openApiHeaderService.deleteByApiId(openApi.getId());
-            openApiParamService.deleteByApiId(openApi.getId());
-
-            if (!CollectionUtils.isEmpty(openApi.getHeaders())) {
-                openApiHeaderService.saveBatch(openApi.getHeaders());
-            }
-
-            if (!CollectionUtils.isEmpty(openApi.getParams())) {
-                openApiParamService.saveBatch(openApi.getParams());
-            }
-        }
+        service.updateById(openApi);
         return Result.ok("修改成功!");
 
     }
@@ -176,26 +148,71 @@ public class OpenApiController extends JeecgController<OpenApi, OpenApiService> 
             result.put("data", null);
             return Result.error("失败", result);
         }
-        List<OpenApiHeader> headers = openApiHeaderService.findByApiId(openApi.getId());
+        HttpHeaders httpHeaders = new HttpHeaders();
+        if (StrUtil.isNotEmpty(openApi.getHeadersJson())) {
+            List<OpenApiHeader> headers = JSON.parseArray(openApi.getHeadersJson(),OpenApiHeader.class);
+            if (headers.size()>0) {
+                for (OpenApiHeader header : headers) {
+                    httpHeaders.put(header.getHeaderKey(), Lists.newArrayList(request.getHeader(header.getHeaderKey())));
+                }
+            }
+        }
 
         String url = openApi.getOriginUrl();
         String method = openApi.getRequestMethod();
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        for (OpenApiHeader header : headers) {
-            httpHeaders.put(header.getHeaderKey(), Lists.newArrayList(request.getHeader(header.getHeaderKey())));
-        }
-
         String appkey = request.getHeader("appkey");
         OpenApiAuth openApiAuth = openApiAuthService.getByAppkey(appkey);
-        SysUser systemUser = sysUserService.getById(openApiAuth.getSystemUserId());
-        String token = JwtUtil.sign(systemUser.getUsername(), systemUser.getPassword());
+        SysUser systemUser = sysUserService.getUserByName(openApiAuth.getCreateBy());
+        String token = this.getToken(systemUser.getUsername(), systemUser.getPassword());
         httpHeaders.put("X-Access-Token", Lists.newArrayList(token));
-
+        httpHeaders.put("Content-Type",Lists.newArrayList("application/json"));
         HttpEntity<String> httpEntity = new HttpEntity<>(json, httpHeaders);
+        url = RestUtil.getBaseUrl() +  url;
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+        if (HttpMethod.GET.matches(method)
+                || HttpMethod.DELETE.matches(method)
+                || HttpMethod.OPTIONS.matches(method)
+                || HttpMethod.TRACE.matches(method)) {
+            //拼接参数
+            if (!request.getParameterMap().isEmpty()) {
+                if (StrUtil.isNotEmpty(openApi.getParamsJson())) {
+                    List<OpenApiParam> params = JSON.parseArray(openApi.getParamsJson(),OpenApiParam.class);
+                    if (params.size()>0) {
+                        Map<String, OpenApiParam> openApiParamMap = params.stream().collect(Collectors.toMap(p -> p.getParamKey(), p -> p, (e, r) -> e));
+                        request.getParameterMap().forEach((k, v) -> {
+                            OpenApiParam openApiParam = openApiParamMap.get(k);
+                            if (Objects.nonNull(openApiParam)) {
+                                if(v==null&&StrUtil.isNotEmpty(openApiParam.getDefaultValue())){
+                                    builder.queryParam(openApiParam.getParamKey(), openApiParam.getDefaultValue());
+                                }
+                                if (v!=null){
+                                    builder.queryParam(openApiParam.getParamKey(), v);
+                                }
+                            }
+                        });
+                    }
+                }
 
-        return restTemplate.exchange(url, HttpMethod.resolve(method), httpEntity, Result.class, request.getParameterMap()).getBody();
+            }
+        }
+        URI targetUrl = builder.build().encode().toUri();
+        return restTemplate.exchange(targetUrl.toString(), Objects.requireNonNull(HttpMethod.resolve(method)), httpEntity, Result.class, request.getParameterMap()).getBody();
     }
+
+    /**
+     * 生成接口访问令牌 Token
+     *
+     * @param USERNAME
+     * @param PASSWORD
+     * @return
+     */
+    private String getToken(String USERNAME, String PASSWORD) {
+        String token = JwtUtil.sign(USERNAME, PASSWORD);
+        redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + token, token);
+        redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + token, 60);
+        return token;
+    }
+
 
     @GetMapping("/json")
     public SwaggerModel swaggerModel() {
@@ -236,13 +253,16 @@ public class OpenApiController extends JeecgController<OpenApi, OpenApiService> 
                 definition.setType("object");
                 Map<String, SwaggerDefinitionProperties> definitionProperties = new HashMap<>();
                 definition.setProperties(definitionProperties);
-
-                JSONObject jsonObject = JSONObject.parseObject(openApi.getBody());
-                for (Map.Entry<String, Object> properties : jsonObject.entrySet()) {
-                    SwaggerDefinitionProperties swaggerDefinitionProperties = new SwaggerDefinitionProperties();
-                    swaggerDefinitionProperties.setType("string");
-                    swaggerDefinitionProperties.setDescription(properties.getValue()+"");
-                    definitionProperties.put(properties.getKey(), swaggerDefinitionProperties);
+                if (openApi.getBody()!=null){
+                    JSONObject jsonObject = JSONObject.parseObject(openApi.getBody());
+                    if (jsonObject.size()>0){
+                        for (Map.Entry<String, Object> properties : jsonObject.entrySet()) {
+                            SwaggerDefinitionProperties swaggerDefinitionProperties = new SwaggerDefinitionProperties();
+                            swaggerDefinitionProperties.setType("string");
+                            swaggerDefinitionProperties.setDescription(properties.getValue()+"");
+                            definitionProperties.put(properties.getKey(), swaggerDefinitionProperties);
+                        }
+                    }
                 }
                 // body的definition构建完成
                 definitions.put(openApi.getRequestUrl()+"Using"+openApi.getRequestMethod()+"body", definition);
@@ -333,25 +353,28 @@ public class OpenApiController extends JeecgController<OpenApi, OpenApiService> 
 
     private void parameters(SwaggerOperation operation, OpenApi openApi) {
         List<SwaggerOperationParameter> parameters = new ArrayList<>();
-
-        for (OpenApiParam openApiParam : openApiParamService.findByApiId(openApi.getId())) {
-            SwaggerOperationParameter parameter = new SwaggerOperationParameter();
-            parameter.setIn("path");
-            parameter.setName(openApiParam.getParamKey());
-            parameter.setRequired(openApiParam.getRequired() == 1);
-            parameter.setDescription(openApiParam.getNote());
-            parameters.add(parameter);
+        if (openApi.getParamsJson()!=null) {
+            List<OpenApiParam> openApiParams = JSON.parseArray(openApi.getParamsJson(), OpenApiParam.class);
+            for (OpenApiParam openApiParam : openApiParams) {
+                SwaggerOperationParameter parameter = new SwaggerOperationParameter();
+                parameter.setIn("path");
+                parameter.setName(openApiParam.getParamKey());
+                parameter.setRequired(openApiParam.getRequired() == 1);
+                parameter.setDescription(openApiParam.getNote());
+                parameters.add(parameter);
+            }
         }
-
-        for (OpenApiHeader openApiHeader : openApiHeaderService.findByApiId(openApi.getId())) {
-            SwaggerOperationParameter parameter = new SwaggerOperationParameter();
-            parameter.setIn("header");
-            parameter.setName(openApiHeader.getHeaderKey());
-            parameter.setRequired(openApiHeader.getRequired() == 1);
-            parameter.setDescription(openApiHeader.getNote());
-            parameters.add(parameter);
+        if (openApi.getHeadersJson()!=null) {
+            List<OpenApiHeader> openApiHeaders = JSON.parseArray(openApi.getHeadersJson(), OpenApiHeader.class);
+            for (OpenApiHeader openApiHeader : openApiHeaders) {
+                SwaggerOperationParameter parameter = new SwaggerOperationParameter();
+                parameter.setIn("header");
+                parameter.setName(openApiHeader.getHeaderKey());
+                parameter.setRequired(openApiHeader.getRequired() == 1);
+                parameter.setDescription(openApiHeader.getNote());
+                parameters.add(parameter);
+            }
         }
-
         operation.setParameters(parameters);
     }
 
@@ -359,7 +382,7 @@ public class OpenApiController extends JeecgController<OpenApi, OpenApiService> 
         SwaggerInfo info = new SwaggerInfo();
 
         info.setDescription("OpenAPI 接口列表");
-        info.setVersion("3.7.1");
+        info.setVersion("3.8.1");
         info.setTitle("OpenAPI 接口列表");
         info.setTermsOfService("https://jeecg.com");
 

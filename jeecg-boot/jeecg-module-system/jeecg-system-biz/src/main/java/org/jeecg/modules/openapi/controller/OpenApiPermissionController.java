@@ -4,10 +4,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.jeecg.modules.openapi.entity.OpenApiPermission;
 import org.jeecg.modules.openapi.service.OpenApiPermissionService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/openapi/permission")
@@ -15,6 +12,11 @@ public class OpenApiPermissionController extends JeecgController<OpenApiPermissi
 
     @PostMapping("add")
     public Result add(@RequestBody OpenApiPermission openApiPermission) {
-        return Result.ok(service.save(openApiPermission));
+        service.add(openApiPermission);
+        return Result.ok("保存成功");
+    }
+    @GetMapping("/getOpenApi")
+    public Result<?> getOpenApi( String apiAuthId) {
+        return service.getOpenApi(apiAuthId);
     }
 }

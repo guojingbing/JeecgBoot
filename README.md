@@ -2,12 +2,12 @@
 JeecgBoot AI低代码平台
 ===============
 
-当前最新版本： 3.7.3（发布日期：2025-02-10） 
+当前最新版本： 3.8.1（发布日期：2025-06-30） 
 
 
 [![AUR](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://github.com/jeecgboot/JeecgBoot/blob/master/LICENSE)
 [![](https://img.shields.io/badge/Author-北京国炬软件-orange.svg)](http://guojusoft.com)
-[![](https://img.shields.io/badge/version-3.7.3-brightgreen.svg)](https://github.com/jeecgboot/JeecgBoot)
+[![](https://img.shields.io/badge/version-3.8.1-brightgreen.svg)](https://github.com/jeecgboot/JeecgBoot)
 [![GitHub stars](https://img.shields.io/github/stars/zhangdaiscott/jeecg-boot.svg?style=social&label=Stars)](https://github.com/jeecgboot/JeecgBoot)
 [![GitHub forks](https://img.shields.io/github/forks/zhangdaiscott/jeecg-boot.svg?style=social&label=Fork)](https://github.com/jeecgboot/JeecgBoot)
 
@@ -16,53 +16,59 @@ JeecgBoot AI低代码平台
 项目介绍
 -----------------------------------
 
-<h3 align="center">Java AI Low Code Platform for Enterprise web applications</h3>
+<h3 align="center">Java AI Low Code Platform</h3>
 
-JeecgBoot 是一款基于`BPM`和`代码生成器`的 AI低代码平台！前后端分离架构 SpringBoot2.x/3.x，SpringCloud，Ant Design Vue3，Mybatis-plus，Shiro，JWT，支持微服务、多租户;支持 AI 大模型 DeepSeek 和 ChatGPT、Ollama本地模型; 强大的代码生成器让前后端代码一键生成，无需写任何代码!  JeecgBoot 引领 AI 低代码开发模式(AI生成-> OnlineCoding-> 代码生成器-> 手工MERGE)， 帮助解决Java项目80%的重复工作，让开发更多关注业务。既能快速提高效率，节省成本，同时又不失灵活性！AIGC能力：AI对话助手、AI建表、AI写文章、AI流程编排、AI知识库问答等等.
+JeecgBoot是一款基于AIGC和低代码引擎的AI低代码平台，旨在帮助开发者快速实现低代码开发和构建、部署个性化的 AI 应用。
+前后端分离架构Ant Design&Vue3，SpringBoot，SpringCloud Alibaba，Mybatis-plus，Shiro，强大的代码生成器让前后端代码一键生成，无需写任何代码！
+成套AI大模型功能: AI模型管理、AI应用、知识库、AI流程编排、AI对话助手等；
+引领AI低代码开发模式: AIGC生成->OnlineCoding-> 代码生成-> 手工MERGE， 帮助Java项目解决80%的重复工作，让开发更多关注业务，快速提高效率 节省成本，同时又不失灵活性！
 
-JeecgBoot 提供了一系列 `AI能力` `低代码模块`，实现在线开发`真正的零代码`：Online表单开发、Online报表、报表配置能力、在线图表设计、仪表盘设计、大屏设计、移动配置能力、表单设计器、在线设计流程、流程自动化配置、插件能力（可插拔）、AI对话助手，AI建表、AI写文章、AI流程编排、AI知识库问答、AI赋能低代码等等！
 
+JeecgBoot 提供了一系列 `低代码能力`，实现`真正的零代码`在线开发：Online表单开发、Online报表、复杂报表设计、打印设计、在线图表设计、仪表盘设计、大屏设计、移动图表能力、表单设计器、在线设计流程、流程自动化配置、插件能力（可插拔）
+
+`AI赋能低代码:` 目前提供了AI应用、AI模型管理、AI流程编排、AI对话助手，AI建表、AI写文章、AI知识库问答、AI字段建议等功能;支持各种AI大模型ChatGPT、DeepSeek、Ollama、智普、千问等.
 
 `JEECG宗旨是:` 简单功能由OnlineCoding配置实现，做到`零代码开发`；复杂功能由代码生成器生成进行手工Merge 实现`低代码开发`，既保证了`智能`又兼顾`灵活`；实现了低代码开发的同时又支持灵活编码，解决了当前低代码产品普遍不灵活的弊端！
 
 `JEECG业务流程:` 采用工作流来实现、扩展出任务接口，供开发编写业务逻辑，表单提供多种解决方案： 表单设计器、online配置表单、编码表单。同时实现了流程与表单的分离设计（松耦合）、并支持任务节点灵活配置，既保证了公司流程的保密性，又减少了开发人员的工作量。
 
-`AI赋能低代码:` 目前JeecgBoot支持AI大模型`ChatGPT`和`DeepSeek`，现在最新版默认使用`DeepSeek`，速度更快质量更高。目前提供了AI对话助手、AI建表、AI报表、AI写文章、AI流程编排、AI知识库问答等功能。
-
-
-适用项目
------------------------------------
-JeecgBoot AI低代码平台，可以应用在任何J2EE项目的开发中，支持信创国产化（默认适配达梦和人大金仓）。尤其适合SAAS项目、企业信息管理系统（MIS）、内部办公系统（OA）、企业资源计划系统（ERP）、客户关系管理系统（CRM）等，其半智能手工Merge的开发方式，可以显著提高开发效率70%以上，极大降低开发成本。
 
 
 ### 视频介绍
 
-[![](https://upload.jeecg.com/jeecg/qiaoqiaoyunsite/jeecgvideo02.png)](https://www.bilibili.com/video/BV1Nk4y1o7Qc)
+[![](https://jeecgos.oss-cn-beijing.aliyuncs.com/files/flow_video.png)](https://www.bilibili.com/video/BV1Nk4y1o7Qc)
 
 
-#### 项目说明
+适用项目
+-----------------------------------
+JeecgBoot AI低代码平台，可以应用在任何J2EE项目的开发中，支持信创国产化。尤其适合SAAS项目、企业信息管理系统（MIS）、内部办公系统（OA）、企业资源计划系统（ERP）、客户关系管理系统（CRM）等，其半智能手工Merge的开发方式，可以显著提高开发效率70%以上，极大降低开发成本。
+又是一个全栈式 AI 开发平台，快速帮助企业构建和部署个性化的 AI 应用。
+
+
+信创国产化
+-----------------------------------
+JeecgBoot 是一个开源低代码开发平台，支持全信创环境。它兼容多种国产操作系统和数据库，包括：
+
+- 操作系统：国产麒麟、银河麒麟等国产系统几乎都是基于 Linux 内核，因此它们具有良好的兼容性。
+- 数据库：达梦、人大金仓、TiDB , [转库文档](https://my.oschina.net/jeecg/blog/4905722)
+- 中间件：东方通 TongWeb、TongRDS，宝兰德 AppServer、CacheDB, [信创配置文档](https://help.jeecg.com/java/tongweb-deploy/)
+
+通过这些适配，JeecgBoot 为使用国产软件和硬件的用户提供了高效的开发解决方案。
+
+
+
+项目说明
+-----------------------------------
 
 | 项目名                | 说明                     | 
 |--------------------|------------------------|
 | `jeecg-boot`    | 后端源码JAVA（SpringBoot微服务架构）        |
 | `jeecgboot-vue3` | 前端源码VUE3（vue3+vite6+ts最新技术栈）  |
-| `jeecg-uniapp` | [配套APP框架](https://github.com/jeecgboot/jeecg-uniapp) 适配多个终端，支持APP、小程序、H5 |
+| `JeecgUniapp` | [配套APP框架](https://github.com/jeecgboot/JeecgUniapp) 适配多个终端，支持APP、小程序、H5 |
 
 
 
-技术文档
------------------------------------
 
-- 官方网站：  [http://www.jeecg.com](http://www.jeecg.com)
-- 在线演示 ：  [在线演示](http://boot3.jeecg.com)   | [APP演示](http://jeecg.com/appIndex)
-- 快速体验： [一分钟体验低代码](https://jeecg.blog.csdn.net/article/details/106079007?spm=1001.2014.3001.5502 "一分钟体验零代码") | [在线体验零代码](https://app.qiaoqiaoyun.com/myapps/index "在线体验零代码")
-- 开发文档：  [文档中心](https://help.jeecg.com) | [AI集成配置(支持DeepSeek)](https://help.jeecg.com/java/ai/aichat.html)
-- 反馈问题：  [在Github上提Issues](https://github.com/jeecgboot/JeecgBoot/issues/new)
-- 新手指南： [快速入门](http://www.jeecg.com/doc/quickstart) | [入门视频](http://jeecg.com/doc/video)
-- QQ交流群 ： ⑩716488839、⑨808791225(满)、其他(满)
-- <b>关注微信公众号，获取最新动态</b>
-
-![公众号](https://jeecg.com/images/jeecg/qrcode_jeecgboot.jpg "在这里输入图片标题")
 
 
 启动项目
@@ -72,53 +78,82 @@ JeecgBoot AI低代码平台，可以应用在任何J2EE项目的开发中，支�
 - [Docker一键启动前后端](https://help.jeecg.com/java/docker/quick)
 
 
-AI 平台支持
------------------------------------
-#### 已集成能力
 
-- AI聊天助手(智能问答)
+
+在线体验
+-----------------------------------
+
+> JeecgBoot vs 敲敲云
+> - JeecgBoot是低代码产品拥有很多低代码能力，比如流程设计、表单设计、大屏设计，代码生成器，适合半开发模式（开发+低代码结合），也可以集成零代码的应用管理模块； 
+> - 敲敲云是零代码产品，完全不写代码，通过配置搭建业务系统，其在jeecgboot基础上研发而成，删除了online、代码生成、OA等很多需要编码的功能，只保留了应用管理和聊天、流程、日程、文件四个标准OA功能
+
+
+- JeecgBoot低代码：  https://boot3.jeecg.com
+- 敲敲云零代码：https://app.qiaoqiaoyun.com
+- APP演示: http://jeecg.com/appIndex
+
+技术文档
+-----------------------------------
+
+- 官方网站：  [http://www.jeecg.com](http://www.jeecg.com)
+- 开发文档：  [文档中心](https://help.jeecg.com) | [AIGC大模块](https://help.jeecg.com/aigc) | [低代码初体验一分钟](https://jeecg.blog.csdn.net/article/details/106079007) 
+- 新手指南： [快速入门](http://www.jeecg.com/doc/quickstart) | [入门视频](http://jeecg.com/doc/video) | [反馈问题](https://github.com/jeecgboot/JeecgBoot/issues/new?template=bug_report.md)
+- QQ交流群 ： ⑩716488839、⑨808791225(满)、其他(满)
+
+
+
+AIGC应用平台介绍
+-----------------------------------
+
+JeecgBoot 平台的AIGC功能模块，是一套类似`Dify`的`AIGC应用开发平台`+`知识库问答`，是一款基于LLM大语言模型AI应用平台和 RAG 的知识库问答系统。
+其直观的界面结合了 AI 流程编排、RAG 管道、知识库管理、模型管理、对接向量库、实时运行可观察等，让您可以快速从原型到生产，拥有AI服务能力。
+
+> JDK说明：AI流程编排引擎暂时不支持jdk21，所以目前只能使用jdk8或者jdk17启动项目。
+
+- [AIGC专题介绍页](README-AI.md)
+- [AIGC开发文档](https://help.jeecg.com/aigc)
+- [配置向量库PGVector](https://help.jeecg.com/aigc/config)
+
+
+##### AI视频介绍
+
+[![](https://jeecgos.oss-cn-beijing.aliyuncs.com/files/jeecg_aivideo.png)](https://www.bilibili.com/video/BV1zmd7YFE4w)
+
+
+
+
+##### Dify `VS` JEECG AI
+
+> JEECG AI与Dify相比，在多个方面展现出显著的优势，特别是在文档处理、格式和图片保持方面。以下是一些具体的优点：
+> - Markdown文档库导入：
+> JEECG AI允许用户直接导入整个Markdown文档库，这不仅保留markdown格式，还支持图片的导入，确保文档内容的完整性和可视化效果。
+> - 对话回复格式美观：
+> 在对话过程中，JEECG AI能够保持回复内容的原格式，也不丢失图片，使得输出的文章更加美观，不会出现格式错乱的情况，还支持图片的渲染。
+> - PDF文档导入与格式转换：
+> JEECG AI在处理PDF文档时，能够更好地保持原始格式和图片，确保转换后的内容与原始文档一致。这个功能在许多AI产品中表现不佳，而JEECG AI在这方面做出了显著的优化
+
+##### 功能大模块
+
+- AI应用开发平台
+- AI知识库系统
+- AI大模型管理
+- AI流程编排
+- AI对话支持图片
+- AI对话助手(智能问答)
 - AI建表（Online表单）
 - AI写文章（CMS）
 - AI表单字段建议（表单设计器）
-- AI大模型支持（DeepSeek、ChatGTP、Ollama本地私有大模型等等）
 
-#### 支持AI大模型
+##### AI大模型支持
 
-|  AI大模型   |  支持   |
+| AI大模型   |  支持   |
 | --- | --- |
-|   DeepSeek   |  √   |
-|   ChatGTP   |  √   |
-|   Ollama本地搭建大模型   |  √   |
-
-AI集成文档： https://help.jeecg.com/java/ai/aichat
-
-
-AIGC应用平台+知识库（研发中，即将发布）
------------------------------------
-> JeecgBoot 研发的AIGC应用平台+知识库大模块，是一款基于LLM大语言模型AI应用平台和 RAG 的知识库问答系统。
-其直观的界面结合了 AI 流程编排、RAG 管道、知识库管理、模型管理、实时运行可观察等，让您可以快速从原型到生产，拥有AI服务能力。
-
-- AI大模型文档： https://help.jeecg.com/aigc 
-
-
-#### 功能特点
-
-- AI流程: 提供强大的AI流程设计器引擎，支持编排 AI 工作过程，满足复杂业务场景，支持画布上构建和实时运行查看 AI流程运行情况。
-- AI流程即服务: 通过AI流程编排你需要的智能体，结合AI+自定义开发节点 实现功能性 API，让你瞬间拥有各种智能体API。
-- AI助手对话功能: 集成 ChatGPT、Deepseek、智普、私有大模型 等 AI 模型，提供智能对话和生成式 AI 功能，深度与知识库结合提供更精准的知识。
-- RAG 功能: 涵盖从文档摄入到检索的所有内容，支持从 PDF、PPT 和其他常见文档格式中提取文本，支持检索增强生成（RAG），将未训练数据与 AI 模型集成，提升智能交互能力。
-- AI 知识库: 通过导入文档或已有问答对进行训练，让 AI 模型能根据文档以交互式对话方式回答问题。
-- 模型管理：支持对接各种大模型，包括本地私有大模型（Deepseek/ Llama 3 / Qwen 2 等）、国内公共大模型（通义千问 / 腾讯混元 / 字节豆包 / 百度千帆 / 智谱 AI / Kimi 等）和国外公共大模型（OpenAI / Claude / Gemini 等）；
-- 无缝嵌入：Iframe一键嵌入,支持将AI聊天助手快速嵌入到第三方系统，让系统快速拥有智能问答能力，提高用户满意度。
-
-
-#### 功能列表（研发中）
-- AI模型管理
-- AI知识库
-- AI应用平台(普通、对接AI流程)
-- AI流程编排
-- AI聊天支持嵌入第三方
-- AI向量库对接
+| DeepSeek   |  √   |
+| ChatGTP   |  √   |
+| Qwq 		  | √ |
+| 智库 		  | √ |
+| Ollama本地模型   |  √   |
+| 等等。。 | √ |
 
 
 
@@ -129,13 +164,13 @@ AIGC应用平台+知识库（研发中，即将发布）
 #### 后端
 
 - IDE建议： IDEA (必须安装lombok插件 )
-- 语言：Java (支持jdk8、jdk17)
+- 语言：Java 默认jdk17(支持jdk8、jdk21)
 - 依赖管理：Maven
 - 基础框架：Spring Boot 2.7.18
-- 微服务框架： Spring Cloud Alibaba 2021.0.1.0
+- 微服务框架： Spring Cloud Alibaba 2021.0.6.2
 - 持久层框架：MybatisPlus 3.5.3.2
-- 报表工具： JimuReport 1.9.4
-- 安全框架：Apache Shiro 1.12.0，Jwt 3.11.0
+- 报表工具： JimuReport 1.9.5
+- 安全框架：Apache Shiro 1.13.0，Jwt 4.5.0
 - 微服务技术栈：Spring Cloud Alibaba、Nacos、Gateway、Sentinel、Skywalking
 - 数据库连接池：阿里巴巴Druid 1.1.24
 - AI大模型：支持 `ChatGPT` `DeepSeek`切换
@@ -163,7 +198,9 @@ AIGC应用平台+知识库（研发中，即将发布）
  ` ( 因为Vite6 需要 Node.js 18 / 20+ )`
 
 
-#### 支持库
+#### 平台支持数据库
+
+> jeecgboot平台支持以下数据库，默认我们只提供mysql脚本，其他数据库可以参考[转库文档](https://my.oschina.net/jeecg/blog/4905722)自己转。
 
 |  数据库   |  支持   |
 | --- | --- |
@@ -172,19 +209,11 @@ AIGC应用平台+知识库（研发中，即将发布）
 |  Sqlserver2017   |  √   |
 |   PostgreSQL   |  √   |
 |   MariaDB   |  √   |
-|   MariaDB   |  √   |
 |   达梦   |  √   |
 |   人大金仓   |  √   |
 |   TiDB     |  √   |
-
-#### 支持AI
-
-|  AI模型   |  支持   |
-| --- | --- |
-|   DeepSeek   |  √   |
-|   ChatGTP   |  √   |
-
-AI集成文档： https://help.jeecg.com/java/ai/aichat.html
+|   kingbase8   |  √   |
+  
 
  
 ## 微服务解决方案
@@ -292,10 +321,10 @@ AI集成文档： https://help.jeecg.com/java/ai/aichat.html
 │  ├─AI对话助手
 │  ├─AI建表
 │  ├─AI写文章
-│  ├─AI流程编排（研发中）
-│  ├─AI知识库问答系统（研发中）
-│  ├─AI应用开发平台（研发中）
-│  ├─AI聊天窗口支持嵌入第三方（研发中）
+│  ├─AI流程编排
+│  ├─AI知识库问答系统
+│  ├─AI应用开发平台
+│  ├─AI聊天窗口支持嵌入第三方
 ├─Online在线开发(低代码)
 │  ├─Online在线表单
 │  ├─Online代码生成器

@@ -8,6 +8,9 @@
       :style="{ width }"
       @click="currentSelectClick"
   >
+    <template #suffix v-if="allowClear && currentSelect">
+      <CloseCircleFilled class="menu-current-close" @click.stop="clearCurrentSelect" />
+    </template>
     <template #addonAfter>
       <span class="cursor-pointer px-2 py-1 flex items-center" v-if="isSvgMode && currentSelect">
         <SvgIcon :name="currentSelect" @click="currentSelectClick"/>
@@ -20,44 +23,49 @@
       />
     </template>
   </a-input>
-  <a-modal :bodyStyle="{ padding: '24px'}" v-bind="$attrs" v-model:open="iconOpen" :keyboard="false" :width="800" @ok="handleOk" :ok-text="t('common.okText')" :cancel-text="t('common.cancelText')">
-    <a-tabs style="padding-left: 15px;padding-right: 15px">
-      <a-tab-pane tab="方向性图标" key="1">
-        <a-form-item-rest>
-          <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="directionIcons" v-model:value="selectIcon" />
-        </a-form-item-rest>
-      </a-tab-pane>
-      <a-tab-pane tab="指示性图标" key="2">
-        <a-form-item-rest>
-          <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="suggestionIcons" v-model:value="selectIcon" />
-        </a-form-item-rest>
-      </a-tab-pane>
-      <a-tab-pane tab="编辑类图标" key="3">
-        <a-form-item-rest>
-          <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="editIcons" v-model:value="selectIcon" />
-        </a-form-item-rest>
-      </a-tab-pane>
-      <a-tab-pane tab="数据类图标" key="4">
-        <a-form-item-rest>
-          <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="dataIcons" v-model:value="selectIcon" />
-        </a-form-item-rest>
-      </a-tab-pane>
-      <a-tab-pane tab="网站通用图标" key="5">
-        <a-form-item-rest>
-          <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="webIcons" v-model:value="selectIcon" />
-        </a-form-item-rest>
-      </a-tab-pane>
-      <a-tab-pane tab="品牌和标识" key="6">
-        <a-form-item-rest>
-          <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="logoIcons" v-model:value="selectIcon" />
-        </a-form-item-rest>
-      </a-tab-pane>
-      <a-tab-pane tab="其他" key="7">
-        <a-form-item-rest>
-          <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-page="true" :is-search="true" :is-svg-mode="isSvgMode" :current-list="otherIcons" v-model:value="selectIcon" />
-        </a-form-item-rest>
-      </a-tab-pane>
-    </a-tabs>
+  <a-modal :bodyStyle="{ padding: '24px', paddingTop: mode === 'svg' ? '48px' : '24px'}" v-bind="$attrs" v-model:open="iconOpen" :keyboard="false" :width="800" @ok="handleOk" :ok-text="t('common.okText')" :cancel-text="t('common.cancelText')">
+    <template v-if="mode === 'iconify'">
+      <a-tabs style="padding-left: 15px;padding-right: 15px">
+        <a-tab-pane tab="方向性图标" key="1">
+          <a-form-item-rest>
+            <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="directionIcons" v-model:value="selectIcon" />
+          </a-form-item-rest>
+        </a-tab-pane>
+        <a-tab-pane tab="指示性图标" key="2">
+          <a-form-item-rest>
+            <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="suggestionIcons" v-model:value="selectIcon" />
+          </a-form-item-rest>
+        </a-tab-pane>
+        <a-tab-pane tab="编辑类图标" key="3">
+          <a-form-item-rest>
+            <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="editIcons" v-model:value="selectIcon" />
+          </a-form-item-rest>
+        </a-tab-pane>
+        <a-tab-pane tab="数据类图标" key="4">
+          <a-form-item-rest>
+            <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="dataIcons" v-model:value="selectIcon" />
+          </a-form-item-rest>
+        </a-tab-pane>
+        <a-tab-pane tab="网站通用图标" key="5">
+          <a-form-item-rest>
+            <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="webIcons" v-model:value="selectIcon" />
+          </a-form-item-rest>
+        </a-tab-pane>
+        <a-tab-pane tab="品牌和标识" key="6">
+          <a-form-item-rest>
+            <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-svg-mode="isSvgMode" :current-list="logoIcons" v-model:value="selectIcon" />
+          </a-form-item-rest>
+        </a-tab-pane>
+        <a-tab-pane tab="其他" key="7">
+          <a-form-item-rest>
+            <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-page="true" :is-search="true" :is-svg-mode="isSvgMode" :current-list="otherIcons" v-model:value="selectIcon" />
+          </a-form-item-rest>
+        </a-tab-pane>
+      </a-tabs>
+    </template>
+    <template v-else>
+      <icon-list ref="iconListRef" :clear-select="clearSelect" :copy="copy" :is-page="true" :is-search="true" :is-svg-mode="isSvgMode" :current-list="otherIcons" v-model:value="selectIcon" />
+    </template>
   </a-modal>
 </template>
 <script lang="ts" setup name="icon-picker">
@@ -72,7 +80,7 @@
   import { useI18n } from '/@/hooks/web/useI18n';
   import svgIcons from 'virtual:svg-icons-names';
   import IconList from "./IconList.vue";
-
+  import { CloseCircleFilled } from '@ant-design/icons-vue';
   // 没有使用别名引入，是因为WebStorm当前版本还不能正确识别，会报unused警告
   const AInput = Input;
 
@@ -99,6 +107,7 @@
     mode: propTypes.oneOf<('svg' | 'iconify')[]>(['svg', 'iconify']).def('iconify'),
     disabled: propTypes.bool.def(false),
     clearSelect: propTypes.bool.def(false),
+    allowClear: propTypes.bool.def(false),
     iconPrefixSave: propTypes.bool.def(true),
   });
 
@@ -191,6 +200,12 @@
     iconOpen.value = false;
   }
 
+  /**
+   * 清除当前选择图标
+   */
+  function clearCurrentSelect(){
+    currentSelect.value = '';
+  }
   onMounted(()=>{
     //初始化加载图标
     initOtherIcon();
@@ -221,6 +236,17 @@
       .scrollbar {
         height: 220px;
       }
+    }
+    //图标样式
+    .menu-current-close {
+      color: #cccccc;
+    }
+  }
+  //图标样式兼容暗黑模式
+  [data-theme='dark'] .@{prefix-cls} {
+    .menu-current-close {
+      color: #4f4f4f;
+      font-size: 12px;
     }
   }
 </style>

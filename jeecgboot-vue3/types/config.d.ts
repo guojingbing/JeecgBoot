@@ -104,6 +104,8 @@ export interface ProjectConfig {
   colorWeak: boolean;
   // Theme color
   themeColor: string;
+  // Theme Mode
+  themeMode: string;
 
   // The main interface is displayed in full screen, the menu is not displayed, and the top
   fullContent: boolean;
@@ -139,6 +141,7 @@ export interface ProjectConfig {
   closeMessageOnSwitch: boolean;
   // Whether to cancel the http request that has been sent but not responded when switching the interface.
   removeAllHttpPending: boolean;
+  aiIconShow: boolean;
 }
 
 export interface GlobConfig {
@@ -160,6 +163,8 @@ export interface GlobConfig {
   shortName: string;
   // 短标题
   shortTitle: string;
+  // 当前是否运行在 electron 平台
+  isElectronPlatform: boolean;
 
   // 【JEECG作为乾坤子应用】是否以乾坤子应用模式启动
   isQiankunMicro: boolean;
@@ -187,9 +192,15 @@ export interface GlobEnvConfig {
   VITE_GLOB_UPLOAD_URL?: string;
   // view url
   VITE_GLOB_ONLINE_VIEW_URL?: string;
+  // 全局隐藏哪些布局，多个用逗号隔开
+  VITE_GLOB_HIDE_LAYOUT_TYPES?: string;
 
   // 【JEECG作为乾坤子应用】填写后将作为乾坤子应用启动，主应用注册时AppName需保持一致
   VITE_GLOB_QIANKUN_MICRO_APP_NAME?: string;
   // 【JEECG作为乾坤子应用】作为乾坤子应用启动时必填，需与qiankun主应用注册子应用时填写的 entry 保持一致
   VITE_GLOB_QIANKUN_MICRO_APP_ENTRY?: string;
+  //在线文档编辑版本。可选属性：wps, onlyoffice
+  VITE_GLOB_ONLINE_DOCUMENT_VERSION?: string;
+  // 当前运行在什么平台
+  VITE_GLOB_RUN_PLATFORM?: 'web' | 'electron';
 }

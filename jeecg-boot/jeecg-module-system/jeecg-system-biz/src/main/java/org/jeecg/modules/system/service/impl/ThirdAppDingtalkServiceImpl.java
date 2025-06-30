@@ -741,6 +741,7 @@ public class ThirdAppDingtalkServiceImpl implements IThirdAppService {
         }
         sysDepart.setDepartName(department.getName());
         sysDepart.setDepartOrder(department.getOrder());
+        sysDepart.setDingIdentifier(department.getSource_identifier());
         return sysDepart;
     }
 

@@ -139,6 +139,7 @@ export type ComponentType =
   | 'JTreeSelect'
   | 'JEllipsis'
   | 'JSelectUserByDept'
+  | 'JSelectUserByDepartment'
   | 'JUpload'
   | 'JSearchSelect'
   | 'JAddInput'
@@ -156,5 +157,6 @@ export type ComponentType =
   | 'linkRecordSelect'
   | 'RangeTime'
   | 'JRangeNumber'
+  | 'JLinkTableCard'
   | 'JInputSelect';
-  
+

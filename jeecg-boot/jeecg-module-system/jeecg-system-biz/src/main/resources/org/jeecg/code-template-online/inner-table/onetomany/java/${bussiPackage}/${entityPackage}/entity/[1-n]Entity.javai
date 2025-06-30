@@ -16,8 +16,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import java.util.Date;
 import org.jeecg.common.aspect.annotation.Dict;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -26,7 +26,7 @@ import java.io.UnsupportedEncodingException;
  * @Date:   ${.now?string["yyyy-MM-dd"]}
  * @Version: V1.0
  */
-@ApiModel(value="${subTab.tableName}对象", description="${subTab.ftlDescription}")
+@Schema(description="${subTab.ftlDescription}")
 @Data
 @TableName("${subTab.tableName}")
 public class ${subTab.entityName} implements Serializable {
@@ -49,6 +49,8 @@ public class ${subTab.entityName} implements Serializable {
 		<#elseif po.classType=='sel_tree'>
 			<#assign list_field_dictCode=', dictTable = "${po.dictTable}", dicText = "${po.dictText?split(",")[2]}", dicCode = "${po.dictText?split(",")[0]}"'>
 		</#if>
+	<#elseif po.classType=='link_table'>
+        <#assign list_field_dictCode=', dictTable = "${po.dictTable}", dicCode = "${po.dictField}", dicText = "${po.dictText?split(",")[0]}"'>
 	</#if>
 	/**${po.filedComment}*/
 	<#if po.fieldName == primaryKeyField>

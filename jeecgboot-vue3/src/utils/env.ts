@@ -36,10 +36,17 @@ export function getAppEnvConfig() {
     VITE_GLOB_APP_CAS_BASE_URL,
     VITE_GLOB_DOMAIN_URL,
     VITE_GLOB_ONLINE_VIEW_URL,
+    // 全局隐藏哪些布局，多个用逗号隔开
+    VITE_GLOB_HIDE_LAYOUT_TYPES,
+    // 当前运行在什么平台
+    VITE_GLOB_RUN_PLATFORM,
 
     // 【JEECG作为乾坤子应用】
     VITE_GLOB_QIANKUN_MICRO_APP_NAME,
     VITE_GLOB_QIANKUN_MICRO_APP_ENTRY,
+    
+    //在线文档编辑版本。可选属性：wps, onlyoffice
+    VITE_GLOB_ONLINE_DOCUMENT_VERSION,
   } = ENV;
 
   // if (!/^[a-zA-Z\_]*$/.test(VITE_GLOB_APP_SHORT_NAME)) {
@@ -59,10 +66,15 @@ export function getAppEnvConfig() {
     VITE_GLOB_APP_CAS_BASE_URL,
     VITE_GLOB_DOMAIN_URL,
     VITE_GLOB_ONLINE_VIEW_URL,
+    VITE_GLOB_HIDE_LAYOUT_TYPES,
+    VITE_GLOB_RUN_PLATFORM,
 
     // 【JEECG作为乾坤子应用】
     VITE_GLOB_QIANKUN_MICRO_APP_NAME,
     VITE_GLOB_QIANKUN_MICRO_APP_ENTRY,
+
+    //在线文档编辑版本。可选属性：wps, onlyoffice
+    VITE_GLOB_ONLINE_DOCUMENT_VERSION
   };
 }
 
@@ -101,4 +113,23 @@ export function isDevMode(): boolean {
  */
 export function isProdMode(): boolean {
   return import.meta.env.PROD;
+}
+
+export function getHideLayoutTypes(): string[] {
+  const {VITE_GLOB_HIDE_LAYOUT_TYPES} = getAppEnvConfig();
+  if (typeof VITE_GLOB_HIDE_LAYOUT_TYPES !== 'string') {
+    return [];
+  }
+  return VITE_GLOB_HIDE_LAYOUT_TYPES.split(',');
+}
+
+/**
+ * 获取在线文档版本号
+ */
+export function getOnlineDocumentVersion(): string {
+  const { VITE_GLOB_ONLINE_DOCUMENT_VERSION } = getAppEnvConfig();
+  if (typeof VITE_GLOB_ONLINE_DOCUMENT_VERSION !== 'string') {
+    return 'wps';
+  }
+  return VITE_GLOB_ONLINE_DOCUMENT_VERSION;
 }

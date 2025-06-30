@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.jeecgframework.boot</groupId>
         <artifactId>jeecg-server-cloud</artifactId>
-        <version>3.7.3</version>
+        <version>3.8.1</version>
     </parent>
 
     <artifactId>mscloud-openapi-cloud-start</artifactId>

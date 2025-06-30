@@ -23,23 +23,17 @@ import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
 import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.modules.system.entity.*;
-import org.jeecg.modules.system.mapper.SysPackPermissionMapper;
-import org.jeecg.modules.system.mapper.SysTenantPackMapper;
-import org.jeecg.modules.system.service.*;
 import org.jeecg.modules.system.service.*;
 import org.jeecg.modules.system.vo.SysUserTenantVo;
 import org.jeecg.modules.system.vo.tenant.TenantDepartAuthInfo;
 import org.jeecg.modules.system.vo.tenant.TenantPackModel;
 import org.jeecg.modules.system.vo.tenant.TenantPackUser;
 import org.jeecg.modules.system.vo.tenant.TenantPackUserCount;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 租户配置信息
@@ -1026,5 +1020,17 @@ public class SysTenantController {
             result.error500("查询失败！");
         }
         return result;
+    }
+
+    /**
+     * 目前只给敲敲云人员与部门下的用户删除使用
+     *
+     * 删除用户
+     */
+    @DeleteMapping("/deleteUser")
+    public Result<String> deleteUser(@RequestBody SysUser sysUser,HttpServletRequest request){
+        Integer tenantId = oConvertUtils.getInteger(TokenUtils.getTenantIdByRequest(request), null);
+        sysTenantService.deleteUser(sysUser, tenantId);
+        return Result.ok("删除用户成功");
     }
 }

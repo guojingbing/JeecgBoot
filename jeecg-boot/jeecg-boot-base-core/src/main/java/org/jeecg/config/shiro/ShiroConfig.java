@@ -133,7 +133,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/swagger-ui.html", "anon");
         filterChainDefinitionMap.put("/swagger**/**", "anon");
         filterChainDefinitionMap.put("/webjars/**", "anon");
-        filterChainDefinitionMap.put("/v2/**", "anon");
+        filterChainDefinitionMap.put("/v3/**", "anon");
 
         // update-begin--Author:sunjianlei Date:20210510 for：排除消息通告查看详情页面（用于第三方APP）
         filterChainDefinitionMap.put("/sys/annountCement/show/**", "anon");
@@ -245,6 +245,11 @@ public class ShiroConfig {
         //update-begin---author:chenrui ---date:20241202  for：[issues/7491]运行时间好长，效率慢 ------------
         registration.addUrlPatterns("/test/ai/chat/send");
         //update-end---author:chenrui ---date:20241202  for：[issues/7491]运行时间好长，效率慢 ------------
+        registration.addUrlPatterns("/airag/flow/run");
+        registration.addUrlPatterns("/airag/flow/debug");
+        registration.addUrlPatterns("/airag/chat/send");
+        registration.addUrlPatterns("/airag/app/debug");
+        registration.addUrlPatterns("/airag/app/prompt/generate");
         //支持异步
         registration.setAsyncSupported(true);
         registration.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ASYNC);

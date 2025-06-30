@@ -1,14 +1,11 @@
 package org.jeecg.config.mybatis;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.inner.DynamicTableNameInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
-import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.LongValue;
 import org.jeecg.common.config.TenantContext;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.constant.TenantConstant;
@@ -19,8 +16,13 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
+
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
 
 /**
  * 单数据源配置（jeecg.datasource.open = false时生效）
@@ -41,7 +43,7 @@ public class MybatisPlusSaasConfig {
      *  3.菜单表、租户表不做租户隔离
      *  4.通过拦截器MybatisInterceptor实现，增删改查数据 自动注入租户ID
      */
-    public static final Boolean OPEN_SYSTEM_TENANT_CONTROL = true;
+    public static final Boolean OPEN_SYSTEM_TENANT_CONTROL = false;
     
     /**
      * 哪些表需要做多租户 表需要添加一个字段 tenant_id
@@ -52,13 +54,24 @@ public class MybatisPlusSaasConfig {
         //1.需要租户隔离的表请在此配置
         if (MybatisPlusSaasConfig.OPEN_SYSTEM_TENANT_CONTROL) {
             //a.系统管理表
-//            TENANT_TABLE.add("sys_role");
-//            TENANT_TABLE.add("sys_user_role");
+            //TENANT_TABLE.add("sys_role");
+            //TENANT_TABLE.add("sys_user_role");
             TENANT_TABLE.add("sys_depart");
             TENANT_TABLE.add("sys_category");
             TENANT_TABLE.add("sys_data_source");
             TENANT_TABLE.add("sys_position");
-            TENANT_TABLE.add("sys_announcement");
+            //b-2.仪表盘
+            TENANT_TABLE.add("onl_drag_page");
+            TENANT_TABLE.add("onl_drag_dataset_head");
+            TENANT_TABLE.add("jimu_report_data_source");
+            TENANT_TABLE.add("jimu_report");
+            TENANT_TABLE.add("jimu_dict");
+            //b-4.AIRAG
+            TENANT_TABLE.add("airag_app");
+            TENANT_TABLE.add("airag_flow");
+            TENANT_TABLE.add("airag_knowledge");
+            TENANT_TABLE.add("airag_knowledge_doc");
+            TENANT_TABLE.add("airag_model");
         }
 
         //2.示例测试

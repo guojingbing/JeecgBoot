@@ -17,6 +17,7 @@ enum Api {
 
   //按level深度获取系统区域树
   getAreaTree = '/sys/area/tree',
+  refreshDragCache = '/drag/page/refreshCache',
 }
 
 /**
@@ -159,3 +160,8 @@ export const getFileblob = (url, parameter) => {
 export const uploadMyFile = (url, data) => {
   return defHttp.uploadMyFile(url, data);
 };
+/**
+ * 刷新仪表盘缓存
+ * @param params
+ */
+export const refreshDragCache = () => defHttp.get({ url: Api.refreshDragCache }, { isTransformResponse: false });

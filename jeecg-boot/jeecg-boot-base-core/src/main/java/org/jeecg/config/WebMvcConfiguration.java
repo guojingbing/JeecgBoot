@@ -11,15 +11,17 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.boot.actuate.trace.http.InMemoryHttpTraceRepository;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.event.EventListener;
+import org.springframework.http.CacheControl;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -37,6 +39,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Spring Boot 2.0 解决跨域问题
@@ -56,6 +59,14 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     private PrometheusMeterRegistry prometheusMeterRegistry;
 
     /**
+     * meterRegistryPostProcessor
+     * for [QQYUN-12558]【监控】系统监控的头两个tab不好使，接口404
+     */
+    @Autowired(required = false)
+    @Qualifier("meterRegistryPostProcessor")
+    private BeanPostProcessor meterRegistryPostProcessor;
+
+    /**
      * 静态资源的配置 - 使得可以从磁盘中读取 Html、图片、视频、音频等
      */
     @Override
@@ -67,6 +78,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                     .addResourceLocations("file:" + jeecgBaseConfig.getPath().getWebapp() + "//");
         }
         resourceHandlerRegistration.addResourceLocations(staticLocations.split(","));
+        // 设置缓存控制标头 Cache-Control有效期为30天
+        resourceHandlerRegistration.setCacheControl(CacheControl.maxAge(30, TimeUnit.DAYS));
     }
 
     /**
@@ -141,11 +154,17 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
 
     /**
-     * 解决metrics端点不显示jvm信息的问题(zyf)
+     * 监听应用启动完成事件，确保 PrometheusMeterRegistry 已经初始化
+     * for [QQYUN-12558]【监控】系统监控的头两个tab不好使，接口404
+     * @param event
+     * @author chenrui
+     * @date 2025/5/26 16:46
      */
-    @Bean
-    InitializingBean forcePrometheusPostProcessor(BeanPostProcessor meterRegistryPostProcessor) {
-        return () -> meterRegistryPostProcessor.postProcessAfterInitialization(prometheusMeterRegistry, "");
+    @EventListener
+    public void onApplicationReady(ApplicationReadyEvent event) {
+        if(null != meterRegistryPostProcessor){
+            meterRegistryPostProcessor.postProcessAfterInitialization(prometheusMeterRegistry, "");
+        }
     }
 
 //    /**

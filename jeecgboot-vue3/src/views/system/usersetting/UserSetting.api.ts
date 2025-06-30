@@ -16,6 +16,10 @@ enum Api {
   agreeOrRefuseJoinTenant = '/sys/tenant/agreeOrRefuseJoinTenant',
   //更改手机号
   changePhone = '/sys/user/changePhone',
+  //用户注销
+  userLogOff = '/sys/user/userLogOff',
+  //没有绑定手机号用的修改密码请求地址
+  updatePasswordNotBindPhone = '/sys/user/updatePasswordNotBindPhone',
 }
 
 /**
@@ -56,6 +60,14 @@ export const updateMobile = (params) => {
  */
 export const updateUserPassword = (params) => {
   return defHttp.get({ url: Api.updateUserPassword, params },{isTransformResponse:false});
+}
+
+/**
+ * 修改密码
+ * @param params
+ */
+export const updatePasswordNotBindPhone = (params) => {
+  return defHttp.put({ url: Api.updatePasswordNotBindPhone, params },{ isTransformResponse:false, joinParamsToUrl: true });
 }
 
 /**
@@ -129,3 +141,11 @@ export const agreeOrRefuseJoinTenant = (params) => {
 export const changePhone = (params) => {
   return defHttp.put({ url: Api.changePhone, params },{ joinParamsToUrl: true, isTransformResponse: false });
 };
+
+/**
+ * 用户注销
+ * @param params
+ */
+export const userLogOff = (params) => {
+  return defHttp.put({ url: Api.userLogOff, params },{ isTransformResponse:false });
+}
