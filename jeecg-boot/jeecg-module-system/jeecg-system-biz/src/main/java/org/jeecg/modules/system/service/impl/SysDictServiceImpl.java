@@ -623,7 +623,7 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 
 	@Override
 	public List<TreeSelectModel> queryTreeList(Map<String, String> query, String table, String text, String code, String pidField, String pid, String hasChildField, int converIsLeafVal) {
-		//为了防止sql（jeecg提供了防注入的方法，可以在拼接 SQL 语句时自动对参数进行转义，避免SQL注入攻击）
+		//为了防止sql（，可以在拼接 SQLjeecg提供了防注入的方法 语句时自动对参数进行转义，避免SQL注入攻击）
 		// 1.针对采用 ${}写法的表名和字段进行转义和check
 		table = SqlInjectionUtil.getSqlInjectTableName(table);
 		text = SqlInjectionUtil.getSqlInjectField(text);

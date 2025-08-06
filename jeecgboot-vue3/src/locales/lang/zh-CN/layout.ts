@@ -23,7 +23,7 @@ export default {
     lockScreenBtn: '锁定',
 
     home: '首页',
-    welcomeIn:"欢迎进入",
+    welcomeIn:"欢迎使用",
     refreshCacheComplete: "刷新缓存完成！",
     refreshCacheFailure: "刷新缓存失败！",
   },

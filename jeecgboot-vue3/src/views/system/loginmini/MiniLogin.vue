@@ -126,8 +126,7 @@
                       <a title="微信" @click="onThirdLogin('wechat_open')"><WechatFilled /></a>
                     </div>
                   </div>
-          
-          <a-button class="aui-link-login" type="primary" @click="sendMessage">获取数据</a-button>
+                  <a-button class="aui-link-login" type="primary" @click="sendMessage">获取数据</a-button>
                 </div>
               </a-form>
             </div>
