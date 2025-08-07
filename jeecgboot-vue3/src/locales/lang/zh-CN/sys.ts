@@ -68,7 +68,7 @@ export default {
     forgetFormTitle: '重置密码',
 
     signInTitle: 'Jeecg Boot',
-    signInDesc: '是中国最具影响力的 企业级低代码平台！在线开发，可视化拖拽设计，零代码实现80%的基础功能~',
+    signInDesc: '致力于将物联网、大数据、人工智能技术与医疗健康需求相结合，创造全新的产品与商业模式。我们的使命是帮助人们随时随地做专业心脏检查，建立心血管病早期预防和治疗的新模式，减少恶性疾病的发生~',
     policy: '我同意敲敲云隐私政策',
     scanSign: `扫码后，即可完成登录`,
     scanSuccess: `扫码成功，登录中`,
