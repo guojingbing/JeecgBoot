@@ -108,7 +108,7 @@ public class MpCommonAPIController {
         }
         String templateCode=(String)tlist.get(0).get("item_value");
 
-        DySmsEnum smsTemplate= DySmsEnum.MP_LOGIN_TEMPLATE_CODE;
+        DySmsEnum smsTemplate= DySmsEnum.LOGIN_TEMPLATE_CODE;
         smsTemplate.setTemplateCode(templateCode);
 
         //随机数

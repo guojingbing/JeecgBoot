@@ -20,6 +20,7 @@
         <module>mscloud-demo-cloud-start</module>
         <module>mscloud-cust-cloud-start</module>
         <module>mscloud-iagent-cloud-start</module>
+        <module>mscloud-zxecg-cloud-start</module>
         <!-- 监控和测试例子 -->
         <module>jeecg-visual</module>
         <module>mscloud-openapi-cloud-start</module>

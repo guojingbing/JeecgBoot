@@ -52,7 +52,7 @@ public class BaseOpenController {
         if (soaUser.getAuthStatus() == null || soaUser.getAuthStatus().intValue() != 1) {
             return Result.error("账号状态异常，身份验证失败");
         }
-        String token = JwtUtil.getOAPITokenWithInfo(String.valueOf(soaUser.getId()), (int) JwtUtil.EXPIRE_TIME / 1000, redisUtil);
+        String token = JwtUtil.getOAPITokenWithInfo(String.valueOf(soaUser.getId()), JwtUtil.EXPIRE_TIME / 1000, redisUtil);
         map.put("token", token);
         map.put("expiredTime", JwtUtil.getTokenExpiredTime(token));
         String refreshToken = JwtUtil.getOAPIRefreshTokenWithInfo(String.valueOf(soaUser.getId()), (int) JwtUtil.REFRESH_EXPIRE_TIME / 1000, redisUtil);
@@ -95,7 +95,7 @@ public class BaseOpenController {
             return Result.error("账号状态异常，身份验证失败");
         }
 
-        String token = JwtUtil.getOAPITokenWithInfo(String.valueOf(soaUser.getId()), (int) JwtUtil.EXPIRE_TIME / 1000, redisUtil);
+        String token = JwtUtil.getOAPITokenWithInfo(String.valueOf(soaUser.getId()), JwtUtil.EXPIRE_TIME / 1000, redisUtil);
         map.put("token", token);
         map.put("expiredTime", JwtUtil.getTokenExpiredTime(token));
         String refreshToken = JwtUtil.getOAPIRefreshTokenWithInfo(String.valueOf(soaUser.getId()), (int) JwtUtil.REFRESH_EXPIRE_TIME / 1000, redisUtil);
@@ -118,7 +118,7 @@ public class BaseOpenController {
             throw new AuthenticationException("token已失效，请重新获取");
         }
         String userName = JwtUtil.getUsername(param);
-        String token = JwtUtil.getOAPITokenWithInfo(userName, (int) JwtUtil.EXPIRE_TIME / 1000, redisUtil);
+        String token = JwtUtil.getOAPITokenWithInfo(userName, JwtUtil.EXPIRE_TIME / 1000, redisUtil);
         map.put("token", token);
         map.put("expiredTime", JwtUtil.getTokenExpiredTime(token));
         String refreshToken = JwtUtil.getOAPIRefreshTokenWithInfo(userName, (int) JwtUtil.REFRESH_EXPIRE_TIME / 1000, redisUtil);

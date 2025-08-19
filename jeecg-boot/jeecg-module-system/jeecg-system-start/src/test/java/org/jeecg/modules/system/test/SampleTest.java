@@ -1,10 +1,10 @@
 package org.jeecg.modules.system.test;
 
 import org.jeecg.JeecgSystemApplication;
-import org.jeecg.modules.demo.mock.MockController;
-import org.jeecg.modules.demo.test.entity.JeecgDemo;
-import org.jeecg.modules.demo.test.mapper.JeecgDemoMapper;
-import org.jeecg.modules.demo.test.service.IJeecgDemoService;
+import org.jeecg.modules.zxecg.mock.MockController;
+import org.jeecg.modules.zxecg.phoenix.entity.JeecgDemo;
+import org.jeecg.modules.zxecg.phoenix.mapper.JeecgDemoMapper;
+import org.jeecg.modules.zxecg.phoenix.service.IJeecgDemoService;
 import org.jeecg.modules.system.service.ISysDataLogService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

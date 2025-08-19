@@ -101,6 +101,10 @@ public interface CommonConstant {
      * OPENAPI用户Token令牌缓存KEY前缀
      */
     public static final String PREFIX_OAPI_USER_TOKEN = "prefix_oapi_user_token_";
+    /**
+     * ZXECG用户Token令牌缓存KEY前缀
+     */
+    public static final String PREFIX_ZXECG_USER_TOKEN = "prefix_zxecg_user_token_";
     /** OPENAPI刷新令牌前缀 */
     public static final String PREFIX_OAPI_USER_REFRESH_TOKEN  = "prefix_oapi_user_refresh_token_";
     /** OPENAPI授权对象IP白名单缓存前缀 */

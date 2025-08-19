@@ -1,8 +1,8 @@
 server:
-  port: 9011
+  port: 8030
 spring:
   application:
-    name: jeecg-iagent
+    name: mscloud-iagent
   config:
     import:
       - optional:nacos:jeecg.yaml

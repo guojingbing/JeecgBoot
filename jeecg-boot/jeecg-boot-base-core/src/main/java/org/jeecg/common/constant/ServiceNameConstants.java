@@ -45,6 +45,10 @@ public interface ServiceNameConstants {
 	 * 微服务名： IAGENT模块
 	 */
 	String SERVICE_IAGENT = "jeecg-iagent";
+    /**
+     * 微服务名： ZXECG模块
+     */
+    String SERVICE_ZXECG = "jeecg-zxecg";
 	
 //	/**
 //	 * 微服务名：online在线模块

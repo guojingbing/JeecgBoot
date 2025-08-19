@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.system.mapper.CommBaseCodeMapper">
+    <select id="getCodeDetailsByCodeStrings" parameterType="java.util.HashMap" resultType="org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO">
+		SELECT *
+		FROM comm_base_code_detail
+		WHERE UPPER(type_no)=#{typeNo} AND is_use=1
+        <if test="codeStrings != null and !codeStrings.isEmpty()">
+		  AND code_string IN
+            <foreach collection="codeStrings" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+	</select>
+    <select id="getCodeDetailsByCodeNames" parameterType="java.util.HashMap" resultType="org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO">
+        SELECT *
+        FROM comm_base_code_detail
+        WHERE UPPER(type_no)=#{typeNo} AND is_use=1
+        <if test="codeNames != null and !codeNames.isEmpty()">
+            AND code_name IN
+            <foreach collection="codeNames" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+</mapper>

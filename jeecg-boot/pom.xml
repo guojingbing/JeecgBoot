@@ -93,6 +93,8 @@
 		<module>mscloud-module-cust</module>
         <module>mscloud-module-iagent</module>
         <module>mscloud-module-openapi</module>
+        <module>mscloud-module-zxecg</module>
+        <module>mscloud-module-zxbase</module>
     </modules>
 
 	<repositories>

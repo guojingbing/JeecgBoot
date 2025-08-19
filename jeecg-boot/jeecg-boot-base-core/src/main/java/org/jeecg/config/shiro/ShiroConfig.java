@@ -13,10 +13,7 @@ import org.crazycake.shiro.*;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.JeecgBaseConfig;
-import org.jeecg.config.shiro.filters.APITokenFilter;
-import org.jeecg.config.shiro.filters.CustomShiroFilterFactoryBean;
-import org.jeecg.config.shiro.filters.JwtFilter;
-import org.jeecg.config.shiro.filters.OAPITokenFilter;
+import org.jeecg.config.shiro.filters.*;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
@@ -201,6 +198,9 @@ public class ShiroConfig {
         filterMap.put("capijwt", new APITokenFilter());
         //添加openapi权限验证过滤器并且取名为oapijwt，用于过滤需要权限验证的openapi接口
         filterMap.put("oapijwt", new OAPITokenFilter());
+        //添加ZXECG权限验证过滤器并且取名为zxecgjwt，用于过滤需要权限验证的zxecg接口
+        filterMap.put("zxecgjwt", new ZxecgSysUserTokenFilter());
+
         shiroFilterFactoryBean.setFilters(filterMap);
 
         filterChainDefinitionMap.put("/sys/common/cust/upload/**", "capijwt");
@@ -209,6 +209,12 @@ public class ShiroConfig {
         //小程序通用接口不需要登录验证
         filterChainDefinitionMap.put("/capi/comm/**", "anon");
         filterChainDefinitionMap.put("/capi/**", "capijwt");
+
+        //zxecg忽略登录权限验证的接口
+        filterChainDefinitionMap.put("/zxecg/login", "anon");
+        filterChainDefinitionMap.put("/zxecg/ignore/**", "anon");
+        //zxecg系统用户登录权限验证
+        filterChainDefinitionMap.put("/zxecg/**", "zxecgjwt");
 
         //通用OPENAPI
         filterChainDefinitionMap.put("/oapi/auth", "anon");

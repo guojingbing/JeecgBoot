@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
  **/
 @Slf4j
 public class JwtUtil {
-
 	/**Token有效期为7天（Token在reids中缓存时间为两倍）*/
 	public static final long EXPIRE_TIME = (7 * 12) * 60 * 60 * 1000;
 	//refresh token
@@ -48,6 +47,21 @@ public class JwtUtil {
 
 
 	/*********************************非框架代码，自定义添加*********************************/
+    /**
+     * ZXECG token生成
+     * @param info
+     * @param expireSeconds
+     * @param redisUtil
+     * @return
+     */
+    public static String getZxecgTokenWithInfo(String info, Long expireSeconds, RedisUtil redisUtil) {
+        // 生成token
+        String token = JwtUtil.sign(info, info);
+        redisUtil.set(CommonConstant.PREFIX_OAPI_USER_TOKEN + token, token);
+        // 设置token缓存有效时间，默认半小时
+        redisUtil.expire(CommonConstant.PREFIX_ZXECG_USER_TOKEN + token, expireSeconds == null ? EXPIRE_TIME/1000 : expireSeconds);
+        return token;
+    }
 	/**
 	 * OPENAPI token生成
 	 * @param info
@@ -55,12 +69,12 @@ public class JwtUtil {
 	 * @param redisUtil
 	 * @return
 	 */
-	public static String getOAPITokenWithInfo(String info, Integer expireSeconds, RedisUtil redisUtil) {
+	public static String getOAPITokenWithInfo(String info, Long expireSeconds, RedisUtil redisUtil) {
 		// 生成token
 		String token = JwtUtil.sign(info, info);
 		redisUtil.set(CommonConstant.PREFIX_OAPI_USER_TOKEN + token, token);
 		// 设置token缓存有效时间，默认半小时
-		redisUtil.expire(CommonConstant.PREFIX_OAPI_USER_TOKEN + token, expireSeconds == null ? EXPIRE_TIME : expireSeconds);
+		redisUtil.expire(CommonConstant.PREFIX_OAPI_USER_TOKEN + token, expireSeconds == null ? EXPIRE_TIME/1000 : expireSeconds);
 		return token;
 	}
 
@@ -144,7 +158,6 @@ public class JwtUtil {
 	 * @return
 	 */
 	public static boolean verfiyMpApiTokenExp(String token, RedisUtil redisUtil){
-		// 设置token缓存有效时间
 		return redisUtil.get(CommonConstant.PREFIX_CUST_USER_TOKEN + token)==null;
 	}
 
@@ -155,9 +168,18 @@ public class JwtUtil {
 	 * @return
 	 */
 	public static boolean verfiyOpenapiTokenExp(String token, RedisUtil redisUtil){
-		// 设置token缓存有效时间
 		return redisUtil.get(CommonConstant.PREFIX_OAPI_USER_TOKEN + token)==null;
 	}
+
+    /**
+     * 验证Zxecg token是否过期
+     * @param token
+     * @param redisUtil
+     * @return
+     */
+    public static boolean verfiyZxecgTokenExp(String token, RedisUtil redisUtil){
+        return redisUtil.get(CommonConstant.PREFIX_ZXECG_USER_TOKEN + token)==null;
+    }
 
 	/**
 	 * 获得token中的信息无需secret解密也能获得

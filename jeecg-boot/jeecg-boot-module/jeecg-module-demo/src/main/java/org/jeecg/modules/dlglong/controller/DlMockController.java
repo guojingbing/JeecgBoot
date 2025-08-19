@@ -14,7 +14,7 @@ import org.jeecg.common.system.query.MatchTypeEnum;
 import org.jeecg.common.system.query.QueryCondition;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.constant.VxeSocketConst;
-import org.jeecg.modules.demo.mock.vxe.websocket.VxeSocket;
+import org.jeecg.modules.zxecg.mock.vxe.websocket.VxeSocket;
 import org.jeecg.modules.dlglong.entity.MockEntity;
 import org.springframework.web.bind.annotation.*;
 
