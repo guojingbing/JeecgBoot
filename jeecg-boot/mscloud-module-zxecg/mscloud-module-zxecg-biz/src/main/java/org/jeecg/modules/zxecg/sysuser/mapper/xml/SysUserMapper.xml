@@ -3,7 +3,7 @@
 <mapper namespace="org.jeecg.modules.zxecg.sysuser.mapper.SysUserMapper">
     <select id="getSystemUserByUserNoOrPhone" parameterType="java.util.HashMap" resultType="org.jeecg.modules.zxecg.sysuser.vo.SysUserVO">
 		SELECT u.user_id,u.user_no,u.password,ifnull(u.event_remind,0) event_remind,u.psd_modified,u.company_id,u.dept_id,u.user_type_id,u.user_avatar_addr,u.user_sign_pic
-		     ,c.company_name company_name,d.dept_name dept_name,
+		     ,u.is_use,c.company_name company_name,d.dept_name dept_name
 		FROM comm_system_user u
 		LEFT JOIN comm_company c ON u.company_id=c.company_id
 		LEFT JOIN comm_dept d ON u.dept_id=d.dept_id

@@ -57,7 +57,7 @@ public class JwtUtil {
     public static String getZxecgTokenWithInfo(String info, Long expireSeconds, RedisUtil redisUtil) {
         // 生成token
         String token = JwtUtil.sign(info, info);
-        redisUtil.set(CommonConstant.PREFIX_OAPI_USER_TOKEN + token, token);
+        redisUtil.set(CommonConstant.PREFIX_ZXECG_USER_TOKEN + token, token);
         // 设置token缓存有效时间，默认半小时
         redisUtil.expire(CommonConstant.PREFIX_ZXECG_USER_TOKEN + token, expireSeconds == null ? EXPIRE_TIME/1000 : expireSeconds);
         return token;
