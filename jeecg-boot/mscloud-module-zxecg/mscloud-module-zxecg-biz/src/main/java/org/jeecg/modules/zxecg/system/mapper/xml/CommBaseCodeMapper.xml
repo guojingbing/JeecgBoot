@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.jeecg.modules.zxecg.system.mapper.CommBaseCodeMapper">
-    <select id="getCodeDetailsByCodeStrings" parameterType="java.util.HashMap" resultType="org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO">
-		SELECT *
-		FROM comm_base_code_detail
-		WHERE UPPER(type_no)=#{typeNo} AND is_use=1
+    <select id="getCodeDetailsByCodeStrings" parameterType="java.util.HashMap"
+            resultType="org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO">
+        SELECT *
+        FROM comm_base_code_detail
+        WHERE UPPER(type_no)=#{typeNo} AND is_use=1
         <if test="codeStrings != null and !codeStrings.isEmpty()">
-		  AND code_string IN
+            AND code_string IN
             <foreach collection="codeStrings" index="index" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-	</select>
-    <select id="getCodeDetailsByCodeNames" parameterType="java.util.HashMap" resultType="org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO">
+    </select>
+    <select id="getCodeDetailsByCodeNames" parameterType="java.util.HashMap"
+            resultType="org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO">
         SELECT *
         FROM comm_base_code_detail
         WHERE UPPER(type_no)=#{typeNo} AND is_use=1
@@ -22,5 +24,45 @@
                 #{item}
             </foreach>
         </if>
+    </select>
+    <select id="getCodeDetailsByCodeIds" parameterType="java.util.HashMap"
+            resultType="org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO">
+        SELECT *
+        FROM comm_base_code_detail
+        WHERE UPPER(type_no)=#{typeNo} AND is_use=1
+        <if test="codeIds != null and !codeIds.isEmpty()">
+            AND code_id IN
+            <foreach collection="codeIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+    <select id="getPrintItems" parameterType="java.lang.String" resultType="java.util.HashMap">
+        SELECT
+            code_id codeId,
+            code_name codeName,
+            order_num orderNum,
+            code_value codeValue,
+            code_string eventCode,
+            remark subCat,
+            extra_value groupCode,
+            CASE extra_value
+        WHEN 1 THEN
+            '报告摘要和统计信息'
+        WHEN 2 THEN
+            '心电事件留图'
+        WHEN 3 THEN
+            '其他设置项'
+        ELSE
+            ''
+        END groupName
+        FROM
+            comm_base_code_detail
+        WHERE
+           UPPER(type_no)=#{typeNo}
+        AND is_use = 1
+        ORDER BY
+            extra_value ASC,
+            order_num ASC
     </select>
 </mapper>
