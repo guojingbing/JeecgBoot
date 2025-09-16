@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserMachBindingLogMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        log_id logId,
+        binding_id bindingId,
+        oper_type_id operTypeId,
+        DATE_FORMAT(
+        oper_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) operTime,
+        device_flag deviceFlag,
+        device_sn deviceSn
+         FROM cust_user_mach_binding_log
+        where binding_id=#{bindingId}) temp
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by operTime desc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

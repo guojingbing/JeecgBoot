@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgWarningReportMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.id,
+        a.rep_no repNo,
+        a.user_id userId,
+        a.user_name userName,
+        a.user_gender userGender,
+        (
+        YEAR (a.create_date) - YEAR (a.birth_date) - 1
+        ) + (
+        DATE_FORMAT(a.birth_date, '%m%d') &lt;= DATE_FORMAT(a.create_date, '%m%d')
+        ) AS age,
+        DATE_FORMAT(a.start_date, '%Y-%m-%d') startDate,
+        DATE_FORMAT(a.end_date, '%Y-%m-%d') endEate,
+        b.user_tel userTel,
+        ifnull(a.rep_status,0) repStatus,
+        ifnull(a.pdf_path, '') pdfPath,
+        a.src,
+        a.company_id companyId,
+        a.level,
+        a.content,
+        DATE_FORMAT(
+        rep_status_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) repStatusTime,
+        DATE_FORMAT(
+        pdf_ecg_end_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) pdfEcgEndTime,
+        CASE
+        WHEN ifnull(a.rep_status, 0) = 1 THEN
+        rep_status_time
+        ELSE
+        ''
+        END pdfTime,
+        IFNULL(
+        (
+        SELECT
+        sum(
+        timestampdiff(
+        SECOND,
+        ecg_start_time,
+        ecg_end_time
+        )
+        ) diff
+        FROM
+        cust_user_ecg_rec
+        WHERE
+        ecg_id IN (
+        SELECT
+        ecg_id
+        FROM
+        cust_user_ecg_warning_report_detail
+        WHERE
+        rep_id = a.id
+        )
+        ),
+        0
+        ) duration,
+        (
+        SELECT
+        DATE_FORMAT(
+        max(ecg_end_time),
+        '%Y-%m-%d %H:%i:%s'
+        )
+        FROM
+        cust_user_ecg_warning_report_detail
+        WHERE
+        rep_id = a.id
+        ) lastEcgEndTime
+        FROM
+        cust_user_ecg_warning_report a
+        INNER JOIN cust_userinfo b ON a.user_id = b.user_id
+        where a.company_id in (select distinct company_id from comm_user_mng_dept a INNER JOIN comm_dept b ON a.dept_id
+        = b.dept_id where user_id=#{loginUserId})
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="repStatus"'>
+                        and repStatus = #{tm}
+                    </when>
+                    <when test='key=="startDate"'>
+                        and startDate >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and startDate &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by id desc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

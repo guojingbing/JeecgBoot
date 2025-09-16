@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.stats.mapper.StatisticAnalysisMapper">
+    <select id="loadMachDataListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.company_id companyId,
+        a.company_name companyName,
+        DATE_FORMAT(
+        a.create_date,
+        '%Y-%m-%d '
+        ) createDate,
+        tmp.collect_time_num collectTimeNum,
+        tmp.collect_day_time_num collectDayTimeNum,
+        tmpa.valid_duration validDuration,
+        tmpa.user_num userNum,
+        tmpa.used_mach_num usedMachNum,
+        tmpb.valid_mach_num validMachNum,
+        tmpc.total_mach_num totalMachNum
+        FROM
+        comm_company a
+        LEFT JOIN (
+        SELECT
+        company_id,
+        sum(mach_coll_second) collect_time_num,
+        sum(mach_coll_days) collect_day_time_num
+        FROM
+        (
+        SELECT
+        company_id,
+        mach_sn,
+        sum(
+        TIMESTAMPDIFF(
+        MINUTE,
+        ecg_start_time,
+        ecg_end_time
+        )
+        ) mach_coll_second,
+        count(
+        date_format(ecg_start_time, '%Y-%m-%d')
+        ) mach_coll_days
+        FROM
+        cust_user_ecg_rec
+        WHERE
+        date_format(ecg_start_time, '%Y-%m-%d') >= #{startDate}
+        AND date_format(ecg_start_time, '%Y-%m-%d') &lt;= #{endDate}
+        GROUP BY
+        company_id,
+        mach_sn,
+        date_format(ecg_start_time, '%Y-%m-%d')
+        ) ta
+        GROUP BY
+        ta.company_id
+        ) tmp ON a.company_id = tmp.company_id
+        LEFT JOIN (
+        SELECT
+        b.company_id,
+        sum(b.valid_duration) valid_duration,
+        count(DISTINCT(user_id)) user_num,
+        count(DISTINCT(mach_sn)) used_mach_num
+        FROM
+        cust_user_ecg_rec b
+        WHERE
+        date_format(
+        b.ecg_start_time,
+        '%Y-%m-%d'
+        ) >= #{startDate}
+        AND date_format(
+        b.ecg_start_time,
+        '%Y-%m-%d'
+        ) &lt;= #{endDate}
+        GROUP BY
+        b.company_id
+        ) tmpa ON a.company_id = tmpa.company_id
+        LEFT JOIN (
+        SELECT
+        company_id,
+        count(*) valid_mach_num
+        FROM
+        comm_company_mach
+        WHERE
+        now() BETWEEN start_date
+        AND end_date
+        GROUP BY
+        company_id
+        ) tmpb ON a.company_id = tmpb.company_id
+        LEFT JOIN (
+        SELECT
+        company_id,
+        count(DISTINCT(mach_sn)) total_mach_num
+        FROM
+        comm_company_mach
+        GROUP BY
+        company_id
+        ) tmpc ON a.company_id = tmpc.company_id
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by companyId desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="loadCompanyDataListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        c.company_name companyName,
+        u.user_name userName,
+        sum( TIMESTAMPDIFF( SECOND, r.ecg_start_time, r.ecg_end_time ) ) dataSeconds,
+        count( DISTINCT ( DATE_FORMAT( r.ecg_start_time, '%Y-%m-%d' ) ) ) dataDays
+        FROM
+        `cust_user_ecg_rec` r
+        LEFT JOIN cust_userinfo u ON r.user_id = u.user_id
+        LEFT JOIN comm_company c ON r.company_id = c.company_id
+        WHERE
+        DATE_FORMAT( r.ecg_start_time, '%Y-%m-%d' ) BETWEEN #{sdate} AND #{edate}
+        GROUP BY
+        r.user_id,
+        r.company_id
+        ORDER BY
+        c.company_name,
+        r.user_id
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by companyName asc,dataDays desc,dataSeconds desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="loadUserProvDataListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        SELECT
+        COUNT(*) userNum,
+        SUBSTRING_INDEX(b.node_full_name, '/', 1) areaName,
+        SUBSTRING_INDEX(node_path, '/', 1) areaCode,
+        (
+        SELECT
+        count(*)
+        FROM
+        cust_userinfo
+        ) total
+        FROM
+        cust_userinfo a
+        LEFT JOIN comm_area b ON a.area_id = b.area_id
+        GROUP BY
+        SUBSTRING_INDEX(b.node_path, '/', 1)
+    </select>
+
+    <select id="loadPdfListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        SELECT * FROM (
+        SELECT
+        a.doctor_user_id doctorUserId,
+        a.company_id companyId,
+        b.user_name userName,
+        c.company_name companyName,
+        a.rep_num repNum
+        FROM
+        (
+        SELECT
+        doctor_user_id,
+        company_id,
+        count(0) rep_num
+        FROM
+        (
+        SELECT
+        ifnull(
+        t.doctor_user_id,
+        s.doctor_user_id
+        ) doctor_user_id,
+        company_id,
+        pdf_file_path
+        FROM
+        cust_user_ecg_report s
+        LEFT JOIN cust_user_ecg_report_statistics t ON s.rep_id = t.rep_id
+        WHERE
+        pdf_file_path IS NOT NULL
+        <if test='repType != null'>
+            AND rep_type =#{repType}
+        </if>
+        AND pdf_time >=#{startDate}
+        AND pdf_time&lt;=#{endDate}
+        ) t1
+        WHERE
+        doctor_user_id IS NOT NULL
+        AND doctor_user_id IN (
+        SELECT
+        user_id
+        FROM
+        comm_system_user
+        WHERE
+        company_id =#{companyId}
+        )
+        GROUP BY
+        doctor_user_id,
+        company_id
+        ) a
+        LEFT JOIN comm_system_user b ON a.doctor_user_id = b.user_id
+        LEFT JOIN comm_company c ON a.company_id = c.company_id
+        ORDER BY
+        user_name,
+        company_name
+        ) TEMP where 1=1
+        <if test="column!= null and column!='' ">
+            order by ${column} ${order}
+        </if>
+    </select>
+
+    <select id="loadRepListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        SELECT * FROM (
+        SELECT
+        a.rep_id repId,
+        a.rep_no repNo,
+        a.user_name userName,
+        a.report_date reportDate ,
+        a.ecg_start_time ecgStartTime,
+        a.ecg_end_time ecgEndTime,
+        timestampdiff(
+        SECOND,
+        a.ecg_start_time,
+        a.ecg_end_time
+        ) ecgSeconds,
+        (
+        (
+        to_days(a.ecg_end_time) - to_days(a.ecg_start_time)
+        ) + 1
+        ) AS days,
+        ifnull(
+        b.doctor_user_id,
+        a.doctor_user_id
+        ) doctorId,
+        a.pdf_time pdfTime,
+        a.company_id companyId,
+        a.rep_type repType,
+        a.pdf_file_path pdfFilePath,
+        d.mach_sn machSn
+        FROM
+        cust_user_ecg_report a
+        LEFT JOIN cust_user_ecg_report_statistics b ON a.rep_id = b.rep_id
+        LEFT JOIN (
+        SELECT
+        ta.rep_id AS rep_id,
+        group_concat(
+        DISTINCT tb.mach_sn SEPARATOR ','
+        ) AS mach_sn
+        FROM
+        (
+        cust_user_ecg_report_detail ta
+        LEFT JOIN cust_user_ecg_rec tb ON ((ta.ecg_id = tb.ecg_id))
+        )
+        GROUP BY
+        ta.rep_id
+        ) d ON (a.rep_id = d.rep_id)
+        ) TEMP where pdfFilePath IS NOT NULL
+        AND pdfTime >=#{startDate}
+        AND pdfTime&lt;= #{endDate}
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by repNo desc
+            </otherwise>
+        </choose>
+    </select>
+    <select id="loadPacemakerListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        SELECT * FROM (
+        SELECT
+        a.id,
+        a.rep_id repId,
+        a.valid_duration validDuration,
+        a.ecg_duration ecgDuration,
+        a.beat_num beatNum,
+        a.bpm,
+        a.rr_up_sec2 rrUpSec2,
+        a.rr_up_sec3 rrUpSec3,
+        a.rr_up_sec4 rrUpSec4,
+        a.rr_up_sec5 rrUpSec5,
+        r.user_name userName,
+        r.user_gender userGender,
+        r.age,
+        r.report_date reportDate,
+        c.company_name companyName,
+        r.company_id companyId,
+        r.dept_id deptId,
+        r.user_id userId
+        FROM
+        cust_user_ecg_report_feature_pacemaker a
+        LEFT JOIN cust_user_ecg_report r ON a.rep_id = r.rep_id
+        INNER JOIN comm_company c ON c.company_id = r.company_id
+        ) TEMP where
+        deptId in(select distinct dept_id from comm_user_mng_dept where user_id=#{loginUserId} )
+        <if test='paramName != null and paramName.toString().trim() != ""'>
+            <if test='rrNums != null '>
+                and ${paramName} >#{rrNums}
+            </if>
+        </if>
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="bpmStart"'>
+                        and bpm >=#{tm}
+                    </when>
+                    <when test='key=="bpmEnd" '>
+                        and bpm &lt;=#{tm}
+                    </when>
+                    <when test='key=="startDate" '>
+                        and reportDate >=#{tm}
+                    </when>
+                    <when test='key=="endDate" '>
+                        and reportDate &lt;=#{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by rrUpSec3 desc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

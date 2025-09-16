@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgReportDiagnosisMapper">
+    <select id="getDiagnosisByRepId" resultType="org.jeecg.modules.zxecg.cust.entity.CustUserEcgReportDiagnosis">
+       select * from cust_user_ecg_report_diagnosis where rep_id=#{repId} limit 1
+    </select>
+</mapper>

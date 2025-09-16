@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgReportDeepAnaMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.deep_ana_id deepAnaId,
+        a.rep_id repId,
+        IFNULL(a.deal_status,0) dealStatus,
+        DATE_FORMAT(
+        a.deal_status_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) dealStatusTime,
+        a.rep_read_status repReadStatus,
+        a.src,
+        DATE_FORMAT(
+        a.deal_start_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) dealStartTime,
+        DATE_FORMAT(
+        a.deal_data_end_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) dealDataEndTime,
+        a.deal_user_id dealUserId,
+        DATE_FORMAT(
+        a.last_deal_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) lastDealTime,
+        DATE_FORMAT(
+        a.create_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) createTime,
+        b.rep_no repNo,
+        b.user_id userId,
+        b.user_name userName,
+        b.user_gender userGender,
+        b.age,
+        b.company_id compayId,
+        b.dept_id deptId,
+        b.dept_name deptName,
+        DATE_FORMAT(
+        b.ecg_start_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) ecgStartTime,
+        DATE_FORMAT(
+        b.ecg_end_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) ecgEndTime,
+        b.ecg_duration ecgDuration,
+        b.valid_duration validDuration,
+        c.company_name companyName,
+        d.dept_name machDeptName,
+        u.user_name dealUserName,
+        cd1.code_name srcName,
+        cd2.code_name repReadStatusName,
+        CASE
+        WHEN ifnull( deal_status, 0 ) = 0 THEN
+        '未开始'
+        WHEN ifnull( deal_status, 0 ) = 1 THEN
+        '处理中'
+        WHEN ifnull( deal_status, 0 ) = 2 THEN
+        '已完成' ELSE ''
+        END dealStatusName,
+        TIMESTAMPDIFF( SECOND, deal_start_time, last_deal_time ) dealInterval
+        FROM
+        cust_user_ecg_report_deep_ana a
+        INNER JOIN cust_user_ecg_report b ON a.rep_id = b.rep_id
+        INNER JOIN comm_company c ON b.company_id = c.company_id
+        INNER JOIN comm_dept d ON b.dept_id = d.dept_id
+        LEFT JOIN comm_system_user u ON a.deal_user_id = u.user_id
+        LEFT JOIN comm_base_code_detail cd1 ON a.src = cd1.code_id
+        AND cd1.type_no = 'CD701'
+        LEFT JOIN comm_base_code_detail cd2 ON a.rep_read_status = cd2.code_id
+        AND cd2.type_no = 'CD702'
+        )temp where 1=1
+        AND deptId in (select distinct dept_id from comm_user_mng_dept where user_id=#{loginUserId} )
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="hideFinish" and tm==1'>
+                        and dealStatus &lt;&gt; 2
+                    </when>
+                    <when test='key=="statistics" and tm==1'>
+                        and dealStatus &lt;&gt; 0
+                    </when>
+                    <when test='key=="startDate"'>
+                        and DATE_FORMAT(ecgStartTime,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and DATE_FORMAT(ecgStartTime,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by dealStatus asc,src desc,ecgStartTime desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getListByRepId" resultType="org.jeecg.modules.zxecg.cust.entity.CustUserEcgReportDeepAna">
+        select * from cust_user_ecg_report_deep_ana where 1=1
+        <if test="repIdList!=null">
+            and rep_id in
+            <foreach collection="repIdList" item="repId" index="index" open="(" close=")" separator=",">
+                #{repId}
+            </foreach>
+        </if>
+    </select>
+</mapper>

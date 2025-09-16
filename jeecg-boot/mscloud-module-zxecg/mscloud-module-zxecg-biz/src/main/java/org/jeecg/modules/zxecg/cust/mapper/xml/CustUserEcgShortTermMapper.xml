@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgShortTermMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.ecg_id ecgId,
+        a.user_id userId,
+        a.user_name userName,
+        a.age,
+        a.gender,
+        a.result,
+        a.result_desc resultDesc,
+        DATE_FORMAT(
+        a.ecg_start_time,
+        '%Y-%m-%d %H:%i:%s'
+        )  ecgStartTime,
+        DATE_FORMAT(
+        a.ecg_end_time,
+        '%Y-%m-%d %H:%i:%s'
+        )  ecgEndTime,
+        cd.code_name resultLevel ,
+        a.mach_sn machSn,
+        a.company_id companyId,
+        a.dept_id deptId,
+        cc.company_name companyName,
+        ccd.dept_name deptName,
+        DATE_FORMAT(
+        a.create_time,
+        '%Y-%m-%d %H:%i:%s'
+        )  createTime,
+        DATE_FORMAT(
+        a.last_modify_date,
+        '%Y-%m-%d %H:%i:%s'
+        )  lastModifyDate,
+        a.last_modify_user_id lastModifyUserId,
+        a.remark
+        FROM
+        cust_user_ecg_short_term a
+        left join comm_base_code_detail cd on cd.code_id=a.result and type_no='CD801'
+        left join comm_company cc on cc.company_id=a.company_id
+        left join comm_dept ccd on ccd.dept_id=a.dept_id
+        )temp where 1=1
+        <if test="deptIdList!=null">
+            and deptId in
+            <foreach collection="deptIdList" item="code" index="index" open="(" close=")" separator=",">
+                #{code}
+            </foreach>
+        </if>
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="startDate"'>
+                        and DATE_FORMAT(ecgStartTime,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and DATE_FORMAT(ecgStartTime,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise >
+                order by ecgId desc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

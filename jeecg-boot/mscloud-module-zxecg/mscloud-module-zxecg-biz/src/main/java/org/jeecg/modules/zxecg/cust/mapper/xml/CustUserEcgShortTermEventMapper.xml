@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgShortTermEventMapper">
+    <delete id="deleteEventsByEcgId" parameterType="java.lang.Long">
+		DELETE FROM cust_user_ecg_short_term_event
+		WHERE ecg_id = #{ecgId}
+	</delete>
+</mapper>

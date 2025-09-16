@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserAppExceptionLogsMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        cuael.log_id logId,
+        cuael.user_id userId,
+        cuael.ecg_id ecgId,
+        cu.user_name userName,
+        cu.user_tel userTel,
+        cuael.mach_sn machSn,
+        cuael.exp_type expType,
+        cuael.exp_desc expDesc,
+        DATE_FORMAT(
+        r.ecg_start_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) ecgStartTime,
+        CASE exp_type
+        WHEN 1 THEN
+        '采样率异常'
+        WHEN 2 THEN
+        '设备升级异常'
+        WHEN 3 THEN
+        '心电数据下载包数异常'
+        ELSE
+        '其他'
+        END expTypeName,
+        FROM_UNIXTIME(
+        cuael.exp_time / 1000,
+        '%Y-%m-%d %H:%i:%s'
+        ) AS expTime,
+        DATE_FORMAT(
+        cuael.upload_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) uploadTime
+        FROM
+        cust_user_app_exception_logs cuael
+        LEFT JOIN cust_user_ecg_rec r ON r.ecg_id = cuael.ecg_id
+        INNER JOIN cust_userinfo cu ON cuael.user_id = cu.user_id
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="expType"'>
+                        and expType = #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by uploadTime desc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

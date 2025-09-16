@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgReportScreenEventMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.rep_id repId,
+        r.rep_no repNo,
+        r.user_id userId,
+        r.user_name userName,
+        r.user_gender userGender,
+        r.age,
+        Date(r.report_date) reportDate,
+        r.valid_duration validDuration,
+        r.ecg_duration ecgDuration,
+        r.company_id companyId,
+        comp.company_name companyName,
+        r.dept_id deptId,
+        cd.dept_name machDeptNName,
+        a.event_name allEventName,
+        b.event_name level1UnconfirmedEventName,
+        c.event_name level1ConfirmedEventName,
+        d.event_name level2UnconfirmedEventName,
+        e.event_name level2ConfirmedEvent_Name,
+        n.note,
+        n.template_id templateId,
+        n.template_desc templateDesc,
+        n.id noteId
+        FROM
+        (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(DISTINCT(event_name)) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        ifnull(confirm_result, 0) = 0
+        OR ifnull(confirm_result, 0) = 1
+        GROUP BY
+        rep_id
+        ) a
+        LEFT JOIN cust_user_ecg_report r ON a.rep_id = r.rep_id
+        LEFT JOIN comm_company comp ON r.company_id = comp.company_id
+        LEFT JOIN comm_dept cd ON r.dept_id = cd.dept_id
+        LEFT JOIN (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(DISTINCT(event_name)) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        event_type = 1
+        AND confirm_result IS NULL
+        GROUP BY
+        rep_id
+        ) b ON a.rep_id = b.rep_id
+        LEFT JOIN (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(
+        DISTINCT (confirm_event_name)
+        ) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        event_type = 1
+        AND confirm_result = 1
+        GROUP BY
+        rep_id
+        ) c ON a.rep_id = c.rep_id
+        LEFT JOIN (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(DISTINCT(event_name)) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        event_type &lt;> 1
+        AND confirm_result IS NULL
+        GROUP BY
+        rep_id
+        ) d ON a.rep_id = d.rep_id
+        LEFT JOIN (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(
+        DISTINCT (confirm_event_name)
+        ) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        event_type &lt;> 1
+        AND confirm_result = 1
+        GROUP BY
+        rep_id
+        ) e ON a.rep_id = e.rep_id
+        LEFT JOIN cust_user_ecg_report_screen_note n ON a.rep_id = n.rep_id
+        )temp where 1=1
+        and deptId in (select distinct dept_id from comm_user_mng_dept where user_id=#{loginUserId})
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="status" and tm==0'>
+                        and ifnull(level1UnconfirmedEventName,'')&lt;>'' or ifnull(level2UnconfirmedEventName,'')&lt;>''
+                    </when>
+                    <when test='key=="status" and tm==1'>
+                        and ifnull(level1UnconfirmedEventName,'')='' and ifnull(level2UnconfirmedEventName,'')=''
+                    </when>
+                    <when test='key=="startDate"'>
+                        and DATE_FORMAT(reportDate,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and DATE_FORMAT(reportDate,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by reportDate DESC,level1UnconfirmedEventName DESC, level2UnconfirmedEventName DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="loadNoteListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        r.rep_id repId,
+        r.rep_no repNo,
+        r.user_id userId,
+        r.user_name userName,
+        r.user_gender userGender,
+        r.age,
+        r.valid_duration validDuration,
+        r.ecg_duration ecgDuration,
+        r.company_id companyId,
+        Date(r.report_date) reportDate,
+        r.rep_type repType,
+        comp.company_name companyName,
+        comp.company_type companyType,
+        tmp.all_event_name allEventName,
+        tmp.level1_unconfirmed_event_name level1UnconfirmedEventName,
+        tmp.level1_confirmed_event_name level1ConfirmedEventName,
+        tmp.level2_unconfirmed_event_name level2UnconfirmedEventName,
+        tmp.level2_confirmed_event_name level2ConfirmedEventName,
+        r.dept_id deptId,
+        cd.dept_name machDeptName
+        FROM
+        cust_user_ecg_report r
+        LEFT JOIN (
+        SELECT
+        a.rep_id,
+        a.event_name all_event_name,
+        b.event_name level1_unconfirmed_event_name,
+        c.event_name level1_confirmed_event_name,
+        d.event_name level2_unconfirmed_event_name,
+        e.event_name level2_confirmed_event_name
+        FROM
+        (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(DISTINCT(event_name)) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        ifnull(confirm_result, 0) = 0
+        OR ifnull(confirm_result, 0) = 1
+        GROUP BY
+        rep_id
+        ) a
+        LEFT JOIN cust_user_ecg_report r ON a.rep_id = r.rep_id
+        LEFT JOIN (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(DISTINCT(event_name)) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        event_type = 1
+        AND confirm_result IS NULL
+        GROUP BY
+        rep_id
+        ) b ON a.rep_id = b.rep_id
+        LEFT JOIN (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(
+        DISTINCT (confirm_event_name)
+        ) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        event_type = 1
+        AND confirm_result = 1
+        GROUP BY
+        rep_id
+        ) c ON a.rep_id = c.rep_id
+        LEFT JOIN (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(DISTINCT(event_name)) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        event_type &lt;> 1
+        AND confirm_result IS NULL
+        GROUP BY
+        rep_id
+        ) d ON a.rep_id = d.rep_id
+        LEFT JOIN (
+        SELECT
+        rep_id,
+        GROUP_CONCAT(
+        DISTINCT (confirm_event_name)
+        ) event_name
+        FROM
+        cust_user_ecg_report_screen_event
+        WHERE
+        event_type &lt;>1
+        AND confirm_result = 1
+        GROUP BY
+        rep_id
+        ) e ON a.rep_id = e.rep_id
+        ) tmp ON r.rep_id = tmp.rep_id
+        LEFT JOIN comm_company comp ON r.company_id = comp.company_id
+        LEFT JOIN comm_dept cd ON r.dept_id = cd.dept_id
+        )temp where 1=1
+        and deptId in (select distinct dept_id from comm_user_mng_dept where user_id=#{loginUserId})
+        AND repType=1 and companyType=4
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="startDate"'>
+                        and DATE_FORMAT(reportDate,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and DATE_FORMAT(reportDate,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by reportDate DESC
+            </otherwise>
+        </choose>
+    </select>
+</mapper>
