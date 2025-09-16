@@ -16,7 +16,7 @@
     <parent>
         <artifactId>jeecg-server-cloud</artifactId>
         <groupId>org.jeecgframework.boot</groupId>
-        <version>3.7.3</version>
+        <version>3.8.1</version>
     </parent>
 
     <repositories>

@@ -1,4 +1,4 @@
-package org.jeecg.modules.zxecg.sysuser.mapper;
+package org.jeecg.modules.zxecg.sysuser.mapper.mysql;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.jeecg.modules.zxecg.entity.CommSystemUser;

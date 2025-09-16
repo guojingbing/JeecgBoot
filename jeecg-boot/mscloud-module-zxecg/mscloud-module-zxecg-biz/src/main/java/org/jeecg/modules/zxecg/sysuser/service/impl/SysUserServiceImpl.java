@@ -3,7 +3,7 @@ package org.jeecg.modules.zxecg.sysuser.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.modules.zxecg.entity.CommSystemUser;
-import org.jeecg.modules.zxecg.sysuser.mapper.SysUserMapper;
+import org.jeecg.modules.zxecg.sysuser.mapper.mysql.SysUserMapper;
 import org.jeecg.modules.zxecg.sysuser.service.ISysUserService;
 import org.jeecg.modules.zxecg.sysuser.vo.SysUserVO;
 import org.springframework.beans.factory.annotation.Autowired;

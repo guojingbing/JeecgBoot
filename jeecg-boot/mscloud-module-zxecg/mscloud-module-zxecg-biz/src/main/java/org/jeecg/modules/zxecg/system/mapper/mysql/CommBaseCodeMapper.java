@@ -1,4 +1,4 @@
-package org.jeecg.modules.zxecg.system.mapper;
+package org.jeecg.modules.zxecg.system.mapper.mysql;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO;

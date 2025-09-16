@@ -1,34 +1,27 @@
 package org.jeecg;
 
-import lombok.extern.slf4j.Slf4j;
-import org.jeecg.common.base.BaseMap;
-import org.jeecg.common.constant.GlobalConstants;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.jeecg.common.constant.GlobalConstants;
+import org.jeecg.common.base.BaseMap;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Slf4j
 @SpringBootApplication
-        (exclude = {
-        DataSourceAutoConfiguration.class,
-        QuartzAutoConfiguration.class
-})
-@EnableFeignClients(basePackages = {"org.jeecg"})
-public class ZxecgCloudApplication implements CommandLineRunner {
+@EnableFeignClients
+public class MscloudLttlCloudApplication implements CommandLineRunner {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     public static void main(String[] args) {
-        SpringApplication.run(ZxecgCloudApplication.class, args);
+        SpringApplication.run(MscloudLttlCloudApplication.class, args);
     }
 
     /**
      * 启动的时候，触发下 Gateway网关刷新
+     *
      * 解决： 先启动gateway后启动服务，Swagger接口文档访问不通的问题
      * @param args
      */

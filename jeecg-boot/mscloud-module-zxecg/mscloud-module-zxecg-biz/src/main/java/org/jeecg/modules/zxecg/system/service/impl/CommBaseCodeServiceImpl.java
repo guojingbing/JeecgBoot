@@ -2,7 +2,7 @@ package org.jeecg.modules.zxecg.system.service.impl;
 
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.jeecg.modules.zxecg.system.mapper.CommBaseCodeMapper;
+import org.jeecg.modules.zxecg.system.mapper.mysql.CommBaseCodeMapper;
 import org.jeecg.modules.zxecg.system.service.ICommBaseCodeService;
 import org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,9 @@ public class CommBaseCodeServiceImpl extends ServiceImpl<CommBaseCodeMapper, Com
         }
         Map<String, CommBaseCodeDetailVO> map=new HashMap<>();
         for(CommBaseCodeDetailVO vo:list){
-            map.put(vo.getCodeName(), vo);
+            if(vo!=null){
+                map.put(vo.getCodeName(), vo);
+            }
         }
         return map;
     }

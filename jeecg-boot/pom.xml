@@ -95,6 +95,7 @@
         <module>mscloud-module-openapi</module>
         <module>mscloud-module-zxecg</module>
         <module>mscloud-module-zxbase</module>
+        <module>mscloud-module-lttl</module>
     </modules>
 
 	<repositories>
