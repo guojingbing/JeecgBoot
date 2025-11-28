@@ -5,11 +5,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.common.util.RedisUtil;
+import org.jeecg.modules.zxecg.phoenix.service.IPhoenixBussinessService;
 import org.jeecg.modules.zxecg.system.service.ICommBaseCodeService;
 import org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO;
 import org.jeecg.modules.zxecg.sysuser.dto.SysUserLoginDTO;
@@ -37,6 +37,10 @@ public class LoginController {
 	private ISysUserService sysUserService;
     @Autowired
     private ICommBaseCodeService commBaseCodeService;
+
+    @Autowired
+    private IPhoenixBussinessService phoenixBussinessService;
+
     @Autowired
     private RedisUtil redisUtil;
 
@@ -48,7 +52,10 @@ public class LoginController {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
 	public Result<?> login(@RequestBody SysUserLoginDTO sysUserLoginDTO, HttpServletRequest request){
 		log.info(" ---我被调用了--- ");
-        Result<JSONObject> result = new Result<JSONObject>();
+        Result<JSONObject> result = new Result<>();
+
+        phoenixBussinessService.phoenixTest();
+
         //查询用户信息
         SysUserVO sysUserVO=sysUserService.getSystemUserVOByUserNoOrPhone(sysUserLoginDTO.getUserNo());
         //判断账号有效性
@@ -60,7 +67,7 @@ public class LoginController {
         //输入的密码
         String inPwd=sysUserLoginDTO.getPassword();
         //用户密码md5
-        String digestPwd=DigestUtils.md5Hex(sysUserLoginDTO.getPassword().trim());
+        String digestPwd= DigestUtils.md5Hex(sysUserLoginDTO.getPassword().trim());
 
         //验证输入密码,若输入密码与用户密码不一致继续验证通用密码
         if(!digestPwd.equalsIgnoreCase(sysUserVO.getPassword())){

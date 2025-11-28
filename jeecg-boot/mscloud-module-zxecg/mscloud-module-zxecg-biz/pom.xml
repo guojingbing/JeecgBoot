@@ -9,14 +9,14 @@
 
     <artifactId>mscloud-module-zxecg-biz</artifactId>
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.jeecgframework.boot</groupId>-->
-<!--            <artifactId>mscloud-module-zxecg-api</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.jeecgframework.boot</groupId>-->
-<!--            <artifactId>mscloud-module-zxbase-phoenix</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.jeecgframework.boot</groupId>
+            <artifactId>mscloud-module-zxecg-cloud-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jeecgframework.boot</groupId>
+            <artifactId>mscloud-module-zxbase-phoenix</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
@@ -24,4 +24,20 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+    <!-- 添加以下资源配置 -->
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+    </build>
 </project>

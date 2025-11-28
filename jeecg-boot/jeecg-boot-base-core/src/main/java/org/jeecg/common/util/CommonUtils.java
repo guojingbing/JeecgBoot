@@ -308,6 +308,8 @@ public class CommonUtils {
                     DB_TYPE = DataBaseConstant.DB_TYPE_POSTGRESQL;
                 }else if(dbType.indexOf(DataBaseConstant.DB_TYPE_MARIADB)>=0) {
                     DB_TYPE = DataBaseConstant.DB_TYPE_MARIADB;
+                }else if(dbType.indexOf("PHOENIX")>=0) {
+                    DB_TYPE = DataBaseConstant.DB_TYPE_PHOENIX;
                 }else {
                     log.error("数据库类型:[" + dbType + "]不识别!");
                     //throw new JeecgBootException("数据库类型:["+dbType+"]不识别!");

@@ -6,6 +6,9 @@ package org.jeecg.common.constant;
 public interface DataBaseConstant {
 	//*********数据库类型****************************************
 
+    /**Phoenix数据库*/
+    public static final String DB_TYPE_PHOENIX = "PHOENIX";
+
     /**MYSQL数据库*/
 	public static final String DB_TYPE_MYSQL = "MYSQL";
 
