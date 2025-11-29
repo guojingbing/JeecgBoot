@@ -38,7 +38,6 @@ public class LoginController {
     private ICommBaseCodeService commBaseCodeService;
     @Autowired
     private RedisUtil redisUtil;
-
     @Value(value = "${zxecg.sys.preUrl}")
     private String preUrl;
 

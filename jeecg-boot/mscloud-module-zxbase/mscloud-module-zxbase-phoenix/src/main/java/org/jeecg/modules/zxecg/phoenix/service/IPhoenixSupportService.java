@@ -32,13 +32,13 @@ public interface IPhoenixSupportService {
      * 通过entity批量建表
      * @param classes
      */
-    void createTables(List<Class<?>> classes);
+    void createTablesIncludeIndex(List<Class<?>> classes);
 
     /**
      * 通过entity批量删表
      * @param classes
      */
-    void dropTables(List<Class<?>> classes);
+    void dropTablesIncludeIndex(List<Class<?>> classes);
 
     /**
      * 创建索引

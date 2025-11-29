@@ -43,12 +43,7 @@ public abstract class PhoenixSupportServiceImpl implements IPhoenixSupportServic
         createSchema(jdbcTemplateConfig.getSchema());
         //扫描代码自定义注解PhoenixEntityAnnotation.ClassAnnotation的实体类建表
         List<Class<?>> classes=PhoenixUtil.scanPhoenixEntities();
-        createTables(classes);
-        //创建sequence
-        Object[][] seqs=new Object[][]{{"SEQ_REP_MATCH_KEY",1,null},{"SEQ_ECG_SEG_KEY",1,null},{"SEQ_OPER_LOG_KEY",1,null},{"SEQ_CUST_REQ_LOG_KEY",1,null}};
-        for(Object[] seq:seqs){
-            createSequence((String)seq[0],(Integer)seq[1],(Integer)seq[2]);
-        }
+        createTablesIncludeIndex(classes);
     }
 
     @Override
@@ -68,7 +63,7 @@ public abstract class PhoenixSupportServiceImpl implements IPhoenixSupportServic
     }
 
     @Override
-    public void createTables(List<Class<?>> classes) {
+    public void createTablesIncludeIndex(List<Class<?>> classes) {
         if(CollectionUtils.isEmpty(classes)){
             return;
         }
@@ -86,7 +81,7 @@ public abstract class PhoenixSupportServiceImpl implements IPhoenixSupportServic
     }
 
     @Override
-    public void dropTables(List<Class<?>> classes) {
+    public void dropTablesIncludeIndex(List<Class<?>> classes) {
         if(CollectionUtils.isEmpty(classes)){
             return;
         }
