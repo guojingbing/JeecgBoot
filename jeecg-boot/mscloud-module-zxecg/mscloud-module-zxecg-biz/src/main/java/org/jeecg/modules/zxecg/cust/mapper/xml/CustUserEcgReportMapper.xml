@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgReportMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.rep_id repId,
+        a.rep_no repNo,
+        a.user_id userId,
+        a.age,
+        a.ecg_start_time ecgStartTime,
+        a.ecg_end_time ecgEndTime,
+        a.company_id companyId,
+        a.report_date reportDate,
+        a.generate_time generateTime,
+        a.report_status reportStatus,
+        a.pdf_time pdfTime,
+        a.rep_type repType,
+        a.confirm_status confirmStatus,
+        ifnull( a.pdf_file_path,'') pdfDownloadAddr,
+        a.user_name userName,
+        a.user_gender userGender,
+        b.user_tel userTel,
+        a.lock_user_id lockUserId,
+        d.company_name companyName,
+        d.company_type companyType,
+        d.rep_template repTemplate,
+        a.doctor_user_id doctorUserId,
+        ifnull(du.user_name, '') doctorUserName,
+        ifnull(u.user_name, '') lockUserName,
+        a.create_user_id createUserId,
+        '' reportStatusName,
+        ifnull(a.reana_status, 0) reanaStatus,
+        ifnull(a.valid_duration, 0) validDuration,
+        ifnull(a.ecg_duration, 0) duration,
+        (
+        CASE
+        WHEN pdf_time IS NOT NULL
+        AND ifnull(last_rep_changed_time, 0) > ifnull(pdf_time, 0) THEN
+        1
+        ELSE
+        0
+        END
+        ) updPdf,
+        (
+        CASE
+        WHEN pdf_time IS NOT NULL THEN
+        '医师报告'
+        ELSE
+        (
+        CASE
+        WHEN ifnull(da.deep_ana_id, 0)
+        &lt;>
+        0 THEN
+        (
+        CASE
+        WHEN ifnull(da.deal_status, 0) = 2 THEN
+        '深度分析完成'
+        ELSE
+        '深度分析处理中'
+        END
+        )
+        ELSE
+        (
+        CASE
+        WHEN ifnull(a.lock_user_id, 0)
+        &lt;>
+        0 THEN
+        '医师分析中'
+        ELSE
+        (
+        CASE
+        WHEN ifnull(rep_type, 1) = 1 THEN
+        '智能分析完成'
+        ELSE
+        '待医师分析'
+        END
+        )
+        END
+        )
+        END
+        )
+        END
+        ) repStatus,
+        a.dept_name deptName,
+        a.hospital_number hospitalNumber,
+        a.section_number sectionNumber,
+        a.user_reg_flag userRegFlag,
+        a.his_bill_no hisBillNo,
+        ifnull(a.frag_style, 0) fragStyle,
+        a.dept_id deptId,
+        cd.dept_name machDeptName,
+        ifnull(da.deep_ana_id, 0) deepAnaId,
+        ifnull(da.deal_status, 0) dealStatus,
+        ifnull(ifnull(
+        rs.doctor_conclusion,
+        a.doctor_conclusion
+        ),"") doctorConclusion
+        FROM
+        cust_user_ecg_report a
+        INNER JOIN cust_userinfo b ON a.user_id = b.user_id
+        LEFT JOIN comm_system_user u ON a.lock_user_id = u.user_id
+        LEFT JOIN comm_system_user du ON a.doctor_user_id = du.user_id
+        INNER JOIN comm_company d ON a.company_id = d.company_id
+        INNER JOIN comm_dept cd ON a.dept_id = cd.dept_id
+        LEFT JOIN cust_user_ecg_report_deep_ana da ON da.rep_id = a.rep_id
+        AND da.src = 2
+        LEFT JOIN cust_user_ecg_report_statistics rs ON a.rep_id = rs.rep_id
+        where a.dept_id in (select distinct dept_id from comm_user_mng_dept where user_id=#{loginUserId})
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="hideDaily" and tm==1'>
+                        and repType = 2
+                    </when>
+                    <when test='key=="hideDaily" and tm==0'>
+                        and repType &lt;> 3
+                    </when>
+                    <when test='key=="isFav" and tm==1'>
+                        and repId in (SELECT rep_id FROM cust_user_ecg_report_favorite WHERE user_id = #{loginUserId})
+                    </when>
+                    <when test='key=="isOwn" and tm==1'>
+                        and doctorUserId=#{loginUserId}
+                    </when>
+                    <when test='key=="unAna" and tm==1'>
+                        and pdfTime is null and ifnull( lockUserId, 0 ) =0
+                        AND NOT EXISTS(select ref_id from cust_user_ecg_report_merge_ref_rep mrr inner JOIN
+                        cust_user_ecg_report mr on mrr.merge_rep_id=mr.rep_id and ifnull(mr.pdf_time,'')&lt;>'' where
+                        mrr.daily_rep_id=repId)
+                    </when>
+                    <when test='key=="repStatus" and tm==2'>
+                        and pdfDownloadAddr &lt;> ''
+                    </when>
+                    <when test='key=="repStatus" and tm==1'>
+                        and pdfDownloadAddr = ''
+                    </when>
+                    <when test='key=="tags"'>
+                        and exists (SELECT 1 from cust_user_ecg_report_tag WHERE rep_id= repId AND event_type_id
+                        IN(#{tm}))
+                    </when>
+                    <when test='key=="userTel"'>
+                        and userId in (SELECT user_id FROM cust_userinfo WHERE user_tel like
+                        CONCAT('%',#{tm,jdbcType=VARCHAR}, '%'))
+                    </when>
+                    <when test='key=="companyName"'>
+                        and companyId in (SELECT company_id FROM comm_company WHERE company_name like
+                        CONCAT('%',#{tm,jdbcType=VARCHAR}, '%'))
+                    </when>
+                    <when test='key=="doctorConclusion"'>
+                        and doctorConclusion like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%') or repId in
+                        (select rep_id from cust_user_ecg_report_statistics where ifnull( doctor_conclusion, '' ) like
+                        CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')))
+                    </when>
+                    <when test='key=="machDeptName"'>
+                        and deptId in (SELECT dept_id FROM comm_dept WHERE dept_name like
+                        CONCAT('%',#{tm,jdbcType=VARCHAR}, '%'))
+                    </when>
+                    <when test='key=="startDate"'>
+                        and DATE_FORMAT(reportDate,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and DATE_FORMAT(reportDate,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by reportDate DESC,reportStatus desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="connectRepList" resultType="java.util.HashMap">
+         SELECT
+            rep_id repId,
+            rep_no repNo,
+            ecg_start_time ecg_StartTime,
+            ecg_end_time ecgEndTime,
+            (
+                CASE
+                WHEN pdf_time IS NOT NULL THEN
+                    '医师报告'
+                ELSE
+                    '未生成'
+                END
+            ) repStatus
+        FROM
+            cust_user_ecg_report
+        WHERE
+            rep_type = #{repType}
+        AND user_id = #{userId}
+        AND user_name = #{userName}
+        ORDER BY
+            ecg_end_time DESC
+        LIMIT 10
+    </select>
+
+    <select id="getRepDiagInfo" resultType="java.util.HashMap">
+            SELECT
+                r.rep_id repId,
+                r.rep_no repNo,
+                r.user_id userId,
+                r.age,
+                r.user_gender userGender,
+                u.weight,
+                ifnull(s.doctor_conclusion, '') doctorConclusion,
+                d.in_desc inDesc,
+                d.out_desc outDesc,
+                d.id
+            FROM
+                cust_user_ecg_report r
+            LEFT JOIN cust_userinfo u ON u.user_id = r.user_id
+            LEFT JOIN cust_user_ecg_report_statistics s ON s.rep_id = r.rep_id
+            LEFT JOIN cust_user_ecg_report_diagnosis d ON d.rep_id = r.rep_id
+            WHERE
+                r.rep_id =#{repId}
+    </select>
+
+    <select id="loadMergeUserListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        tmpa.user_name userName,
+        tmpa.user_id userId,
+        tmpa.rep_id repId,
+        b.user_tel userTel,
+        b.reg_time regTime,
+        c.age,
+        c.user_gender userGender,
+        c.birth_date birthDate,
+        c.rep_no repNo,
+        c.report_date reportDate,
+        c.ecg_end_time ecgEndTime
+        FROM
+        (
+        SELECT
+        user_name,
+        user_id,
+        max(rep_id) rep_id
+        FROM
+        cust_user_ecg_report
+        WHERE
+        dept_id IN (
+        SELECT
+        dept_id
+        FROM
+        comm_user_mng_dept
+        WHERE
+        user_id =#{loginUserId}
+        )
+        AND rep_type = 1
+        GROUP BY
+        user_id,
+        user_name
+        ) tmpa
+        INNER JOIN cust_userinfo b ON tmpa.user_id = b.user_id
+        INNER JOIN cust_user_ecg_report c ON tmpa.rep_id = c.rep_id AND c.rep_type=1
+        ) temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="userId"'>
+                        and userId = #{tm}
+                    </when>
+                    <when test='key=="user"'>
+                        and (userName like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%') or userTel like
+                        CONCAT('%',#{tm,jdbcType=VARCHAR}, '%'))
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by reportDate DESC,userId desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getRepDateByUser" resultType="java.util.HashMap">
+        select DATE_FORMAT(report_date,'%Y-%m-%d') reportDate from cust_user_ecg_report
+        where rep_type=1 and user_id=#{userId} and user_name=#{userName}
+        and ( DATE_FORMAT(report_date,'%Y-%m')= #{startMonth} or DATE_FORMAT(report_date,'%Y-%m')= #{endMonth})
+        <if test="null!=loginUserId">
+            and dept_id in (select distinct dept_id from comm_user_mng_dept where user_id=#{loginUserId})
+        </if>
+    </select>
+
+</mapper>

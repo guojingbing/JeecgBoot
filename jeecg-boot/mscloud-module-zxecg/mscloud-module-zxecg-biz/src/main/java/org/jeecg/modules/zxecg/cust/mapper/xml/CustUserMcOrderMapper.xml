@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserMcOrderMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.`order_id` orderId,
+        a.`order_no` orderNo,
+        a.`order_type_id` orderTypeId,
+        a.`title`,
+        a.`order_desc` orderDesc,
+        a.`receive_type` receiveType,
+        a.`receive_time` receiveTime,
+        a.`order_status` mcOrderStatus,
+        a.`status_reason_id` statusReasonId,
+        a.`order_conclusion` order_Conclusion,
+        a.fillin_time fillinTime,
+        a.`pay_order_id` payOrderId,
+        a.`order_effected` orderEffected,
+        a.`order_expire` orderExpire,
+        a.company_id companyId,
+        a.doctor_id doctorId,
+        a.user_id userId,
+        r.user_name custUserName,
+        r.user_gender custUserGender,
+        r.age custUserAge,
+        a.user_height custUserHeight,
+        a.user_weight custUserWeight,
+        b.disp_id dispId,
+        b.disp_no dispNo,
+        b.disp_status dispStatus,
+        b.disp_type_id dispTypeId,
+        b.doctor_id dispDoctorId,
+        d.code_name statusReasonName,
+        h.code_name orderTypeName,
+        DATE_FORMAT(
+        r.`ecg_start_time`,
+        '%Y-%m-%d'
+        ) ecgStartTime,
+        DATE_FORMAT(r.`ecg_end_time`, '%Y-%m-%d') ecgEndTime,
+        r.rep_id repId,
+        r.rep_no repNo,
+        r.generate_time generateTime,
+        r.pdf_time pdfTime,
+        r.pdf_file_path pdfDownloadAddr,
+        f.order_id maOrderId,
+        f.order_status maOrderStatus,
+        i.user_name dispDoctorName,
+        j.company_name companyName,
+        k.code_name positionName,
+        l.company_name mcCompanyName,
+        CASE
+        WHEN f.order_status = '20'
+        OR f.order_status = '30'
+        OR f.order_status = '40' THEN
+        '分析中'
+        WHEN f.order_status = '60' THEN
+        '已关闭'
+        WHEN f.order_status = '50' THEN
+        CASE
+        WHEN ifnull(r.pdf_file_path, '') = '' THEN
+        '报告生成中'
+        ELSE
+        '已生成报告'
+        END
+        END maOrderStatusName,
+        ifnull(cd.code_name, '') vipName
+        FROM
+        cust_user_mc_order a
+        LEFT JOIN cust_user_mc_order_dispatch b ON a.order_id = b.order_id
+        LEFT JOIN comm_base_code_detail d ON a.status_reason_id = d.code_id
+        AND d.type_no = 'CD205'
+        LEFT JOIN cust_user_mc_ma_order e ON e.mc_order_id = a.order_id
+        LEFT JOIN cust_user_ma_order f ON e.ma_order_id = f.order_id
+        LEFT JOIN cust_user_ma_order_rep mr ON mr.order_id = f.order_id
+        LEFT JOIN cust_user_ecg_report r ON r.rep_id = mr.rep_id
+        LEFT JOIN cust_user_voucher g ON f.voucher_id = g.voucher_id
+        LEFT JOIN v_comm_base_code_detail h ON g.voucher_type_id = h.code_id
+        AND h.type_no = 'CD128'
+        LEFT JOIN comm_system_user i ON i.user_id = b.doctor_id
+        LEFT JOIN comm_company j ON a.company_id = j.company_id
+        LEFT JOIN comm_base_code_detail k ON i.position = k.code_id
+        AND k.type_no = 'CD108'
+        LEFT JOIN comm_company l ON i.company_id = l.company_id
+        LEFT JOIN cust_userinfo u ON u.user_id = a.user_id
+        LEFT JOIN v_comm_base_code_detail cd ON u.vip_level = cd.code_id
+        AND cd.type_no = 'CD127'
+        )temp
+        where 1=1
+        <choose>
+            <when test="userId!=null ">
+                and userId=#{userId}
+            </when>
+            <otherwise>
+               and  EXISTS (select b.company_id from comm_user_mng_dept a inner join comm_dept b on a.dept_id=b.dept_id
+                where user_id=#{loginUserId} and b.company_id=temp.companyId)
+            </otherwise>
+        </choose>
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by mcOrderStatus asc,maOrderStatus desc
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

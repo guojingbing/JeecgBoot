@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserInfoMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        user_id userId,
+        user_no userNo,
+        user_name userName,
+        user_tel_region userTelRegion,
+        user_tel userTel,
+        email,
+        user_gender userGender,
+        DATE_FORMAT(
+        birth_date,
+        '%Y-%m-%d '
+        ) birthDate,
+        (year(now())-year(birth_date)-1) + ( DATE_FORMAT(birth_date, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d') ) as age,
+        height,
+        weight,
+        a.area_id areaId,
+        b.node_full_name userRegion,
+        address,
+        user_city userCity,
+        user_province userProvince,
+        user_country userCountry,
+        user_avatar userAvatar,
+        user_status userStatus,
+        DATE_FORMAT(
+        reg_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) regTime,
+        status,
+        symptom,
+        habits,
+        medical,
+        vip_level vipLevel,
+        user_type userType,
+        device_flag deviceFlag
+        FROM
+        cust_userinfo a
+        LEFT JOIN comm_area b ON a.area_id = b.area_id
+        ) temp
+        where 1=1 and status =1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="userStatus"'>
+                        and userStatus = #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by regTime desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="loadVoucherListPaging" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        v.voucher_type_id voucherTypeId,
+        v.user_id userId,
+        f.code_name voucherTypeName ,
+        CASE v.ref_business
+        WHEN 1 THEN
+        '微信销售'
+        WHEN 2 THEN
+        'APP销售'
+        WHEN 3 THEN
+        '代理商批发'
+        ELSE
+        ''
+        END refBusinessName,
+        o.order_no orderNo,
+        DATE_FORMAT(
+        v.create_date,
+        '%Y-%m-%d %H:%i:%s'
+        ) createDate,
+        c.company_name companyName,
+        CASE
+        WHEN o.order_id IS NULL THEN
+        '未使用'
+        ELSE
+        '已使用'
+        END `status`
+        FROM
+        cust_user_voucher v
+        LEFT JOIN cust_user_ma_order o ON o.voucher_id = v.voucher_id
+        LEFT JOIN comm_company c ON v.audit_company_id = c.company_id
+        LEFT JOIN v_comm_base_code_detail f ON v.voucher_type_id = f.code_id
+        AND f.type_no = 'CD128'
+        ) temp
+        where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="userId"'>
+                        and userId = #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by createDate desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="loadRelatedListPaging" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        r.fr_id frId,
+        r.user_id userId,
+        r.fr_user_id frUserId,
+        u.user_name userName,
+        u.user_avatar userAvatar,
+        u.user_tel userTel,
+        u.user_gender userGender,
+        (
+        YEAR (now()) - YEAR (u.birth_date) - 1
+        ) + (
+        DATE_FORMAT(u.birth_date, '%m%d') &lt;= DATE_FORMAT(NOW(), '%m%d')
+        ) userAge,
+        d.code_name relationship,
+        ifnull(r.fr_status, 0) frStatus,
+        ifnull(r.is_emergency_contact, 0) isEmergencyContact
+        FROM
+        cust_user_family_related r
+        LEFT JOIN cust_userinfo u ON r.user_id = u.user_id
+        LEFT JOIN comm_base_code_detail d ON d.code_id = r.type_id
+        AND d.type_no = 'CD601'
+        WHERE
+        ifnull(r.fr_status, 0) = 1
+        ) temp
+        where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="frUserId"'>
+                        and frUserId = #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by frId desc
+            </otherwise>
+        </choose>
+    </select>
+    <select id="userInfo" parameterType="java.lang.Long" resultType="org.jeecg.modules.zxecg.cust.vo.CustUserInfoVo">
+        SELECT
+        user_id ,
+        user_no ,
+        user_name ,
+        user_tel ,
+        user_gender ,
+        birth_date,
+        height,
+        weight,
+        a.area_id ,
+        b.node_full_name userRegion,
+        address,
+        user_avatar ,
+        user_status ,
+        reg_time,
+        symptom,
+        habits,
+        medical
+        FROM
+        cust_userinfo a
+        LEFT  JOIN  comm_area b ON a.area_id = b.area_id
+        where user_id=#{userId}
+    </select>
+
+
+    <select id="getUserInfoByNoOrTel" parameterType="java.lang.String"
+            resultType="org.jeecg.modules.zxecg.cust.entity.CustUserInfo">
+        SELECT
+        *
+        FROM
+        cust_userinfo a
+        where status=1
+        <choose>
+            <when test='userNo != null and userNo.toString().trim() != "" and userTel != null and userTel.toString().trim() != ""'>
+                and user_no=#{userNo} or user_tel=#{userTel}
+            </when>
+            <when test='userNo != null and userNo.toString().trim() != ""'>
+                and user_no=#{userNo}
+            </when>
+            <when test='userTel != null and userTel.toString().trim() != ""'>
+                and user_tel=#{userTel}
+            </when>
+        </choose>
+    </select>
+
+    <select id="getVoucherInfo" parameterType="java.lang.String"
+            resultType="org.jeecg.modules.zxecg.cust.vo.CardInfoVo">
+            SELECT
+                sci.card_id,
+                sci.card_no,
+                sci.cat_id,
+                sci.audit_company_id,
+                sci.agent_name,
+                sci.card_type_name,
+                cc.company_name rep_company_name,
+                CASE
+               WHEN r.recharge_id IS NULL THEN
+                '未兑换'
+               ELSE
+                '已兑换'
+                END recharge_status
+            FROM
+                v_sale_card_info sci
+            LEFT JOIN cust_user_recharge r ON r.card_no = sci.card_no
+            AND ifnull(r.recharge_status, 0) = 1
+            LEFT JOIN comm_company cc ON sci.audit_company_id = cc.company_id
+            WHERE
+                UPPER(sci.card_no) =#{cardNo}
+            LIMIT 1
+    </select>
+</mapper>

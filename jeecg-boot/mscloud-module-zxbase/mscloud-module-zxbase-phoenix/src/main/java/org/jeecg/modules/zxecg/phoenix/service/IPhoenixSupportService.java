@@ -3,7 +3,6 @@ package org.jeecg.modules.zxecg.phoenix.service;
 import org.jeecg.modules.zxecg.phoenix.util.PhoenixQueryPager;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Description: Phoenix支持服务
@@ -66,23 +65,6 @@ public interface IPhoenixSupportService {
      * @param sequenceName
      */
     void dropSequence(String sequenceName);
-
-    /**
-     * 使用原生语句更新数据
-     * @param sql
-     * @param datas
-     * @param isCommit
-     * @throws Exception
-     */
-    void upsert(String sql, List<Map<String, Object>> datas, boolean isCommit) throws Exception;
-
-    /**
-     * 使用phoenix sql语句删除
-     * @param sql
-     * @param params
-     * @throws Exception
-     */
-    void deleteWithPsql(String sql, List<?> params) throws Exception ;
 
     /**
      * 实体批量保存

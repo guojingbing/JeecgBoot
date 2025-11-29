@@ -5,10 +5,12 @@ import org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CommBaseCodeMapper extends BaseMapper<CommBaseCodeDetailVO> {
     /**
      * 根据codeStrings获取指定typeNo字典的字典项
+     *
      * @param typeNo
      * @param codeStrings
      * @return
@@ -17,9 +19,26 @@ public interface CommBaseCodeMapper extends BaseMapper<CommBaseCodeDetailVO> {
 
     /**
      * 根据codeNames获取指定typeNo字典的字典项
+     *
      * @param typeNo
      * @param codeNames
      * @return
      */
     List<CommBaseCodeDetailVO> getCodeDetailsByCodeNames(@Param("typeNo") String typeNo, @Param("codeNames") List<String> codeNames);
+
+    /**
+     * 根据codeIds获取指定typeNo字典的字典项
+     *
+     * @param typeNo
+     * @param typeNo
+     * @return
+     */
+    List<CommBaseCodeDetailVO> getCodeDetailsByCodeIds(@Param("typeNo") String typeNo, @Param("codeIds") List<Long> codeIds);
+
+    /**
+     * 根据typeNo 获取打印项
+     * @param typeNo
+     * @return
+     */
+    List<Map<String, Object>> getPrintItems(@Param("typeNo") String typeNo);
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.system.mapper.CommCompanyPrescriberMapper">
+    <select id="getCompanyPrescriber" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        SELECT
+        p.id preId,
+        p.prescriber_name prescriberName,
+        d.dept_name deptName
+        FROM
+        comm_company_prescriber p
+        LEFT JOIN comm_company cc ON cc.company_id = p.company_id
+        LEFT JOIN comm_dept d ON p.dept_id = d.dept_id
+        WHERE
+        p.company_id =#{companyId}
+        <if test="deptId!=null">
+            and p.dept_id=#{deptId}
+        </if>
+        order by d.dept_name desc,p.prescriber_name asc
+    </select>
+
+</mapper>

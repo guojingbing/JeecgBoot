@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgReportFragStyleMapper">
+    <select id="getByRepIdAndCatId" parameterType="java.lang.Long"
+            resultType="org.jeecg.modules.zxecg.cust.entity.CustUserEcgReportFragStyle">
+        select *  from cust_user_ecg_report_frag_style where rep_id=#{repId} and category_id=#{catId}
+    </select>
+
+
+</mapper>

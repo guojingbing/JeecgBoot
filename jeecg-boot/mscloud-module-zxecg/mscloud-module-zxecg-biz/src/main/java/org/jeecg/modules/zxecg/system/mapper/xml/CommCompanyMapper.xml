@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.system.mapper.CommCompanyMapper">
+    <select id="getListByUserId" parameterType="java.lang.Long"
+            resultType="java.util.HashMap">
+       SELECT * FROM comm_company WHERE company_id IN(
+       SELECT DISTINCT(b.company_id) FROM comm_user_mng_dept a INNER JOIN comm_dept b ON a.dept_id=b.dept_id WHERE a.user_id=#{userId})
+    </select>
+
+
+</mapper>

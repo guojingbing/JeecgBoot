@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgReportCheckOrderMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        co.id,
+        co.user_id userId,
+        co.user_name userName,
+        co.age,
+        co.gender,
+        co.case_number caseNumber,
+        co.bed_number bedNumber,
+        co.hospital_number hospitalNumber,
+        co.dept_id deptId,
+        cc.company_name companyName,
+        cd.dept_name deptName,
+        co.order_type orderType,
+        co.company_id companyId,
+        DATE_FORMAT(
+        co.order_start_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) startTime,
+        DATE_FORMAT(
+        co.order_end_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) endTime,
+        DATE_FORMAT(
+        co.act_end_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) actEndTime,
+        co.fee_confirm_status feeConfirmStatus,
+        CASE
+        WHEN co.fee_confirm_status = 0 THEN
+        '待确费'
+        WHEN co.fee_confirm_status = 1 THEN
+        '已确费'
+        ELSE
+        ''
+        END feeConfirmStatusDesc,
+        co.fee_confirm_user feeConfirmUser,
+        cf.user_name feeConfirmUserName,
+        co.remote_rep_path remoteRepPath,
+        DATE_FORMAT(
+        co.fee_confirm_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) feeConfirmTime,
+        CASE WHEN co.order_type = 1 THEN
+        CASE
+        WHEN co.remote_rep_path IS NOT NULL THEN
+        '下载'
+        ELSE
+        '未生成'
+        END
+        ELSE
+        ''
+        END repStatusDesc,
+        DATE_FORMAT(
+        co.remote_rep_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) remoteRepTime,
+        co.holter_rep_status holterRepStatus,
+        CASE
+        WHEN co.holter_rep_status = 0 THEN
+        '待申请'
+        WHEN co.holter_rep_status = 10 THEN
+        '待关联'
+        WHEN co.holter_rep_status = 20 THEN
+        '已关联'
+        ELSE
+        ''
+        END holterRepStatusDesc,
+        co.holter_rep_oper_user holterRepOperUser,
+        ch.user_name holterRepOperUserName ,
+        DATE_FORMAT(
+        co.holter_rep_oper_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) holterRepOperTime,
+        co.order_status orderStatus,
+        CASE
+        WHEN co.order_status = 0 THEN
+        '进行中'
+        WHEN co.order_status = 1 THEN
+        '已结束'
+        ELSE
+        ''
+        END orderStatusDesc,
+        co.remote_rec_id remoteRecId,
+        co.prescriber_name prescriberName,
+        co.holter_rep_id holterRepId,
+        r.rep_no repNo,
+        r.pdf_file_path pdfDownloadAddr
+        FROM
+        cust_user_ecg_report_check_order co
+        LEFT JOIN comm_company cc ON cc.company_id = co.company_id
+        LEFT JOIN comm_dept cd ON cd.dept_id = co.dept_id
+        LEFT JOIN comm_system_user cf ON cf.user_id = co.fee_confirm_user
+        LEFT JOIN comm_system_user ch ON ch.user_id = co.holter_rep_oper_user
+        LEFT JOIN cust_user_ecg_report r ON r.rep_id = co.holter_rep_id
+        where co.dept_id in (select distinct dept_id from comm_user_mng_dept where user_id=#{loginUserId})
+        AND co.order_type=#{orderType}
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="canSeeAll" and tm==0'>
+                        <if test="orderType!= null and orderType==1 ">
+                            and companyId in (select distinct company_id from comm_company_rep_templ where
+                            ifnull(is_remote_rep,0)=1)
+                        </if>
+                        <if test="orderType!= null and orderType==2 ">
+                            and companyId in (select distinct company_id from comm_company_rep_templ where
+                            ifnull(is_remote_rep,0)=0)
+                        </if>
+                    </when>
+                    <when test='key=="holterRepStatus"'>
+                        and holterRepStatus = #{tm}
+                    </when>
+                    <when test='key=="feeConfirmStatus"'>
+                        and feeConfirmStatus = #{tm}
+                    </when>
+                    <when test='key=="startDate"'>
+                        and DATE_FORMAT(startTime,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and DATE_FORMAT(startTime,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by startTime desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getListByRepId" resultType="org.jeecg.modules.zxecg.cust.entity.CustUserEcgReportCheckOrder">
+        select * from cust_user_ecg_report_check_order where holter_rep_id=#{repId}
+    </select>
+</mapper>

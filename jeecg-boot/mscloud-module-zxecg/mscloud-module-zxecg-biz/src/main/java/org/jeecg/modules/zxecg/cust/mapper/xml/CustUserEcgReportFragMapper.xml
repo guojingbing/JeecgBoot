@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgReportFragMapper">
+    <select id="getCatIdByRepId" parameterType="java.lang.Long" resultType="java.lang.Integer">
+        select distinct category_id from cust_user_ecg_report_frag where rep_id=#{repId} and category_id&lt;>0
+    </select>
+
+    <update id="updateReversed">
+       UPDATE cust_user_ecg_report_frag SET is_reversed = #{reversed}
+       where  rep_id=#{repId} and ecg_id=#{ecgId} and category_id=0 and sub_category_id=#{subCategoryId} and frag_center_time=#{fragCenterTime}
+    </update>
+    <select id="getFragByRepIdAndCatId" resultType="org.jeecg.modules.zxecg.cust.entity.CustUserEcgReportFrag">
+        select * from cust_user_ecg_report_frag where rep_id=#{repId}  and ecg_id=#{ecgId}
+        and frag_start_time=#{fragStartTime}  and category_id=#{categoryId}
+    </select>
+
+    <select id="getByRepIdAndFragId" resultType="org.jeecg.modules.zxecg.cust.entity.CustUserEcgReportFrag">
+        select * from cust_user_ecg_report_frag where rep_id=#{repId}  and frag_id=#{fragId}
+    </select>
+</mapper>

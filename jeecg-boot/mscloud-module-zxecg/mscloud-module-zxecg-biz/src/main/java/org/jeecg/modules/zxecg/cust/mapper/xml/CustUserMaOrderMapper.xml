@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserMaOrderMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.`order_id` orderId,
+        a.`order_no` orderNo,
+        `order_desc` orderDesc,
+        a.`user_id` userId,
+        a.`create_user_id` createUserId,
+        a.`create_date` createDate,
+        a.company_id companyId,
+        a.order_status orderStatus,
+        a.doctor_id doctorId,
+        a.order_type orderType,
+        ifnull( a.audit_status, 0 ) maAuditStatus,
+        CASE
+        WHEN ifnull( a.audit_status, 0 ) = 0 THEN
+        '未提交'
+        WHEN a.audit_status = 1 THEN
+        '待审核'
+        WHEN a.audit_status = 2 THEN
+        '已通过'
+        WHEN a.audit_status = 3 THEN
+        '已驳回' ELSE ''
+        END maAuditStatusName,
+        a.audit_time auditTime,
+        a.audit_user_id auditUserId,
+        a.audit_company_id auditCompanyId,
+        a.audit_desc auditDesc,
+        au.user_name auditUserName,
+        CASE
+        WHEN a.order_status = '10' THEN
+        '待付款'
+        WHEN a.order_status = '50' THEN
+        '已完成'
+        WHEN a.order_status = '60' THEN
+        '已关闭'
+        WHEN a.order_status = '90' THEN
+        '已退款' ELSE '待分析'
+        END maOrderStatusName,
+        CASE
+        WHEN a.order_type = 1 THEN
+        '分析订单'
+        WHEN a.order_type = 2 THEN
+        '智能筛查'
+        WHEN a.order_type = 9 THEN
+        '分析报告'
+        END maOrderTypeName,
+        g.company_name companyName,
+        d.user_name custUserName,
+        d.user_gender custUserGender,
+        d.age custUerAge,
+        `cust_user_height` custUserHeight,
+        `cust_user_weight` custUserWeight,
+        `cust_user_tel` custUserTel,
+        a.`order_fee` orderFee,
+        `status_reason_id` statusReasonId,
+        `order_effected` orderEffected,
+        `order_expire` orderExpire,
+        DATE_FORMAT( d.`ecg_start_time`, '%Y%m%d' ) ecgStartTime,
+        DATE_FORMAT( d.`ecg_end_time`, '%Y%m%d' ) ecgEndTime,
+        ifnull( d.rep_id, 0 ) repId,
+        d.rep_no repNo,
+        d.generate_time generateTime,
+        ifnull( d.report_status, 0 ) reportStatus,
+        d.pdf_time pdfTime,
+        d.pdf_file_path pdfDownloadAddr,
+        d.doctor_conclusion doctorConclusion,
+        g.rep_template repTemplate,
+        f.code_name orderTypeName,
+        (
+        SELECT
+        SUM( valid_duration )
+        FROM
+        cust_user_ecg_rec r
+        WHERE
+        r.ecg_id IN ( SELECT ecg_id FROM cust_user_ecg_report_detail WHERE rep_id = ( SELECT max( rep_id ) FROM
+        cust_user_ma_order_rep c WHERE c.order_id = a.order_id ) )
+        ) validDuration,
+        (
+        SELECT
+        SUM( TIMESTAMPDIFF( SECOND, rd.ana_start_time, rd.ana_end_time ) )
+        FROM
+        cust_user_ecg_report_detail rd
+        WHERE
+        rd.rep_id IN ( SELECT rep_id FROM cust_user_ma_order_rep c WHERE c.order_id = a.order_id )
+        ) recordDuration,
+        ifnull( cd.code_name, '' ) vipName,
+        so.goods_name saleOrderType,
+        so.sale_company_name saleCompanyName,
+        so.sale_dept_name saleDeptName,
+        so.dept_id deptId,
+        e.agent_id agentId,
+        vsa.company_name agentName,
+        audit.company_name auditCompanyName
+        FROM
+        `cust_user_ma_order` a
+        LEFT JOIN cust_user_ma_order_rep c ON a.order_id = c.order_id
+        INNER JOIN cust_user_ecg_report d ON c.rep_id = d.rep_id
+        LEFT JOIN cust_user_voucher e ON a.voucher_id = e.voucher_id
+        LEFT JOIN v_comm_base_code_detail f ON e.voucher_type_id = f.code_id
+        AND f.type_no = 'CD128'
+        LEFT JOIN comm_company g ON a.company_id = g.company_id
+        LEFT JOIN cust_userinfo u ON u.user_id = a.user_id
+        LEFT JOIN v_comm_base_code_detail cd ON u.vip_level = cd.code_id
+        AND cd.type_no = 'CD127'
+        LEFT JOIN comm_system_user au ON a.audit_user_id = au.user_id
+        LEFT JOIN v_sale_order so ON a.sale_order_id = so.order_id
+        AND so.order_type = 3
+        LEFT JOIN v_sale_agent vsa ON vsa.company_id = e.agent_id
+        LEFT JOIN comm_company audit ON audit.company_id = a.audit_company_id
+        )temp
+        where 1=1
+        <if test="orderType!=null">
+            and orderType=#{orderType}
+        </if>
+        <choose>
+            <when test="audit!=null and audit==1">
+                and maAuditStatus &lt;>0
+            </when>
+            <otherwise>
+                and orderType &lt;>9
+                <if test="orderType!=null and orderType==2">
+                    and deptId in (SELECT sale_dept_id from comm_user_mng_sale_dept where user_id=#{loginUserId})
+                </if>
+                <if test="orderType==null or orderType!=2">
+                    and companyId in (select b.company_id from comm_user_mng_dept a inner join comm_dept b on
+                    a.dept_id=b.dept_id where user_id=#{loginUserId}) or agentId in(select DISTINCT(sale_company_id) FROM
+                    comm_user_mng_sale_dept WHERE user_id=#{loginUserId})
+                </if>
+            </otherwise>
+        </choose>
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="userId"'>
+                        and userId=#{tm}
+                    </when>
+                    <when test='key=="startDate"'>
+                        and DATE_FORMAT(ecgStartTime,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and DATE_FORMAT(ecgStartTime,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by reportStatus desc,orderId desc
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

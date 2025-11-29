@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgRecSignalWeakMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        i.user_id userId,
+        i.user_name userName,
+        i.user_tel userTel,
+        r.ecg_id ecgId,
+        r.app_ver appVer,
+        r.src,
+        FROM_UNIXTIME(w.start_timestamp/1000,'%Y-%m-%d %H:%i:%s') as startTime,
+        FROM_UNIXTIME(w.end_timestamp/1000,'%Y-%m-%d %H:%i:%s') as endTime,
+        DATE_FORMAT(
+        w.create_date,
+        '%Y-%m-%d %H:%i:%s'
+        ) createDate
+        FROM
+        cust_user_ecg_rec_signal_weak w
+        INNER JOIN cust_user_ecg_rec r ON r.ecg_id = w.ecg_id
+        INNER JOIN cust_userinfo i ON i.user_id = r.user_id
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by createDate desc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

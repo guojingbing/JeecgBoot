@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.system.mapper.CommCompanyMachMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        ccm.mach_id machId,
+        ccm.company_id companyId,
+        ccm.dept_id deptId,
+        ccm.mach_sn machSn,
+        ccm.start_date startDate,
+        ccm.end_date endDate,
+        ccm.create_time createTime,
+        ccm.mach_status machStatus,
+        ccm.status_time statusTime,
+        ccm.oper_user_id operUserId,
+        cc.company_name companyName,
+        cum.user_id userId,
+        DATE_FORMAT(
+        cum.binding_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) bindingTime,
+        cum.binding_status bindingStatus,
+        cu.user_name userNmae,
+        csu.user_name operUserName,
+        cd.dept_name deptName
+        FROM
+        (
+        SELECT
+        tt.mach_id ,
+        tt.company_id ,
+        tt.dept_id ,
+        tt.mach_sn ,
+        tt.mach_type ,
+        DATE_FORMAT(
+        tt.start_date,
+        '%Y-%m-%d'
+        ) start_date,
+        DATE_FORMAT(
+        tt.end_date,
+        '%Y-%m-%d'
+        ) end_date,
+        DATE_FORMAT(
+        tt.create_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) create_time,
+        ifnull(tt.mach_status, 1) mach_status,
+        DATE_FORMAT(
+        tt.status_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) status_time,
+        tt.oper_user_id
+        FROM
+        comm_company_mach tt
+        INNER JOIN (
+        SELECT
+        mach_sn,
+        max(mach_id) mach_id
+        FROM
+        comm_company_mach
+        WHERE
+        dept_id IN (
+        SELECT DISTINCT
+        dept_id
+        FROM
+        comm_user_mng_dept
+        WHERE
+        user_id = #{loginUserId}
+        )
+        GROUP BY
+        mach_sn
+        ) s ON s.mach_sn = tt.mach_sn
+        AND s.mach_id = tt.mach_id
+        ) ccm
+        LEFT JOIN comm_company cc ON cc.company_id = ccm.company_id
+        LEFT JOIN comm_dept cd ON cd.dept_id = ccm.dept_id
+        LEFT JOIN cust_user_mach cum ON ccm.mach_sn = cum.mach_sn
+        AND IFNULL(cum.binding_status, 0) = 1
+        LEFT JOIN cust_userinfo cu ON cum.user_id = cu.user_id
+        LEFT JOIN comm_system_user csu ON csu.user_id = ccm.oper_user_id
+        ) temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <choose>
+                <when test='key=="machId"'>
+                    and machId = #{tm}
+                </when>
+                <otherwise>
+                    and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                </otherwise>
+            </choose>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by machSn desc
+            </otherwise>
+        </choose>
+    </select>
+
+   <select id="getMachInfo" resultType="java.util.HashMap">
+       SELECT
+        ccm.mach_id machId,
+        ccm.company_id companyId,
+        ccm.dept_id deptId,
+        ccm.mach_sn machSn,
+        ccm.start_date startDate,
+        ccm.end_date endDate,
+        ccm.create_time createTime,
+        ccm.mach_status machStatus,
+        ccm.status_time statusTime,
+        ccm.oper_user_id operUserId,
+        cc.company_name companyName,
+        cum.user_id userId,
+        DATE_FORMAT(
+        cum.binding_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) bindingTime,
+        cum.binding_status bindingStatus,
+        cu.user_name userNmae,
+        csu.user_name operUserName,
+        cd.dept_name deptName
+        FROM
+        (
+        SELECT
+        tt.mach_id ,
+        tt.company_id ,
+        tt.dept_id ,
+        tt.mach_sn ,
+        tt.mach_type ,
+        DATE_FORMAT(
+        tt.start_date,
+        '%Y-%m-%d'
+        ) start_date,
+        DATE_FORMAT(
+        tt.end_date,
+        '%Y-%m-%d'
+        ) end_date,
+        DATE_FORMAT(
+        tt.create_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) create_time,
+        ifnull(tt.mach_status, 1) mach_status,
+        DATE_FORMAT(
+        tt.status_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) status_time,
+        tt.oper_user_id
+        FROM
+        comm_company_mach tt
+        INNER JOIN (
+        SELECT
+        mach_sn,
+        max(mach_id) mach_id
+        FROM
+        comm_company_mach
+        WHERE
+        dept_id IN (
+        SELECT DISTINCT
+        dept_id
+        FROM
+        comm_user_mng_dept
+        WHERE
+        user_id = #{loginUserId}
+        )
+        GROUP BY
+        mach_sn
+        ) s ON s.mach_sn = tt.mach_sn
+        AND s.mach_id = tt.mach_id
+        ) ccm
+        LEFT JOIN comm_company cc ON cc.company_id = ccm.company_id
+        LEFT JOIN comm_dept cd ON cd.dept_id = ccm.dept_id
+        LEFT JOIN cust_user_mach cum ON ccm.mach_sn = cum.mach_sn
+        AND IFNULL(cum.binding_status, 0) = 1
+        LEFT JOIN cust_userinfo cu ON cum.user_id = cu.user_id
+        LEFT JOIN comm_system_user csu ON csu.user_id = ccm.oper_user_id
+        where mach_id=#{machId} and mach_status=1
+   </select>
+</mapper>

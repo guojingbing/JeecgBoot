@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserWarningEventMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.event_id eventId,
+        a.warn_id warnId,
+        a.ecg_id ecgId,
+        a.event_type_id eventTypeId,
+        a.event_timestamp eventTimestamp,
+        a.event_start_time eventStartTime,
+        a.event_end_time eventEndTime,
+        a.bpm ,
+        a.warn_level warnLevel,
+        ifnull(a.confirm_status,0) confirmStatus,
+        a.confirm_time confirmTime,
+        a.confirm_user_id confirmUserId,
+        b.code_name eventTypeName,
+        c.age,
+        d.user_name userName,
+        d.user_gender userGender,
+        d.user_tel userTel,
+        c.user_id userId
+        FROM
+        cust_user_warning_event a
+        LEFT JOIN comm_base_code_detail b ON a.event_type_id=b.code_id AND b.type_no='CD200'
+        LEFT JOIN cust_user_ecg_rec c ON a.ecg_id=c.ecg_id
+        LEFT JOIN cust_userinfo d ON c.user_id=d.user_id
+        )temp
+        where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="warnLevel"'>
+                        AND warnLevel=#{tm}
+                    </when>
+                    <when test='key=="read"'>
+                        and confirmStatus=#{tm}
+                    </when>
+                    <when test='key=="startDate"'>
+                        and from_unixtime(eventTimestamp/1000,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and from_unixtime(eventTimestamp/1000,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by eventTimestamp desc
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

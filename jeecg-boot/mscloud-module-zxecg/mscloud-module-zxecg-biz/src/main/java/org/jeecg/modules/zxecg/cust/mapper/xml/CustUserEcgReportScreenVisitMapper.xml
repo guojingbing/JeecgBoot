@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgReportScreenVisitMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.id,
+        a.user_id userId,
+        a.rep_id repId,
+        visit_time visitTime,
+        visit_content visitContent,
+        a.create_date createDate,
+        b.user_name  user_Name
+        FROM
+        cust_user_ecg_report_screen_visit a
+        LEFT JOIN comm_system_user b ON a.create_user_id = b.user_id
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="repId"'>
+                        and repId = #{tm}
+                    </when>
+                    <when test='key=="userId"'>
+                        and userId = #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by createDate desc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>
