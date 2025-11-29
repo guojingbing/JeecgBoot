@@ -19,7 +19,6 @@ import java.util.Properties;
 
 @Slf4j
 @Configuration
-//@MapperScan(basePackages = "org.jeecg.**.mapper.phoenix**",sqlSessionTemplateRef = "phoenixSqlSessionTemplate", annotationClass = PhoenixMapper.class)
 public class PhoenixDataSourceConfig {
     @Value("${spring.datasource.phoenix.mapper-locations}")
     private String mapperLocation;

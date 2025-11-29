@@ -11,7 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.redis.core.RedisTemplate;
 
 @Slf4j
-@SpringBootApplication(exclude = {org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration.class})
+@SpringBootApplication
 @EnableFeignClients(basePackages = {"org.jeecg"})
 public class ZxecgCloudApplication implements CommandLineRunner {
     @Autowired
