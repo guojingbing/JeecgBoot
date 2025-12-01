@@ -7,6 +7,7 @@ spring:
     import:
       - optional:nacos:jeecg.yaml
       - optional:nacos:jeecg-@profile.name@.yaml
+      - optional:nacos:mscloud-phoenix-@profile.name@.yaml
       - optional:nacos:${spring.application.name}-@profile.name@.yaml
   cloud:
     nacos:
