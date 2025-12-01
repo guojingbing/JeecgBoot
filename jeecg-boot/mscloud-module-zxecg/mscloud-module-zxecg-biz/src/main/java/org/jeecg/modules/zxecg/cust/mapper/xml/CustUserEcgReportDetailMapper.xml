@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgReportDetailMapper">
+    <select id="getRepIdsByEcgId" parameterType="java.lang.Long" resultType="java.lang.Long">
+     select DISTINCT rep_id from cust_user_ecg_report_detail where ecg_id=#{ecgId}
+    </select>
+
+    <select id="getListByRepId" parameterType="java.lang.Long"
+            resultType="org.jeecg.modules.zxecg.cust.entity.CustUserEcgReportDetail">
+             SELECT
+                *
+            FROM
+                cust_user_ecg_report_detail
+            WHERE
+                rep_id = #{repId} order by ana_start_time asc
+    </select>
+    <delete id="deleteByEcgId" parameterType="java.lang.Long">
+        delete from cust_user_ecg_report_detail where ecg_id=#{ecgId}
+    </delete>
+    <delete id="deleteByRepId" parameterType="java.lang.Long">
+        delete from cust_user_ecg_report_detail where rep_id=#{repId}
+    </delete>
+</mapper>

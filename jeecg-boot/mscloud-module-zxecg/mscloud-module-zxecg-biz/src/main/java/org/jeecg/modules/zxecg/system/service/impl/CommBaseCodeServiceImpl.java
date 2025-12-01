@@ -2,7 +2,7 @@ package org.jeecg.modules.zxecg.system.service.impl;
 
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.jeecg.modules.zxecg.system.mapper.mysql.CommBaseCodeMapper;
+import org.jeecg.modules.zxecg.system.mapper.CommBaseCodeMapper;
 import org.jeecg.modules.zxecg.system.service.ICommBaseCodeService;
 import org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +23,12 @@ public class CommBaseCodeServiceImpl extends ServiceImpl<CommBaseCodeMapper, Com
 
     @Override
     public Map<String, CommBaseCodeDetailVO> getCodeDetailsByCodeStrings(String typeNo, List<String> codeStrings) {
-        List<CommBaseCodeDetailVO> list=commBaseCodeMapper.getCodeDetailsByCodeStrings(typeNo.toUpperCase(), codeStrings);
-        if(CollectionUtils.isEmpty(list)){
+        List<CommBaseCodeDetailVO> list = commBaseCodeMapper.getCodeDetailsByCodeStrings(typeNo.toUpperCase(), codeStrings);
+        if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-        Map<String, CommBaseCodeDetailVO> map=new HashMap<>();
-        for(CommBaseCodeDetailVO vo:list){
+        Map<String, CommBaseCodeDetailVO> map = new HashMap<>();
+        for (CommBaseCodeDetailVO vo : list) {
             map.put(vo.getCodeString(), vo);
         }
         return map;
@@ -36,16 +36,45 @@ public class CommBaseCodeServiceImpl extends ServiceImpl<CommBaseCodeMapper, Com
 
     @Override
     public Map<String, CommBaseCodeDetailVO> getCodeDetailsByCodeNames(String typeNo, List<String> codeNames) {
-        List<CommBaseCodeDetailVO> list=commBaseCodeMapper.getCodeDetailsByCodeNames(typeNo.toUpperCase(), codeNames);
-        if(CollectionUtils.isEmpty(list)){
+        List<CommBaseCodeDetailVO> list = commBaseCodeMapper.getCodeDetailsByCodeNames(typeNo.toUpperCase(), codeNames);
+        if (CollectionUtils.isEmpty(list)) {
             return null;
         }
-        Map<String, CommBaseCodeDetailVO> map=new HashMap<>();
-        for(CommBaseCodeDetailVO vo:list){
-            if(vo!=null){
-                map.put(vo.getCodeName(), vo);
-            }
+        Map<String, CommBaseCodeDetailVO> map = new HashMap<>();
+        for (CommBaseCodeDetailVO vo : list) {
+            map.put(vo.getCodeName(), vo);
         }
         return map;
+    }
+
+    @Override
+    public Map<String, CommBaseCodeDetailVO> getCodeDetailsByCodeIds(String typeNo, List<Long> codeIds) {
+        List<CommBaseCodeDetailVO> list = commBaseCodeMapper.getCodeDetailsByCodeIds(typeNo.toUpperCase(), codeIds);
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        Map<String, CommBaseCodeDetailVO> map = new HashMap<>();
+        for (CommBaseCodeDetailVO vo : list) {
+            map.put(vo.getCodeName(), vo);
+        }
+        return map;
+    }
+
+    @Override
+    public Map<Long, CommBaseCodeDetailVO> getCodeDetailsByTypeNo(String typeNo) {
+        List<CommBaseCodeDetailVO> list = commBaseCodeMapper.getCodeDetailsByCodeIds(typeNo.toUpperCase(),null);
+        if (CollectionUtils.isEmpty(list)) {
+            return null;
+        }
+        Map<Long, CommBaseCodeDetailVO> map = new HashMap<>();
+        for (CommBaseCodeDetailVO vo : list) {
+            map.put(vo.getCodeId(), vo);
+        }
+        return map;
+    }
+
+    @Override
+    public List<Map<String, Object>> getPrintItems(String typeNo) {
+        return commBaseCodeMapper.getPrintItems(typeNo.toUpperCase());
     }
 }

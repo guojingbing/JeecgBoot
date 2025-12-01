@@ -5,9 +5,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.common.util.RedisUtil;
 import org.jeecg.modules.zxecg.system.service.ICommBaseCodeService;
@@ -39,7 +38,6 @@ public class LoginController {
     private ICommBaseCodeService commBaseCodeService;
     @Autowired
     private RedisUtil redisUtil;
-
     @Value(value = "${zxecg.sys.preUrl}")
     private String preUrl;
 

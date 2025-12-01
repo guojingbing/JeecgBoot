@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.EcgOutPackRecMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.pack_id packId,
+        a.company_id companyId,
+        DATE_FORMAT(
+        a.begin_date,
+        '%Y-%m-%d'
+        ) beginDate,
+        DATE_FORMAT(
+        a.end_date,
+        '%Y-%m-%d'
+        ) endDate,
+        DATE_FORMAT(
+        a.pack_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) packTime,
+        ifnull(a.pack_status, 0) packStatus,
+        DATE_FORMAT(
+        a.download_expire_time,
+        '%Y-%m-%d'
+        ) downloadExpireTime,
+        a.oper_user_id oprtUserId,
+        DATE_FORMAT(
+        a.oper_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) operTime,
+        b.company_name companyName,
+        u.user_name userName,
+        CASE
+        WHEN ifnull(a.pack_status, 0) = 2 THEN
+        '查看'
+        ELSE
+        ''
+        END downloadAddress
+        FROM
+        ecg_out_pack_rec a
+        LEFT JOIN comm_company b ON a.company_id = b.company_id
+        LEFT JOIN comm_system_user u ON a.oper_user_id = u.user_id
+        where a.company_id in(select distinct company_id from comm_user_mng_dept a INNER JOIN comm_dept b ON a.dept_id =
+        b.dept_id where user_id=#{loginUserId} )
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="startDate"'>
+                        and DATE_FORMAT(operTime,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and DATE_FORMAT(operTime,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by packTime desc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>

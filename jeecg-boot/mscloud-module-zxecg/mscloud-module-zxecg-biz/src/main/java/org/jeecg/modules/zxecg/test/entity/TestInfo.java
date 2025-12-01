@@ -1,14 +1,15 @@
 package org.jeecg.modules.zxecg.test.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 @Data
-@TableName("test_info")
+@TableName(value = "test_info", keepGlobalPrefix = true, schema = "TEST")
 public class TestInfo {
-    /**主键*/
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(value = "id", type = IdType.NONE/*, type = IdType.ASSIGN_ID*/)
     private String id;
+    @TableField(value = "name"/*, condition = SqlCondition.LIKE*/)
+    private String name;
+    @TableField(value = "age")
+    private Integer age;
 }

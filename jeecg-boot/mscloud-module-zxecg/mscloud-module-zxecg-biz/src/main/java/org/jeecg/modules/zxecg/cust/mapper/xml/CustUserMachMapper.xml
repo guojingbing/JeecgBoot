@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserMachMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.binding_id bindingId ,
+        a.mach_type machType,
+        a.mach_sn machSn,
+        a.mach_mac machMac,
+        a.uuid,
+        a.device_flag deviceFlag,
+        DATE_FORMAT(
+        a.binding_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) bindingTime,
+        DATE_FORMAT(
+        a.unbind_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) unbindTime,
+        a.binding_status bindingStatus ,
+        a.company_id companyId,
+        a.dept_id deptId,
+        b.user_name userName,
+        b.user_tel userTel,
+        b.user_status userStatus,
+        b.status,
+        b.user_id userId
+        FROM cust_user_mach a
+        LEFT JOIN cust_userinfo b ON a.user_id=b.user_id
+        where a.dept_id in (select distinct dept_id from comm_user_mng_dept where user_id=#{loginUserId})
+        )temp
+        where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by bindingTime desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getMachByUserIdAndMachSn" resultType="org.jeecg.modules.zxecg.cust.entity.CustUserMach">
+        select * from cust_user_mach where IFNULL(binding_status, 0) =1 AND user_id=#{userId}
+        <if test="machSn!= null and machSn!='' ">
+            AND mach_sn=#{machSn}
+        </if>
+    </select>
+</mapper>

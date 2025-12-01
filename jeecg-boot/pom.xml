@@ -189,6 +189,18 @@
 				<artifactId>jeecg-system-biz</artifactId>
 				<version>${jeecgboot.version}</version>
 			</dependency>
+            <!-- system 单体 api -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>jeecg-system-local-api</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
+            <!-- system 微服务 api -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>jeecg-system-cloud-api</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
 
 			<!-- jeecg tools -->
 			<dependency>
@@ -202,18 +214,13 @@
 				<artifactId>jeecg-boot-base-core</artifactId>
 				<version>${jeecgboot.version}</version>
 			</dependency>
-			<!-- system 单体 api -->
-			<dependency>
-				<groupId>org.jeecgframework.boot</groupId>
-				<artifactId>jeecg-system-local-api</artifactId>
-				<version>${jeecgboot.version}</version>
-			</dependency>
-			<!-- system 微服务 api -->
-			<dependency>
-				<groupId>org.jeecgframework.boot</groupId>
-				<artifactId>jeecg-system-cloud-api</artifactId>
-				<version>${jeecgboot.version}</version>
-			</dependency>
+
+            <!-- cust模块 -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>mscloud-module-cust-biz</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
 			<!-- cust单体 api -->
 			<dependency>
 				<groupId>org.jeecgframework.boot</groupId>
@@ -226,6 +233,13 @@
 				<artifactId>mscloud-module-cust-cloud-api</artifactId>
 				<version>${jeecgboot.version}</version>
 			</dependency>
+
+            <!-- IAGENT模块 -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>mscloud-module-iagent-biz</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
 			<!-- IAGENT单体 api -->
 			<dependency>
 				<groupId>org.jeecgframework.boot</groupId>
@@ -238,6 +252,26 @@
 				<artifactId>mscloud-module-iagent-cloud-api</artifactId>
 				<version>${jeecgboot.version}</version>
 			</dependency>
+
+            <!-- ZXBASE PHOENIX -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>mscloud-module-zxbase-phoenix</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
+
+            <!-- ZXECG模块 -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>mscloud-module-zxecg-biz</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
+            <!-- ZXECG 微服务api -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>mscloud-module-zxecg-cloud-api</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
 
             <!--微服务启动依赖-->
             <dependency>

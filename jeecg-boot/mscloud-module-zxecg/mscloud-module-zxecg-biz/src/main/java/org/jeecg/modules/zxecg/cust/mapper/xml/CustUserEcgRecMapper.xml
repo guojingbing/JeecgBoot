@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserEcgRecMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        a.ecg_id ecgId,
+        ecg_no ecgNo,
+        a.user_id userId,
+        b.user_name userName,
+        DATE_FORMAT(b.birth_date,'%Y-%m-%d') birthDate,
+        a.age,
+        b.user_tel userTel,
+        b.user_gender userGender,
+        DATE_FORMAT(ecg_start_time,'%Y-%m-%d %H:%i:%s') ecgStartTime,
+        DATE_FORMAT(ecg_end_time,'%Y-%m-%d %H:%i:%s') ecgEndTime,
+        CEIL((UNIX_TIMESTAMP(ecg_end_time) - UNIX_TIMESTAMP(ecg_start_time))/60) ecgMins,
+        ecg_type ecgType,
+        c.code_name ecgTypeName,
+        file_num fileNum,
+        data_file_status dataFileStatus,
+        abnormal_num abnormalNum,
+        mach_sn machSn,
+        attachment_id attachmentId,
+        a.version_id versionId,
+        a.app_ecg_id appEcgId,
+        DATE_FORMAT(a.upload_time,'%Y-%m-%d %H:%i:%s') uploadTime,
+        ifnull(a.ana_status,0) anaStatus,
+        a.app_alg_ver appAlgVer,
+        a.app_ver appVer,
+        a.data_file_path dataFilePath,
+        a.file_name fileName,
+        a.segment_type segmentType,
+        a.segment_reason segmentReason,
+        a.src,
+        a.company_id companyId,
+        a.phone_model phoneModel,
+        a.phone_os_ver phoneOsVer,
+        CASE ifnull(tmp.ecg_id,0)>0
+        WHEN true THEN
+        1
+        ELSE
+        0
+        END isKbData,
+        a.root_path_index rootPathIndex,
+        ifnull(wave_filter,1) waveFilter,
+        ifnull(anno_index_based,0) annoIndexBased,
+        DATE_FORMAT(a.create_time,'%Y-%m-%d %H:%i:%s') createTime,
+        comp.company_name companyName,
+        imei,
+        a.dept_id deptId,
+        cd.dept_name deptName,
+        case when l.archive_status=3 then 1
+        else l.archive_status
+        end archive_status,
+        case when l.archive_status=0 then '取回中'
+        when l.archive_status=1 then '已归档'
+        when l.archive_status=2 then '已取回'
+        when l.archive_status=3 then '已归档'
+        else '未归档'
+        end archiveStatusName
+        FROM
+        cust_user_ecg_rec a
+        inner join cust_userinfo b on a.user_id=b.user_id
+        left join comm_base_code_detail c on a.ecg_type=c.code_id and c.type_no='CD204'
+        left join (SELECT DISTINCT(ecg_id) FROM zx_kb_data_ecg) tmp ON a.ecg_id=tmp.ecg_id
+        left join comm_company comp on comp.company_id=a.company_id
+        left join comm_dept cd on cd.dept_id=a.dept_id
+        left join cust_user_ecg_rec_archive_log l on l.ecg_id=a.ecg_id
+        where a.dept_id in (select distinct dept_id from comm_user_mng_dept where user_id=#{loginUserId})
+        )temp where 1=1
+        <foreach collection="likeMap" item="tm" index="key">
+            <if test='tm != null and tm.toString().trim() != ""'>
+                <choose>
+                    <when test='key=="userName"'>
+                        and userId in (SELECT user_id FROM cust_userinfo WHERE user_name like
+                        CONCAT('%',#{tm,jdbcType=VARCHAR}, '%'))
+                    </when>
+                    <when test='key=="companyName"'>
+                        and companyId in (SELECT company_id FROM comm_company WHERE company_name like
+                        CONCAT('%',#{tm,jdbcType=VARCHAR}, '%'))
+                    </when>
+                    <when test='key=="deptName"'>
+                        and deptId in (SELECT dept_id FROM comm_dept WHERE dept_name like
+                        CONCAT('%',#{tm,jdbcType=VARCHAR}, '%'))
+                    </when>
+                    <when test='key=="startDate"'>
+                        and DATE_FORMAT(ecgStartTime,'%Y-%m-%d') >= #{tm}
+                    </when>
+                    <when test='key=="endDate"'>
+                        and DATE_FORMAT(ecgStartTime,'%Y-%m-%d') &lt;= #{tm}
+                    </when>
+                    <when test='key=="userId"'>
+                        and userId= #{tm}
+                    </when>
+                    <otherwise>
+                        and ${key} like CONCAT('%',#{tm,jdbcType=VARCHAR}, '%')
+                    </otherwise>
+                </choose>
+            </if>
+        </foreach>
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by ecgEndTime DESC,ecgId desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getEcgListByRepId" resultType="org.jeecg.modules.zxecg.cust.entity.CustUserEcgRec">
+        SELECT
+        *
+        FROM
+            cust_user_ecg_rec
+        WHERE
+            ecg_id IN (
+                SELECT
+                    ecg_id
+                FROM
+                    cust_user_ecg_report_detail
+                WHERE
+                    rep_id = #{repId}
+                    )
+    </select>
+
+    <select id="getDurationByEcgIds" resultType="java.util.HashMap">
+        SELECT
+        sum(
+        TIMESTAMPDIFF(
+        SECOND,
+        ecg_start_time,
+        ecg_end_time
+        )
+        ) ecgDuration,
+        sum(valid_duration) validDuration
+        FROM
+        cust_user_ecg_rec
+        WHERE 1=1
+        <if test="codeList!=null">
+            and ecg_id in
+            <foreach collection="ecgIdList" item="code" index="index" open="(" close=")" separator=",">
+                #{code}
+            </foreach>
+        </if>
+    </select>
+</mapper>

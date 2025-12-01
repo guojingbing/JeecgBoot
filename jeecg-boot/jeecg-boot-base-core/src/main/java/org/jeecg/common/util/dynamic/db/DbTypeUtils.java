@@ -60,6 +60,10 @@ public class DbTypeUtils {
         dialectMap.put("other", "org.hibernate.dialect.PostgreSQLDialect");
     }
 
+    public static boolean dbTypeIsPhoenix(DbType dbType) {
+        return dbTypeIf(dbType, DbType.PHOENIX);
+    }
+
     public static boolean dbTypeIsMySql(DbType dbType) {
         return dbTypeIf(dbType, DbType.MYSQL, DbType.MARIADB, DbType.CLICK_HOUSE, DbType.SQLITE);
     }
@@ -101,7 +105,10 @@ public class DbTypeUtils {
             return DataBaseConstant.DB_TYPE_SQLSERVER;
         }else if(dbTypeIsPostgre(dbType)){
             return DataBaseConstant.DB_TYPE_POSTGRESQL;
+        }else if(dbTypeIsPhoenix(dbType)){
+            return DataBaseConstant.DB_TYPE_PHOENIX;
         }
+
         return DataBaseConstant.DB_TYPE_MYSQL;
     }
 

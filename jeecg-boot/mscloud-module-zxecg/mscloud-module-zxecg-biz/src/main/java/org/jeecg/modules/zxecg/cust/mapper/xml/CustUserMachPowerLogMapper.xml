@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.zxecg.cust.mapper.CustUserMachPowerLogMapper">
+    <select id="loadListPaging" parameterType="java.util.HashMap"
+            resultType="java.util.HashMap">
+        select * from (
+        SELECT
+        id,
+        binding_id bindingId,
+        power_value,powerValue,
+        DATE_FORMAT(
+        upload_time,
+        '%Y-%m-%d %H:%i:%s'
+        ) uploadTime
+        FROM cust_user_mach_power_log
+        where binding_id=#{bindingId}) temp
+        <choose>
+            <when test="column!= null and column!='' ">
+                order by ${column} ${order}
+            </when>
+            <otherwise>
+                order by uploadTime desc
+            </otherwise>
+        </choose>
+    </select>
+</mapper>
