@@ -610,6 +610,37 @@ public class PhoenixUtil {
     }
 
     /**
+     * 初始化查询操作sql
+     * @param baseSql WHERE前的基础查询语句
+     * @param queryPager 查询参数，包含排序、分页、查询条件等，必须按顺序指定主键字段值，caseSql为where后的查询条件(使用时注意使用主键字段，避免触发hbase fullscan)
+     * @return
+     */
+    public static String initQuerySql(String baseSql,PhoenixQueryPager queryPager) {
+        if(StringUtils.isBlank(baseSql)){
+            return null;
+        }
+        StringBuffer sb=new StringBuffer(baseSql);
+        sb.append(" WHERE 1=1 ");
+        if(StringUtils.isNotBlank(queryPager.getCaseSql())){
+            sb.append(" AND ");
+            sb.append(queryPager.getCaseSql());
+        }
+        if(StringUtils.isNotBlank(queryPager.getOrderSql())){
+            sb.append(" ORDER BY ");
+            sb.append(queryPager.getOrderSql());
+        }
+        if(queryPager.getPageSize()>0){
+            sb.append(" LIMIT ");
+            sb.append(queryPager.getPageSize());
+        }
+        if(queryPager.getPageNo()>0){
+            sb.append(" OFFSET ");
+            sb.append(queryPager.getPageSize()*(queryPager.getPageNo()-1));
+        }
+        return sb.toString().toUpperCase();
+    }
+
+    /**
      * 扫描phoenix实体类
      * @return
      */

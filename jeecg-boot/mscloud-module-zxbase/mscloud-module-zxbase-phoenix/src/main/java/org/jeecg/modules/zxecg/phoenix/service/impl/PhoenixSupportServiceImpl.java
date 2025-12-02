@@ -211,6 +211,27 @@ public abstract class PhoenixSupportServiceImpl implements IPhoenixSupportServic
     }
 
     @Override
+    public <T> PhoenixQueryPager query(Class<T> clazz, String baseSql, PhoenixQueryPager pager) throws Exception{
+        String sql=PhoenixUtil.initQuerySql(baseSql,pager);
+        if(StringUtils.isBlank(sql)){
+            return pager;
+        }
+
+        //设置查询参数,绑定查询语句中的参数
+        List<Object> params=pager.getKeyParams();
+        List<T> list=jdbcTemplate.query(sql, ps -> {
+            if(CollectionUtils.isNotEmpty(params)){
+                for(int i=0;i<params.size();i++){
+                    ps.setObject(i+1,params.get(i));
+                }
+            }
+        }, new BeanPropertyRowMapper<>(clazz));
+
+        pager.setList(list);
+        return pager;
+    }
+
+    @Override
     public void excuteSql(String sql) throws Exception {
         jdbcTemplate.execute(sql);
     }

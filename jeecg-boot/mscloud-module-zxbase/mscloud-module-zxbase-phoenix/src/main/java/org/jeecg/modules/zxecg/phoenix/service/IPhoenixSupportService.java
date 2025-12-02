@@ -97,6 +97,17 @@ public interface IPhoenixSupportService {
     <T> PhoenixQueryPager query(Class<T> clazz, PhoenixQueryPager pager) throws Exception;
 
     /**
+     * 自定义查询语句分页查询
+     * @param clazz
+     * @param baseSql WHERE前的基础查询语句
+     * @param pager
+     * @param <T>
+     * @return
+     * @throws Exception
+     */
+    <T> PhoenixQueryPager query(Class<T> clazz, String baseSql,PhoenixQueryPager pager) throws Exception;
+
+    /**
      * 执行phoenix 建表、删表 sql语句
      * @param sql
      * @throws Exception
