@@ -14,7 +14,7 @@ public class PhoenixQueryPager {
     private Integer pageCount;//总页数
     private Integer totalCount;//总记录数
     private List<Object> keyParams;//查询主键字段参数
-    private String caseSql;//查询条件sql
+    private String caseSql;//查询条件sql,where后的查询条件
     private String orderSql;//排序sql
     private List<?> list;//查询结果列表
     public PhoenixQueryPager() {}

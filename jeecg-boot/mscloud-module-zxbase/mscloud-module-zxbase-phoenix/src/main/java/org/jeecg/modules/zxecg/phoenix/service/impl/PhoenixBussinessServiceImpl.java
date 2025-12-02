@@ -99,6 +99,13 @@ public class PhoenixBussinessServiceImpl extends PhoenixSupportServiceImpl imple
                     System.out.println(pager.getList().size());
                 }
             }
+            PhoenixQueryPager pager1 = new PhoenixQueryPager(null,10,1,"id in (201,301) and name like '张三%'","id asc,type asc");
+            pager1=super.query(PhoenixDemoEntity.class,"select * from PHOENIX_DEMO",pager1);
+            if(pager1!=null){
+                if(CollectionUtils.isNotEmpty(pager1.getList())){
+                    System.out.println(pager1.getList().size());
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

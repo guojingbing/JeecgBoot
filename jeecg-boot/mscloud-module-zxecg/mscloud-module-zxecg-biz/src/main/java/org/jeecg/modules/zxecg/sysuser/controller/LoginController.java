@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.common.util.RedisUtil;
+import org.jeecg.modules.zxecg.cust.service.phoenix.IPhoenixEcgService;
 import org.jeecg.modules.zxecg.system.service.ICommBaseCodeService;
 import org.jeecg.modules.zxecg.system.vo.CommBaseCodeDetailVO;
 import org.jeecg.modules.zxecg.sysuser.dto.SysUserLoginDTO;
@@ -38,6 +39,10 @@ public class LoginController {
     private ICommBaseCodeService commBaseCodeService;
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private IPhoenixEcgService phoenixEcgService;
+
     @Value(value = "${zxecg.sys.preUrl}")
     private String preUrl;
 
@@ -47,6 +52,8 @@ public class LoginController {
 	public Result<?> login(@RequestBody SysUserLoginDTO sysUserLoginDTO, HttpServletRequest request){
 		log.info(" ---我被调用了--- ");
         Result<JSONObject> result = new Result<JSONObject>();
+        phoenixEcgService.phoenixTest();
+
         //查询用户信息
         SysUserVO sysUserVO=sysUserService.getSystemUserVOByUserNoOrPhone(sysUserLoginDTO.getUserNo());
         //判断账号有效性
