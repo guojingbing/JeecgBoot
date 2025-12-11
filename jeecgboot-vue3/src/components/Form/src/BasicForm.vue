@@ -11,6 +11,7 @@
           :allDefaultValues="defaultValueRef"
           :formModel="formModel"
           :formName="getBindValue.name"
+          :source="getBindValue.source"
           :setFormModel="setFormModel"
           :validateFields="validateFields"
           :clearValidate="clearValidate"
@@ -60,6 +61,7 @@
   import { useDesign } from '/@/hooks/web/useDesign';
   import dayjs from 'dayjs';
   import { useDebounceFn } from '@vueuse/core';
+  import { isFunction, isObject } from '/@/utils/is';
 
   export default defineComponent({
     name: 'BasicForm',
@@ -89,12 +91,11 @@
       // Get the basic configuration of the form
       const getProps = computed((): FormProps => {
         let mergeProps = { ...props, ...unref(propsRef) } as FormProps;
-        //update-begin-author:sunjianlei date:20220923 for: 如果用户设置了labelWidth，则使labelCol失效，解决labelWidth设置无效的问题
+        // 代码逻辑说明: 如果用户设置了labelWidth，则使labelCol失效，解决labelWidth设置无效的问题
         if (mergeProps.labelWidth) {
           mergeProps.labelCol = undefined;
         }
-        //update-end-author:sunjianlei date:20220923 for: 如果用户设置了labelWidth，则使labelCol失效，解决labelWidth设置无效的问题
-        // update-begin--author:liaozhiyang---date:20231017---for：【QQYUN-6566】BasicForm支持一行显示(inline)
+        // 代码逻辑说明: 【QQYUN-6566】BasicForm支持一行显示(inline)
         if (mergeProps.layout === 'inline') {
           if (mergeProps.labelCol === componentSetting.form.labelCol) {
             mergeProps.labelCol = undefined;
@@ -103,7 +104,6 @@
             mergeProps.wrapperCol = undefined;
           }
         }
-        // update-end--author:liaozhiyang---date:20231017---for：【QQYUN-6566】BasicForm支持一行显示(inline)
         return mergeProps;
       });
 
@@ -126,7 +126,14 @@
         };
       });
 
-      const getBindValue = computed(() => ({ ...attrs, ...props, ...unref(getProps) } as Recordable));
+      const getBindValue = computed(() => {
+        const bindValue = { ...attrs, ...props, ...unref(getProps) } as Recordable;
+        // 代码逻辑说明: 【issues/8484】分类字典中的新增弹窗的label点击会触发查询区域的input
+        if (bindValue.name === undefined && bindValue.source === 'table-query') {
+          bindValue.name = 'top-query-form';
+        }
+        return bindValue;
+      });
 
       const getSchema = computed((): FormSchema[] => {
         const schemas: FormSchema[] = unref(schemaRef) || (unref(getProps).schemas as any);
@@ -134,44 +141,46 @@
           const { defaultValue, component, componentProps } = schema;
           // handle date type
           if (defaultValue && dateItemType.includes(component)) {
-            //update-begin---author:wangshuai ---date:20230410  for：【issues/435】代码生成的日期控件赋默认值报错------------
+            // 代码逻辑说明: 【issues/435】代码生成的日期控件赋默认值报错------------
             let valueFormat:string = "";
-            if(componentProps){
+            // 代码逻辑说明: 【issues/8683】DatePicker组件的componentProps使用函数形式时初始值获取不对
+            if(isObject(componentProps)) {
               valueFormat = componentProps?.valueFormat;
+            } else if (isFunction(componentProps)) {
+              try {
+                // @ts-ignore
+                valueFormat = componentProps({schema, tableAction: props.tableAction, formModel})?.valueFormat;
+              } catch (error) {
+              }
             }
+            // update-end--author:liaozhiyang---date:20250818---for【issues/8683】DatePicker组件的componentProps使用函数形式时初始值获取不对
             if(!valueFormat){
               console.warn("未配置valueFormat,可能导致格式化错误！");
             }
-            //update-end---author:wangshuai ---date:20230410  for：【issues/435】代码生成的日期控件赋默认值报错------------
             if (!Array.isArray(defaultValue)) {
-              //update-begin---author:wangshuai ---date:20221124  for：[issues/215]列表页查询框（日期选择框）设置初始时间，一进入页面时，后台报日期转换类型错误的------------
+              // 代码逻辑说明: [issues/215]列表页查询框（日期选择框）设置初始时间，一进入页面时，后台报日期转换类型错误的------------
               if(valueFormat){
                 // schema.defaultValue = dateUtil(defaultValue).format(valueFormat);
-                // update-begin--author:liaozhiyang---date:20240529---for：【TV360X-346 】时间组件填写默认值有问题
+                // 代码逻辑说明: 【TV360X-346 】时间组件填写默认值有问题
                 schema.defaultValue = dateUtil(defaultValue, valueFormat).format(valueFormat);
-                // update-end--author:liaozhiyang---date:20240529---for：【TV360X-346 】时间组件填写默认值有问题
               }else{
                 schema.defaultValue = dateUtil(defaultValue);
               }
-              //update-end---author:wangshuai ---date:20221124  for：[issues/215]列表页查询框（日期选择框）设置初始时间，一进入页面时，后台报日期转换类型错误的------------
             } else {
               const def: dayjs.Dayjs[] = [];
               defaultValue.forEach((item) => {
-                //update-begin---author:wangshuai ---date:20221124  for：[issues/215]列表页查询框（日期选择框）设置初始时间，一进入页面时，后台报日期转换类型错误的------------
+                // 代码逻辑说明: [issues/215]列表页查询框（日期选择框）设置初始时间，一进入页面时，后台报日期转换类型错误的------------
                 if(valueFormat){
-                  // update-begin--author:liaozhiyang---date:20240529---for：【TV360X-346 】时间组件填写默认值有问题
+                  // 代码逻辑说明: 【TV360X-346 】时间组件填写默认值有问题
                   def.push(dateUtil(item, valueFormat).format(valueFormat));
-                  // update-end--author:liaozhiyang---date:20240529---for：【TV360X-346 】时间组件填写默认值有问题
                 }else{
                   def.push(dateUtil(item));
                 }
-                //update-end---author:wangshuai ---date:20221124  for：[issues/215]列表页查询框（日期选择框）设置初始时间，一进入页面时，后台报日期转换类型错误的------------
               });
-              // update-begin--author:liaozhiyang---date:20240328---for：【issues/1114】rangepicker等时间控件报错（vue3.4以上版本有问题）
+              // 代码逻辑说明: 【issues/1114】rangepicker等时间控件报错（vue3.4以上版本有问题）
               def.forEach((item, index) => {
                 defaultValue[index] = item;
               });
-              // update-end--author:liaozhiyang---date:20240328---for：【issues/1114】rangepicker等时间控件报错（vue3.4以上版本有问题）
             }
           }
         }
@@ -275,21 +284,18 @@
         propsRef.value = deepMerge(unref(propsRef) || {}, formProps);
       }
 
-      //update-begin-author:taoyan date:2022-11-28 for: QQYUN-3121 【优化】表单视图问题#scott测试 8、此功能未实现
+      // 代码逻辑说明: QQYUN-3121 【优化】表单视图问题#scott测试 8、此功能未实现
       const onFormSubmitWhenChange = useDebounceFn(handleSubmit, 300);
       function setFormModel(key: string, value: any) {
         formModel[key] = value;
-        // update-begin--author:liaozhiyang---date:20230922---for：【issues/752】表单校验dynamicRules 无法 使用失去焦点后校验 trigger: 'blur'
         // const { validateTrigger } = unref(getBindValue);
         // if (!validateTrigger || validateTrigger === 'change') {
         //   validateFields([key]).catch((_) => {});
         // }
-        // update-end--author:liaozhiyang---date:20230922---for：【issues/752】表单校验dynamicRules 无法 使用失去焦点后校验 trigger: 'blur'
         if(props.autoSearch === true){
           onFormSubmitWhenChange();
         }
       }
-      //update-end-author:taoyan date:2022-11-28 for: QQYUN-3121 【优化】表单视图问题#scott测试 8、此功能未实现
 
       function handleEnterPress(e: KeyboardEvent) {
         const { autoSubmitOnEnter } = unref(getProps);
@@ -300,6 +306,22 @@
             handleSubmit();
           }
         }
+      }
+
+      /**
+       * 获取 componentProps，处理可能是函数的情况
+       * @param schema
+       */
+      function getSchemaComponentProps(schema: FormSchema) {
+        if (typeof schema.componentProps === 'function') {
+          return schema.componentProps({
+            schema,
+            tableAction: props.tableAction,
+            formActionType,
+            formModel,
+          })
+        }
+        return schema.componentProps
       }
 
       const formActionType: Partial<FormActionType> = {
@@ -318,6 +340,7 @@
         validate,
         submit: handleSubmit,
         scrollToField: scrollToField,
+        getSchemaComponentProps,
       };
 
       onMounted(() => {
@@ -357,16 +380,13 @@
       &-with-help {
         margin-bottom: 0;
       }
-      // update-begin--author:liaozhiyang---date:20240514---for：【QQYUN-9241】form表单上下间距大点
       //&:not(.ant-form-item-with-help) {
       //  margin-bottom: 24px;
       //}
-      // update-begin--author:liaozhiyang---date:20240514---for：【QQYUN-9241】form表单上下间距大点
-      // update-begin--author:liaozhiyang---date:20240620---for：【TV360X-1420】校验时闪动
+      // 代码逻辑说明: 【TV360X-1420】校验时闪动
       &-has-error {
         margin-bottom: 24px;
       }
-      // update-end--author:liaozhiyang---date:20240620---for：【TV360X-1420】校验时闪动
 
       // 表单组件中间件样式
       .j-form-item-middleware {
@@ -425,12 +445,11 @@
         margin-bottom: 8px !important;
       }
     }
-    // update-begin--author:liaozhiyang---date:20231017---for：【QQYUN-6566】BasicForm支持一行显示(inline)
+    // 代码逻辑说明: 【QQYUN-6566】BasicForm支持一行显示(inline)
     &.ant-form-inline {
       & > .ant-row {
         .ant-col { width:auto !important; }
       }
     }
-    // update-end--author:liaozhiyang---date:20231017---for：【QQYUN-6566】BasicForm支持一行显示(inline)
   }
 </style>

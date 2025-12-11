@@ -28,6 +28,7 @@
   import { useTabDropdown } from '../useTabDropdown';
   import { useMultipleTabSetting } from '/@/hooks/setting/useMultipleTabSetting';
   import { useLocaleStore } from '/@/store/modules/locale';
+  import { PageEnum } from '/@/enums/pageEnum';
 
   export default defineComponent({
     name: 'TabContent',
@@ -43,7 +44,7 @@
       const { prefixCls } = useDesign('multiple-tabs-content');
       const { t } = useI18n();
 
-      //update-begin-author:taoyan date:2022-6-1 for: VUEN-1144 online 配置成菜单后，打开菜单，显示名称未展示为菜单名称
+      // 代码逻辑说明: VUEN-1144 online 配置成菜单后，打开菜单，显示名称未展示为菜单名称
       const localeStore = useLocaleStore();
       const getTitle = computed(() => {
         const { tabItem: { meta, fullPath } = {} } = props;
@@ -53,7 +54,6 @@
         }
         return meta && t(meta.title as string);
       });
-      //update-end-author:taoyan date:2022-6-1 for: VUEN-1144 online 配置成菜单后，打开菜单，显示名称未展示为菜单名称
 
       const getIsTabs = computed(() => !props.isExtra);
 
@@ -61,7 +61,7 @@
       const prefixIconType = computed(() => {
         if (props.tabItem.meta.icon) {
           return props.tabItem.meta.icon;
-        } else if (props.tabItem.path === '/dashboard/analysis') {
+        } else if (props.tabItem.path === PageEnum.BASE_HOME) {
           // 当是首页时返回 home 图标 TODO 此处可能需要动态判断首页路径
           return 'ant-design:home-outlined';
         } else {

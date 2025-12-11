@@ -3,9 +3,6 @@ AIGC应用平台介绍
 
 一个全栈式 AI 开发平台，旨在帮助开发者快速构建和部署个性化的 AI 应用。
 
-> JDK说明：AI流程编排引擎暂时不支持jdk21，所以目前只能使用jdk8或者jdk17启动项目。
-
-
 JeecgBoot平台的AIGC功能模块，是一套类似`Dify`的`AIGC应用开发平台`+`知识库问答`，是一款基于LLM大语言模型AI应用平台和 RAG 的知识库问答系统。
 其直观的界面结合了 AI 流程编排、RAG 管道、知识库管理、模型管理、对接向量库、实时运行可观察等，让您可以快速从原型到生产，拥有AI服务能力。
 
@@ -14,6 +11,19 @@ JeecgBoot平台的AIGC功能模块，是一套类似`Dify`的`AIGC应用开发�
 ### AI视频介绍
 
 [![](https://jeecgos.oss-cn-beijing.aliyuncs.com/files/jeecg_aivideo.png)](https://www.bilibili.com/video/BV1zmd7YFE4w)
+
+
+##### 功能大模块
+
+- AI应用开发平台
+- AI知识库系统
+- AI大模型管理
+- AI流程编排
+- AI对话支持图片
+- AI对话助手(智能问答)
+- AI建表（Online表单）
+- AI写文章（CMS）
+- AI表单字段建议（表单设计器）
 
 
 
@@ -44,10 +54,10 @@ JeecgBoot平台的AIGC功能模块，是一套类似`Dify`的`AIGC应用开发�
 
 
 
-### 安装向量库 pgvector
+### 技术文档
 
-- https://help.jeecg.com/aigc/config
-
+- [AIGC开发文档](https://help.jeecg.com/aigc)
+- [安装向量库 pgvector](https://help.jeecg.com/aigc/config)
 
 
 
@@ -73,7 +83,7 @@ JeecgBoot平台的AIGC功能模块，是一套类似`Dify`的`AIGC应用开发�
 ## 技术交流
 
 - 开发文档：https://help.jeecg.com/aigc 
-- QQ群：716488839
+- QQ群：964611995、716488839(满)
 
 
 ## 功能列表

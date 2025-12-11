@@ -86,7 +86,8 @@
 
     &-main {
       width: 100%;
-      margin-left: 1px;
+      // 代码逻辑说明:【issues/8709】LayoutContent样式多出1px
+      // margin-left: 1px;
     }
   }
 </style>

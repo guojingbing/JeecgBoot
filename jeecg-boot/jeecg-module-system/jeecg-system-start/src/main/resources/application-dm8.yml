@@ -1,11 +1,7 @@
 server:
   port: 8080
-  undertow:
-    # max-http-post-size: 10MB # 平替 tomcat server.tomcat.max-swallow-siz， undertow该值默认为-1
-    worker-threads: 16  # 4核CPU标准配置
-    buffers:
-      websocket: 8192 # WebSocket缓冲 以字节为单位，这里设置为8 KB
-      io: 16384 # IO操作缓冲 以字节为单位，这里设置为16 KB
+  tomcat:
+    max-swallow-size: -1
   error:
     include-exception: true
     include-stacktrace: ALWAYS
@@ -21,29 +17,34 @@ management:
   endpoints:
     web:
       exposure:
-        include: metrics,httptrace-new
+        include: metrics,httpexchanges,jeecghttptrace
 
 spring:
   flyway:
     # 是否启用flyway
     enabled: false
-    # 是否关闭要清除已有库下的表功能,生产环境必须为true,否则会删库，非常重要！！！
     clean-disabled: true
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
   mail:
+    # 定时任务发送邮件
+    timeJobSend: false
     host: smtp.163.com
     username: jeecgos@163.com
     password: ??
     properties:
+      mail.smtp.timeout: 10000  # 连接超时（毫秒）
+      mail.smtp.connectiontimeout: 10000  # 连接超时（毫秒）
+      mail.smtp.writetimeout: 10000  # 写入超时（毫秒）
       mail.smtp.auth: true
       smtp.ssl.enable: true
   ## quartz定时任务,采用数据库方式
   quartz:
     job-store-type: jdbc
-    initialize-schema: never
+    jdbc:
+      initialize-schema: embedded
     #定时任务启动开关，true-开  false-关
     auto-startup: true
     #延迟1秒启动定时任务
@@ -104,7 +105,7 @@ spring:
     static-locations: classpath:/static/,classpath:/public/
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
       - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
   datasource:
     druid:
@@ -129,16 +130,17 @@ spring:
       datasource:
         # 重点是将数据源指向oracle 用compatibleMode=oracle即可
         master:
-          url: jdbc:dm://127.0.0.1:30236/?schema=SYSDBA&compatibleMode=oracle&zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
+          url: jdbc:dm://127.0.0.1:30236?schema=SYSDBA&compatibleMode=oracle&zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8
           username: SYSDBA
           password: SYSDBA
           driverClassName: dm.jdbc.driver.DmDriver
   #redis 配置
-  redis:
-    database: 0
-    host: 127.0.0.1
-    port: 6379
-    password: ''
+  data:
+    redis:
+      database: 0
+      host: 127.0.0.1
+      port: 6379
+      password: ''
 #mybatis plus 设置
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml
@@ -151,8 +153,8 @@ mybatis-plus:
       # 默认数据库表下划线命名
       table-underline: true
   configuration:
-    # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
-    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 返回类型为Map,显示null对应的字段
     call-setters-on-nulls: true
 #jeecg专用配置
@@ -164,7 +166,7 @@ jeecg:
     enabled: true
     model: deepseek-chat
     apiKey: ??
-    apiHost: https://api.deepseek.com
+    apiHost: https://api.deepseek.com/v1
     timeout: 60
   # AIRag向量库
   ai-rag:
@@ -204,6 +206,18 @@ jeecg:
     secretKey: ??
     endpoint: oss-cn-beijing.aliyuncs.com
     bucketName: jeecgdev
+    # 短信模板
+    sms-template:
+      # 签名
+      signature:
+      # 模板code
+      templateCode:
+        # 登录短信、忘记密码模板编码
+        SMS_175435174:
+        # 修改密码短信模板编码
+        SMS_465391221:
+        # 注册账号短信模板编码
+        SMS_175430166:
   # 在线预览文件服务器地址配置
   file-view-domain: http://fileview.jeecg.com
   # minio文件上传
@@ -222,6 +236,12 @@ jeecg:
       dataSourceSafe: false
       # 低代码开发模式（dev:开发模式，prod:发布模式—关闭在线报表设计功能，分配角色admin、lowdeveloper可以放开限制）
       lowCodeMode: dev
+    # 高德地图Api配置(v2.1.3+ BI新增高德地图)
+    gao-de-api:
+      # 应用key
+      api-key: ??
+      # 应用秘钥
+      secret-key: ??
   #xxl-job配置
   xxljob:
     enabled: false
@@ -245,6 +265,7 @@ cas:
 #Mybatis输出sql日志
 logging:
   level:
+    org.springframework.context.support.PostProcessorRegistrationDelegate: error
     org.flywaydb: debug
     org.jeecg.modules.system.mapper: info
 #swagger

@@ -40,4 +40,18 @@ public interface ISysRoleIndexService extends IService<SysRoleIndex> {
      */
     void cleanDefaultIndexCache();
 
+    /**
+     * 切换默认门户
+     * @param sysRoleIndex
+     */
+    void changeDefHome(SysRoleIndex sysRoleIndex);
+
+    /**
+     * 更新其他全局默认的状态值
+     *
+     * @param roleCode
+     * @param status
+     * @param id
+     */
+    void updateOtherDefaultStatus(String roleCode, String status, String id);
 }

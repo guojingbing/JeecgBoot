@@ -134,9 +134,14 @@
 <#-- update-begin---author:chenrui ---date:20231228  for:[QQYUN-7527]vue3代码生成默认带上高级查询---------- -->
 <#-- ** 高级查询生成(Vue3 * -->
 <#function superQueryFieldListForVue3(po,order)>
+<#-- 高级查询日期格式化 -->
+    <#assign picker=''>
+    <#if po.extendParams?exists && po.extendParams.picker?exists>
+        <#assign picker='fieldExtendJson:"{\\"picker\\":\\"${po.extendParams.picker}\\"}",'>
+    </#if>
 <#-- 字段展示/DB类型 -->
     <#assign baseAttrs="view: '${po.classType}', type: 'string',">
-    <#if po.fieldDbType=='int' || po.fieldDbType=='double' || po.fieldDbType=='BigDecimal'>
+    <#if po.fieldDbType=='int' || po.fieldDbType=='long' || po.fieldDbType=='double' || po.fieldDbType=='BigDecimal'>
         <#assign baseAttrs="view: 'number', type: 'number',">
     </#if>
 
@@ -189,7 +194,7 @@
         <#assign extAttrs="code: '${po.dictTable?default('')}', orgFields: '${orgField}', destFields: '${po.fieldName}', popupMulti: false,">
     </#if>
 
-    <#return "${po.fieldName}: {title: '${po.filedComment}',order: ${order},${baseAttrs}${extAttrs}}" >
+    <#return "${po.fieldName}: {title: '${po.filedComment}',order: ${order},${baseAttrs}${extAttrs}${picker}}" >
 </#function>
 <#-- update-end---author:chenrui ---date:20231228  for:[QQYUN-7527]vue3代码生成默认带上高级查询---------- -->
 
@@ -239,7 +244,7 @@
   <#list columns as po>
       <#if po.isQuery=='Y'>
           <#if po.queryMode=='group'>
-              <#if po.fieldDbType=='int' || po.fieldDbType=='double' || po.fieldDbType=='BigDecimal' || po.classType=='time' || po.classType=='date' || po.classType=='datetime'>
+              <#if po.fieldDbType=='int' || po.fieldDbType=='long' || po.fieldDbType=='double' || po.fieldDbType=='BigDecimal' || po.classType=='time' || po.classType=='date' || po.classType=='datetime'>
                   <#assign rangeField = rangeField + "${po.fieldName},">
               </#if>
           </#if>

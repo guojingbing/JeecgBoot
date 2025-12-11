@@ -8,6 +8,9 @@ export default {
     dropdownItemSwitchDepart: 'Switch Department',
     dropdownItemRefreshCache: 'Clean cache',
     dropdownItemSwitchAccount: 'Account Setting',
+    dropdownItemSwitchDefaultHomePage: 'Switch Home Page',
+    dropdownItemSwitchDefaultWeb: 'Web Download',
+    dropdownItemSwitchDefaultAndroid: 'Android Apk Download',
 
     tooltipErrorLog: 'Error log',
     tooltipLock: 'Lock screen',

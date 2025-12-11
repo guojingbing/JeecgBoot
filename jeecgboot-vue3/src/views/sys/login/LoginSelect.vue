@@ -1,5 +1,5 @@
 <template>
-  <BasicModal v-bind="config" @register="registerModal" :title="currTitle" wrapClassName="loginSelectModal" v-model:visible="visible">
+  <BasicModal v-bind="config" @register="registerModal" :title="currTitle" wrapClassName="loginSelectModal" v-model:visible="visible" :maxHeight="500">
     <a-form ref="formRef" :model="formState" :rules="rules" v-bind="layout" :colon="false" class="loginSelectForm">
       <!--多租户选择-->
       <a-form-item v-if="isMultiTenant" name="tenantId" :validate-status="validate_status">
@@ -146,11 +146,11 @@
         let multi_depart = loginResult.multi_depart;
         //0:无部门 1:一个部门 2:多个部门
         if (multi_depart == 0) {
-          notification.warn({
-            message: '提示',
-            description: `您尚未归属部门,请确认账号信息`,
-            duration: 3,
-          });
+          // notification.warn({
+          //   message: '提示',
+          //   description: `您尚未归属部门,请确认账号信息`,
+          //   duration: 3,
+          // });
           isMultiDepart.value = false;
         } else if (multi_depart == 2) {
           isMultiDepart.value = true;

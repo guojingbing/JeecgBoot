@@ -76,6 +76,7 @@ export const formSchemas: FormSchema[] = [
     label: '模板编码',
     field: 'templateCode',
     component: 'Input',
+    required: true,
     dynamicRules: ({ model, schema }) => {
       return [ ...rules.duplicateCheckRule('sys_sms_template', 'template_code', model, schema, true)];
     },
@@ -86,11 +87,22 @@ export const formSchemas: FormSchema[] = [
     label: '模板类型',
     field: 'templateType',
     component: 'JDictSelectTag',
+    defaultValue: '1',
     componentProps: {
       dictCode: 'msgType',
+      type: 'radio',
       placeholder: '请选择模板类型',
     },
     required: true,
+  },
+  {
+    label: '模板分类',
+    field: 'templateCategory',
+    component: 'JDictSelectTag',
+    componentProps: {
+      dictCode: 'msgCategory',
+      placeholder: '请选择模板分类',
+    }
   },
   {
     label: '是否应用',

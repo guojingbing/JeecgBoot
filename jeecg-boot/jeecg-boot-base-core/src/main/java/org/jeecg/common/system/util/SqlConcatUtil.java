@@ -1,13 +1,22 @@
 package org.jeecg.common.system.util;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.constant.DataBaseConstant;
 import org.jeecg.common.constant.SymbolConstant;
+import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.util.CommonUtils;
 import org.jeecg.common.util.oConvertUtils;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -141,7 +150,7 @@ public class SqlConcatUtil {
     }
 
     private static String getInConditionValue(Object value,boolean isString) {
-        //update-begin-author:taoyan date:20210628 for: 查询条件如果输入,导致sql报错
+        // 代码逻辑说明: 查询条件如果输入,导致sql报错
         String[] temp = value.toString().split(",");
         if(temp.length==0){
             return "('')";
@@ -159,7 +168,6 @@ public class SqlConcatUtil {
         }else {
             return "("+value.toString()+")";
         }
-        //update-end-author:taoyan date:20210628 for: 查询条件如果输入,导致sql报错
     }
 
     /**
@@ -206,7 +214,6 @@ public class SqlConcatUtil {
                 }
             }else {
 
-                //update-begin-author:taoyan date:2022-6-30 for: issues/3810 数据权限规则问题
                 // 走到这里说明 value不带有任何模糊查询的标识(*或者%)
                 if (ruleEnum == QueryRuleEnum.LEFT_LIKE) {
                     if (DataBaseConstant.DB_TYPE_SQLSERVER.equals(getDbType())) {
@@ -227,7 +234,6 @@ public class SqlConcatUtil {
                         return "'%" + str + "%'";
                     }
                 }
-                //update-end-author:taoyan date:2022-6-30 for: issues/3810 数据权限规则问题
 
             }
         }
@@ -238,6 +244,48 @@ public class SqlConcatUtil {
      */
     private static String getDbType() {
         return CommonUtils.getDatabaseType();
+    }
+
+    /**
+     * 获取前端传过来的 "多字段排序信息: sortInfoString"
+     * @return
+     */
+    public static List<OrderItem> getQueryConditionOrders(String column, String order, String queryInfoString){
+        List<OrderItem> list = new ArrayList<>();
+        if(oConvertUtils.isEmpty(queryInfoString)){
+            //默认以创建时间倒序查询
+            if(CommonConstant.ORDER_TYPE_DESC.equalsIgnoreCase(order)){
+                list.add(OrderItem.desc(column));
+            }else{
+                list.add(OrderItem.asc(column));
+            }
+        }else{
+            // 【TV360X-967】URL解码（微服务下需要）
+            if (queryInfoString.contains("%22column%22")) {
+                log.info("queryInfoString 原生 = {}", queryInfoString);
+                try {
+                    queryInfoString = URLDecoder.decode(queryInfoString, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new JeecgBootException(e);
+                }
+                log.info("queryInfoString 解码 = {}", queryInfoString);
+            }
+            JSONArray array = JSONArray.parseArray(queryInfoString);
+            Iterator it = array.iterator();
+            while(it.hasNext()){
+                JSONObject json = (JSONObject)it.next();
+                String tempColumn = json.getString("column");
+                if(oConvertUtils.isNotEmpty(tempColumn)){
+                    String tempOrder = json.getString("order");
+                    if(CommonConstant.ORDER_TYPE_DESC.equalsIgnoreCase(tempOrder)){
+                        list.add(OrderItem.desc(tempColumn));
+                    }else{
+                        list.add(OrderItem.asc(tempColumn));
+                    }
+                }
+            }
+        }
+        return list;
     }
     
 }

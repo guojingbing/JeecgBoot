@@ -35,7 +35,7 @@
   // components
   import { Dropdown, Menu } from 'ant-design-vue';
 
-  import { defineComponent, computed, ref } from 'vue';
+  import { defineComponent, computed, ref, nextTick } from 'vue';
 
   import { SITE_URL } from '/@/settings/siteSetting';
 
@@ -59,7 +59,7 @@
   import { getRefPromise } from '/@/utils/index';
   import { refreshDragCache } from "@/api/common/api";
 
-  type MenuEvent = 'logout' | 'doc' | 'lock' | 'cache' | 'depart';
+  type MenuEvent = 'logout' | 'doc' | 'lock' | 'cache' | 'depart' | 'defaultHomePage' | 'password' | 'account';
   const { createMessage } = useMessage();
   export default defineComponent({
     name: 'UserDropdown',
@@ -104,12 +104,11 @@
        * 多部门弹窗逻辑
        */
       const loginSelectRef = ref();
-      // update-begin--author:liaozhiyang---date:20230901---for：【QQYUN-6333】空路由问题—首次访问资源太大
+      // 代码逻辑说明: 【QQYUN-6333】空路由问题—首次访问资源太大
       async function handleLock() {
         await getRefPromise(lockActionRef);
         openModal(true);
       }
-      // update-end--author:liaozhiyang---date:20230901---for：【QQYUN-6333】空路由问题—首次访问资源太大
       //  login out
       function handleLoginOut() {
         userStore.confirmLoginOut();
@@ -123,23 +122,17 @@
       // 清除缓存
       async function clearCache() {
         const result = await refreshCache();
-        //TODO 当前版本还不支持刷新缓存，需要等jimibi升级
-        // const dragRes = await refreshDragCache();
-        // console.log('dragRes', dragRes);
+        const dragRes = await refreshDragCache();
+        console.log('dragRes', dragRes);
         if (result.success) {
           const res = await queryAllDictItems();
           removeAuthCache(DB_DICT_DATA_KEY);
           setAuthCache(DB_DICT_DATA_KEY, res.result);
-          // update-begin--author:liaozhiyang---date:20240124---for：【QQYUN-7970】国际化
           createMessage.success(t('layout.header.refreshCacheComplete'));
-          // update-end--author:liaozhiyang---date:20240124---for：【QQYUN-7970】国际化
-          // update-begin--author:wangshuai---date:20241112---for：【issues/7433】vue3 数据字典优化建议
+          // 代码逻辑说明: 【issues/7433】vue3 数据字典优化建议
           userStore.setAllDictItems(res.result);
-          // update-end--author:wangshuai---date:20241112---for：【issues/7433】vue3 数据字典优化建议
         } else {
-          // update-begin--author:liaozhiyang---date:20240124---for：【QQYUN-7970】国际化
           createMessage.error(t('layout.header.refreshCacheFailure'));
-          // update-end--author:liaozhiyang---date:20240124---for：【QQYUN-7970】国际化
         }
       }
       // 切换部门
@@ -148,13 +141,12 @@
       }
       // 修改密码
       const updatePasswordRef = ref();
-      // update-begin--author:liaozhiyang---date:20230901---for：【QQYUN-6333】空路由问题—首次访问资源太大
+      // 代码逻辑说明: 【QQYUN-6333】空路由问题—首次访问资源太大
       async function updatePassword() {
         passwordVisible.value = true;
         await getRefPromise(updatePasswordRef);
         updatePasswordRef.value.show(userStore.getUserInfo.username);
       }
-      // update-end--author:liaozhiyang---date:20230901---for：【QQYUN-6333】空路由问题—首次访问资源太大
       function handleMenuClick(e: { key: MenuEvent }) {
         switch (e.key) {
           case 'logout':
@@ -176,9 +168,8 @@
             updatePassword();
             break;
           case 'account':
-            //update-begin---author:wangshuai ---date:20221125  for：进入用户设置页面------------
+            // 代码逻辑说明: 进入用户设置页面------------
             go(`/system/usersetting`);
-            //update-end---author:wangshuai ---date:20221125  for：进入用户设置页面--------------
             break;
         }
       }
@@ -247,11 +238,18 @@
     }
 
     &-dropdown-overlay {
-      // update-begin--author:liaozhiyang---date:20231226---for：【QQYUN-7512】顶部账号划过首次弹出时位置会变更一下
+      // 代码逻辑说明: 【QQYUN-7512】顶部账号划过首次弹出时位置会变更一下
       width: 160px;
-      // update-end--author:liaozhiyang---date:20231226---for：【QQYUN-7512】顶部账号划过首次弹出时位置会变更一下
       .ant-dropdown-menu-item {
         min-width: 160px;
+      }
+    }
+  }
+  // 代码逻辑说明: 【QQYUN-13013】切换到英文模式下拉菜单宽度有点窄
+  html[lang="en"] {
+    .@{prefix-cls} {
+      &-dropdown-overlay {
+        width: 175px;
       }
     }
   }

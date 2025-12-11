@@ -48,18 +48,27 @@
   const { t } = useI18n();
 
   // 自定义菜单名称列渲染
-  columns[0].customRender = function ({text, record}) {
-    const isDefIndex = checkDefIndex(record)
+  columns[0].customRender = function ({ text, record }) {
+    // date-begin--author:liaozhiyang---date:20250716---for：【issues/8317】默认首页菜单名称适配国际化报错
+    let displayText = text;
+    // 先处理国际化，避免在添加默认首页标记后影响国际化检查
+    if (displayText && displayText.includes("t('") && t) {
+      try {
+        displayText = new Function('t', `return ${displayText}`)(t);
+      } catch (error) {
+        console.warn('国际化处理失败:', error);
+        // 如果国际化处理失败，使用原始文本
+        displayText = text;
+      }
+    }
+    // 在国际化处理完成后，再添加默认首页标记
+    const isDefIndex = checkDefIndex(record);
     if (isDefIndex) {
-      text += '（默认首页）'
+      displayText += `（${t('routes.basic.defaultHomePage')}）`;
     }
-    // update-begin--author:liaozhiyang---date:20240306---for：【QQYUN-8379】菜单管理页菜单国际化
-    if (text.includes("t('") && t) {
-      return new Function('t', `return ${text}`)(t);
-    }
-    // update-end--author:liaozhiyang---date:20240306---for：【QQYUN-8379】菜单管理页菜单国际化
-    return text
-  }
+    return displayText;
+    // date-end--author:liaozhiyang---date:20250716---for：【issues/8317】默认首页菜单名称适配国际化报错
+  };
 
   // 列表页面公共参数、方法
   const { prefixCls, tableContext } = useListPage({
@@ -77,10 +86,9 @@
       showIndexColumn: false,
       tableSetting: { fullScreen: true },
       formConfig: {
-        // update-begin--author:liaozhiyang---date:20230803---for：【QQYUN-5873】查询区域lablel默认居左
+        // 代码逻辑说明: 【QQYUN-5873】查询区域lablel默认居左
         labelWidth: 74,
         rowProps: { gutter: 24 },
-        // update-end--author:liaozhiyang---date:20230803---for：【QQYUN-5873】查询区域lablel默认居左
         schemas: searchFormSchema,
         autoAdvancedCol: 4,
         baseColProps: { xs: 24, sm: 12, md: 6, lg: 6, xl: 6, xxl: 6 },

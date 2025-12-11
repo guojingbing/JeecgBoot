@@ -62,10 +62,9 @@
       api: list,
       columns: columns,
       formConfig: {
-        // update-begin--author:liaozhiyang---date:20230803---for：【QQYUN-5873】查询区域lablel默认居左
+        // 代码逻辑说明: 【QQYUN-5873】查询区域lablel默认居左
         labelWidth:65,
         rowProps: { gutter: 24 },
-        // update-end--author:liaozhiyang---date:20230803---for：【QQYUN-5873】查询区域lablel默认居左
         schemas: searchFormSchema,
       },
       actionColumn: {
@@ -183,10 +182,6 @@
           title: '是否确认删除',
           confirm: handleDelete.bind(null, record),
         },
-      },
-      {
-        label: '首页配置',
-        onClick: handleIndexConfig.bind(null, record.roleCode),
       },
     ];
   }

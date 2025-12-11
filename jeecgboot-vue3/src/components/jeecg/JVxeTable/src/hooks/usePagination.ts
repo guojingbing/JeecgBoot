@@ -38,7 +38,10 @@ export function usePagination(props: JVxeTableProps, methods: JVxeTableMethods) 
 
   function handleShowSizeChange(current, pageSize) {
     innerPagination.pageSize = pageSize;
-    methods.trigger('pageChange', { current, pageSize });
+    // -update-begin--author:liaozhiyang---date:20251209---for:【issues/9169】切换页码时，pageChange事件加载了两次
+    // 因为 handleShowSizeChange先触发，紧接着会触发 handleChange，所以可以注释掉。
+    // methods.trigger('pageChange', { current, pageSize });
+    // -update-end--author:liaozhiyang---date:20251209---for:【issues/9169】切换页码时，pageChange事件加载了两次
   }
 
   /** 渲染分页器 */
@@ -52,9 +55,8 @@ export function usePagination(props: JVxeTableProps, methods: JVxeTableMethods) 
         [
           h(Pagination, {
             ...bindProps.value,
-            // update-begin--author:liaozhiyang---date:20250423---for：【issues/8137】vxetable表格禁用后分页隐藏了
+            // 代码逻辑说明: 【issues/8137】vxetable表格禁用后分页隐藏了
             disabled: false,
-            // update-end--author:liaozhiyang---date:20250423---for：【issues/8137】vxetable表格禁用后分页隐藏了
             onChange: handleChange,
             onShowSizeChange: handleShowSizeChange,
           }),

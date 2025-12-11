@@ -84,6 +84,7 @@
   }
   //倒计时执行前的函数
   function sendCodeApi() {
-    return getCaptcha({ mobile: formData.mobile, smsmode: SmsEnum.FORGET_PASSWORD });
+    // 代码逻辑说明: 【issues/8567】严重：修改密码存在水平越权问题：登录应该用登录模板不应该用忘记密码的模板---
+    return getCaptcha({ mobile: formData.mobile, smsmode: SmsEnum.LOGIN });
   }
 </script>

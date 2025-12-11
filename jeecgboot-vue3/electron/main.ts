@@ -1,9 +1,8 @@
-import './ipc';
-
 import { app, BrowserWindow, Menu } from 'electron';
 import { isDev } from './env';
 import { createMainWindow, createIndexWindow } from './utils/window';
-import { getAppInfo} from "./utils";
+import { getAppInfo } from './utils';
+import './ipc';
 
 // 隐藏所有菜单
 Menu.setApplicationMenu(null);
@@ -12,6 +11,13 @@ let mainWindow: BrowserWindow | null = null;
 
 function main() {
   mainWindow = createMainWindow();
+  // 代码逻辑说明: 【JHHB-13】桌面应用消息通知
+  mainWindow.on('focus', () => {
+    // 清除任务栏闪烁
+    if (process.platform === 'win32') {
+      mainWindow!.flashFrame(false);
+    }
+  });
   return mainWindow;
 }
 

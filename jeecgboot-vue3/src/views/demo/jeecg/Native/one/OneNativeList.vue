@@ -56,16 +56,14 @@
             <a @click="handleEdit(record)">编辑</a>
             <a-divider type="vertical" />
             <a-dropdown>
-              <!-- update-begin--author:liaozhiyang---date:20230803---for：【QQYUN-5838】图标改小保持一致 -->
               <a class="ant-dropdown-link">更多 <Icon icon="mdi-light:chevron-down"></Icon></a>
-              <!-- update-end--author:liaozhiyang---date:20230803---for：【QQYUN-5838】图标改小保持一致 -->
               <template #overlay>
                 <a-menu class="antd-more">
                   <a-menu-item>
                     <a @click="handleDetail(record)">详情</a>
                   </a-menu-item>
                   <a-menu-item>
-                    <Popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
+                    <Popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)" placement="left">
                       <a>删除</a>
                     </Popconfirm>
                   </a-menu-item>

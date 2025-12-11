@@ -8,6 +8,7 @@ import { useMultipleTabStore } from '/@/store/modules/multipleTab';
 import { RouteLocationNormalized, useRouter } from 'vue-router';
 import { useTabs } from '/@/hooks/web/useTabs';
 import { useI18n } from '/@/hooks/web/useI18n';
+import { useHideHomeDesign } from './useHideHomeDesign';
 
 export function useTabDropdown(tabContentProps: TabContentProps, getIsTabs: ComputedRef<boolean>) {
   const state = reactive({
@@ -23,6 +24,8 @@ export function useTabDropdown(tabContentProps: TabContentProps, getIsTabs: Comp
   const getTargetTab = computed((): RouteLocationNormalized => {
     return unref(getIsTabs) ? tabContentProps.tabItem : unref(currentRoute);
   });
+  // 隐藏下拉菜单中的门户设计项
+  const { getHideHomeDesign, isHideHomeDesign } = useHideHomeDesign(currentRoute);
 
   /**
    * @description: drop-down list
@@ -40,7 +43,6 @@ export function useTabDropdown(tabContentProps: TabContentProps, getIsTabs: Comp
     const isCurItem = curItem ? curItem.path === path : false;
     const index = state.currentIndex;
     const refreshDisabled = !isCurItem;
-    // update-begin--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
     // Close left
     const closeLeftDisabled = () => {
       if (index === 0) {
@@ -48,7 +50,9 @@ export function useTabDropdown(tabContentProps: TabContentProps, getIsTabs: Comp
       } else {
         // 【TV360X-1039】当只有首页和另一个tab页时关闭左侧禁用
         const validTabList = tabStore.getTabList.filter((item) => !item?.meta?.affix);
-        return validTabList[0].path === state.current?.path;
+        // update-begin--author:liaozhiyang---date:20251128---for：【issues/9098】tabs标签页关闭异常
+        return validTabList[0]?.path === state.current?.path;
+        // update-end--author:liaozhiyang---date:20251128---for：【issues/9098】tabs标签页关闭异常
       }
     };
     // Close other
@@ -64,7 +68,8 @@ export function useTabDropdown(tabContentProps: TabContentProps, getIsTabs: Comp
 
     // Close right
     const closeRightDisabled = index === tabStore.getTabList.length - 1 && tabStore.getLastDragEndIndex >= 0;
-    // update-end--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
+    // 隐藏下拉菜单中的门户设计项
+    getHideHomeDesign(isCurItem, path);
     const dropMenuList: DropMenu[] = [
       {
         icon: 'jam:refresh-reverse',
@@ -76,7 +81,8 @@ export function useTabDropdown(tabContentProps: TabContentProps, getIsTabs: Comp
         icon: 'ant-design:setting-outlined',
         event: MenuEventEnum.HOME_DESIGN,
         text: t('layout.multipleTab.homeDesign'),
-        disabled: path !== '/PortalView',
+        disabled: !/^\/portal-view\/[^/]+$/.test(path),
+        hide: isHideHomeDesign.value,
         divider: true,
       },
       // {
@@ -90,9 +96,8 @@ export function useTabDropdown(tabContentProps: TabContentProps, getIsTabs: Comp
         icon: 'mdi:arrow-left',
         event: MenuEventEnum.CLOSE_LEFT,
         text: t('layout.multipleTab.closeLeft'),
-        // update-begin--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
+        // 代码逻辑说明: 【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         disabled: closeLeftDisabled(),
-        // update-end--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         divider: false,
       },
       {
@@ -106,9 +111,8 @@ export function useTabDropdown(tabContentProps: TabContentProps, getIsTabs: Comp
         icon: 'material-symbols:arrows-outward',
         event: MenuEventEnum.CLOSE_OTHER,
         text: t('layout.multipleTab.closeOther'),
-        // update-begin--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
+        // 代码逻辑说明: 【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         disabled: closeOtherDisabled(),
-        // update-end--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
       },
       // {
       //   icon: 'clarity:minus-line',
@@ -147,33 +151,23 @@ export function useTabDropdown(tabContentProps: TabContentProps, getIsTabs: Comp
         break;
       // Close left
       case MenuEventEnum.CLOSE_LEFT:
-        // update-begin--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         closeLeft(state.current);
-        // update-end--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         break;
       // Close right
       case MenuEventEnum.CLOSE_RIGHT:
-        // update-begin--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         closeRight(state.current);
-        // update-end--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         break;
       // Close other
       case MenuEventEnum.CLOSE_OTHER:
-        // update-begin--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         closeOther(state.current);
-        // update-end--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         break;
       // Close all
       case MenuEventEnum.CLOSE_ALL:
-        // update-begin--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         closeAll(state.current);
-        // update-end--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         break;
       // Close all
       case MenuEventEnum.HOME_DESIGN:
-        // update-begin--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         changeDesign();
-        // update-end--author:liaozhiyang---date:20240605---for：【TV360X-732】非当前页右键关闭左侧、关闭右侧、关闭其它功能正常使用
         break;
     }
   }

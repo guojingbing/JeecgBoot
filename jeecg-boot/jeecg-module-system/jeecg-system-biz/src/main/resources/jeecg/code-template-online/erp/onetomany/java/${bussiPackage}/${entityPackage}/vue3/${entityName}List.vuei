@@ -33,7 +33,7 @@
           <a-button type="primary" v-auth="'${entityPackage}:${tableName}:exportXls'"  preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
           <j-upload-button type="primary" v-auth="'${entityPackage}:${tableName}:importExcel'"  preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
     <#if buttonList?size gt 0>
-      <#list buttonList?sort_by('orderNum') as btn>
+      <#list buttonList?filter(it -> it.orderNum?? && it.orderNum != null)?sort_by("orderNum") as btn>
          <#if btn.buttonStyle == 'button'>
            <a-button type="primary" @click="handle${btn.buttonCode?cap_first}" <#if btn.buttonIcon??> preIcon="ant-design:${btn.buttonIcon}" </#if>>${btn.buttonName}</a-button>
          </#if>
@@ -130,6 +130,15 @@
   import { getAuthCache, setAuthCache } from '/@/utils/auth';
   import { DB_DICT_DATA_KEY } from '/@/enums/cacheEnum';
   </#if>
+  import { getDateByPicker } from '/@/utils';
+  //日期个性化选择
+  const fieldPickers = reactive({
+  <#list columns as po>
+    <#if po.extendParams?exists && po.extendParams.picker?exists>
+    ${po.fieldName}: '${po.extendParams.picker}',
+    </#if>
+  </#list>
+  });
   <#if bpm_flag==true>
   import { startProcess } from '/@/api/common/api';
   const [registerBpmModal, { openModal: bpmPicModal }] = useModal();
@@ -144,7 +153,8 @@
            title: '${tableVo.ftlDescription}',
            api: list,
            columns,
-           canResize: false,
+           canResize: true,
+           maxHeight: 300,
            clickToRowSelect: true,
            rowSelection: {type: 'radio'},
            formConfig: {
@@ -154,7 +164,7 @@
                    <#if po.isQuery=='Y'>
                    <#if po.queryMode=='group'>
                    <#-- update-begin---author:chenrui ---date:20240527  for：[TV360X-388]时间范围查询控件---------- -->
-                   <#if po.fieldDbType=='int' || po.fieldDbType=='double' || po.fieldDbType=='BigDecimal' || po.classType=='time'>
+                   <#if po.fieldDbType=='int' || po.fieldDbType=='long' || po.fieldDbType=='double' || po.fieldDbType=='BigDecimal' || po.classType=='time'>
                    <#-- update-end---author:chenrui ---date:20240527  for：[TV360X-388]时间范围查询控件---------- -->
                    ['${po.fieldName}', ['${po.fieldName}_begin', '${po.fieldName}_end']],
                    </#if>
@@ -181,6 +191,13 @@
                fixed:'right'
            },
            beforeFetch: (params) => {
+              if (params && fieldPickers) {
+                for (let key in fieldPickers) {
+                  if (params[key]) {
+                    params[key] = getDateByPicker(params[key], fieldPickers[key]);
+                  }
+                }
+              }
              return Object.assign(params, queryParam);
            },
             <#if list_has_popup_dict>
@@ -333,7 +350,7 @@
           ifShow: !!record.bpmStatus && record.bpmStatus !== '1',
         }
 <#if buttonList?size gt 0>
-      <#list buttonList?sort_by('orderNum') as btn>
+      <#list buttonList?filter(it -> it.orderNum?? && it.orderNum != null)?sort_by("orderNum") as btn>
          <#if btn.buttonStyle == 'link'>
          ,{
             label: '${btn.buttonName}',
@@ -368,7 +385,7 @@
         auth: '${entityPackage}:${tableName}:delete'
       }
   <#if buttonList?size gt 0>
-    <#list buttonList?sort_by('orderNum') as btn>
+    <#list buttonList?filter(it -> it.orderNum?? && it.orderNum != null)?sort_by("orderNum") as btn>
        <#if btn.buttonStyle == 'link'>
        ,{
           label: '${btn.buttonName}',
@@ -427,7 +444,7 @@
 </#if>
 
 <#if buttonList?size gt 0>
-  <#list buttonList?sort_by('orderNum') as btn>
+  <#list buttonList?filter(it -> it.orderNum?? && it.orderNum != null)?sort_by("orderNum") as btn>
   <#if btn.buttonStyle=='button'>
    function handle${btn.buttonCode?cap_first}(){
      createMessage.info('点击了${btn.buttonName}按钮，对应的业务逻辑需自行实现!');
@@ -448,7 +465,6 @@
       height: 100%;
       .content {
         background-color: #fff;
-        height: 100%;
       }
     }
   }

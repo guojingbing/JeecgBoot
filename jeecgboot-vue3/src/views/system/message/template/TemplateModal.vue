@@ -1,5 +1,5 @@
 <template>
-  <BasicModal @register="registerModal" :title="title" :width="800" v-bind="$attrs" @ok="onSubmit">
+  <BasicModal @register="registerModal" :title="title" :width="600" v-bind="$attrs" @ok="onSubmit">
     <BasicForm @register="registerForm" />
   </BasicModal>
 </template>
@@ -16,11 +16,19 @@
   const title = ref<string>('');
   const isUpdate = ref<boolean>(false);
   // 注册 form
-  //update-begin---author:wangshuai ---date:20221123  for：[VUEN-2807]消息模板加一个查看功能------------
+  // 代码逻辑说明: [VUEN-2807]消息模板加一个查看功能------------
   const [registerForm, { resetFields, setFieldsValue, validate, updateSchema, setProps }] = useForm({
-  //update-end---author:wangshuai ---date:20221123  for：[VUEN-2807]消息模板加一个查看功能--------------z
     schemas: formSchemas,
     showActionButtonGroup: false,
+    baseRowStyle: {
+      marginTop: '10px',
+    },
+    labelCol: {
+      span: 5,
+    },
+    wrapperCol: {
+      span: 17,
+    },
   });
   // 注册 modal
   const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {

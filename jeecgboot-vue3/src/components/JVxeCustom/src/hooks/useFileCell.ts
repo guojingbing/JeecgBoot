@@ -57,23 +57,22 @@ export function useFileCell(props, fileType: UploadTypeEnum, options?) {
       ...originColumn.value.props,
       maxCount: maxCount.value,
       fileType: fileType,
+      action: originColumn.value.action ?? void 0,
     });
   }
 
   // 更多上传回调
   function onModalChange(path) {
     if (path) {
-      // update-begin--author:liaozhiyang---date:20240524---for：【TV360X-235】富文本禁用状态下图片上传按钮文字看不清
+      // 代码逻辑说明: 【TV360X-235】富文本禁用状态下图片上传按钮文字看不清
       if (innerFile.value === null) {
         innerFile.value = {};
       }
-      // update-end-author:liaozhiyang---date:20240524---for：【TV360X-235】富文本禁用状态下图片上传按钮文字看不清
       innerFile.value.path = path;
       handleChangeCommon(innerFile.value);
     } else {
-      //update-begin-author:liusq date:2023-06-05 for: [issues/530]JVxeTable 的JVxeTypes.image类型，无法全部删除上传图片
+      // 代码逻辑说明: [issues/530]JVxeTable 的JVxeTypes.image类型，无法全部删除上传图片
       handleChangeCommon(null);
-      //update-end-author:liusq date:2023-06-05 for:  [issues/530]JVxeTable 的JVxeTypes.image类型，无法全部删除上传图片
     }
   }
 

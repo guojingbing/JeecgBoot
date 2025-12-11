@@ -1,13 +1,14 @@
 package org.jeecg.common.util;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.constant.ServiceNameConstants;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -16,6 +17,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * @Description: spring上下文工具类
  * @author: jeecg-boot
  */
+@Lazy(false)
 @Component
 public class SpringContextUtils implements ApplicationContextAware {
 

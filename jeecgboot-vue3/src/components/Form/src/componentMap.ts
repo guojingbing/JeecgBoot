@@ -44,6 +44,7 @@ import JSelectRole from './jeecg/components/JSelectRole.vue';
 import JImageUpload from './jeecg/components/JImageUpload.vue';
 import JDictSelectTag from './jeecg/components/JDictSelectTag.vue';
 import JSelectDept from './jeecg/components/JSelectDept.vue';
+import JSelectDepartPost from './jeecg/components/JSelectDepartPost.vue';
 import JAreaSelect from './jeecg/components/JAreaSelect.vue';
 import JEditor from './jeecg/components/JEditor.vue';
 // import JMarkdownEditor from './jeecg/components/JMarkdownEditor.vue';
@@ -52,9 +53,8 @@ import JSelectInput from './jeecg/components/JSelectInput.vue';
 import JCategorySelect from './jeecg/components/JCategorySelect.vue';
 import JSelectMultiple from './jeecg/components/JSelectMultiple.vue';
 import JPopup from './jeecg/components/JPopup.vue';
-// update-begin--author:liaozhiyang---date:20240130---for：【QQYUN-7961】popupDict字典
+// 代码逻辑说明: 【QQYUN-7961】popupDict字典
 import JPopupDict from './jeecg/components/JPopupDict.vue';
-// update-end--author:liaozhiyang---date:20240130---for：【QQYUN-7961】popupDict字典
 import JSwitch from './jeecg/components/JSwitch.vue';
 import JTreeDict from './jeecg/components/JTreeDict.vue';
 import JInputPop from './jeecg/components/JInputPop.vue';
@@ -66,6 +66,7 @@ import JEllipsis from './jeecg/components/JEllipsis.vue';
 import JSelectUserByDept from './jeecg/components/JSelectUserByDept.vue';
 import JSelectUserByDepartment from './jeecg/components/JSelectUserByDepartment.vue';
 import JLinkTableCard from './jeecg/components/JLinkTableCard/JLinkTableCard.vue';
+
 import JUpload from './jeecg/components/JUpload/JUpload.vue';
 import JSearchSelect from './jeecg/components/JSearchSelect.vue';
 import JAddInput from './jeecg/components/JAddInput.vue';
@@ -76,6 +77,8 @@ import JRangeDate from './jeecg/components/JRangeDate.vue'
 import JRangeTime from './jeecg/components/JRangeTime.vue'
 import JInputSelect from './jeecg/components/JInputSelect.vue'
 import RoleSelectInput from './jeecg/components/roleSelect/RoleSelectInput.vue';
+import JSelectUserByDeptPost from './jeecg/components/JSelectUserByDeptPost.vue';
+import JDatePickerMultiple from './jeecg/components/JDatePickerMultiple.vue';
 import {DatePickerInFilter, CascaderPcaInFilter} from "@/components/InFilter";
 
 const componentMap = new Map<ComponentType, Component>();
@@ -109,6 +112,7 @@ componentMap.set('RangePicker', DatePicker.RangePicker);
 componentMap.set('WeekPicker', DatePicker.WeekPicker);
 componentMap.set('TimePicker', TimePicker);
 componentMap.set('DatePickerInFilter', DatePickerInFilter);
+componentMap.set('JDatePickerMultiple', JDatePickerMultiple);
 componentMap.set('StrengthMeter', StrengthMeter);
 componentMap.set('IconPicker', IconPicker);
 componentMap.set('InputCountDown', CountdownInput);
@@ -147,9 +151,8 @@ componentMap.set(
 componentMap.set('JCategorySelect', JCategorySelect);
 componentMap.set('JSelectMultiple', JSelectMultiple);
 componentMap.set('JPopup', JPopup);
-// update-begin--author:liaozhiyang---date:20240130---for：【QQYUN-7961】popupDict字典
+// 代码逻辑说明: 【QQYUN-7961】popupDict字典
 componentMap.set('JPopupDict', JPopupDict);
-// update-end--author:liaozhiyang---date:20240130---for：【QQYUN-7961】popupDict字典
 componentMap.set('JSwitch', JSwitch);
 componentMap.set('JTreeDict', JTreeDict);
 componentMap.set('JInputPop', JInputPop);
@@ -173,6 +176,8 @@ componentMap.set('RangeDate', JRangeDate);
 componentMap.set('RangeTime', JRangeTime);
 componentMap.set('RoleSelect', RoleSelectInput);
 componentMap.set('JInputSelect', JInputSelect);
+componentMap.set('JSelectDepartPost', JSelectDepartPost);
+componentMap.set('JSelectUserByDeptPost', JSelectUserByDeptPost);
 
 
 
