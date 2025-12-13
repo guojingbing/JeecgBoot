@@ -4,9 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
+import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.common.util.SysRedisUtil;
+import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.shiro.DefContants;
+import org.jeecg.config.shiro.JwtToken;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -54,16 +57,21 @@ public class ZxecgSysUserTokenFilter extends BasicHttpAuthenticationFilter {
 		SysRedisUtil redisUtil = ctx.getBean(SysRedisUtil.class);
 		HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 		String token = httpServletRequest.getHeader(DefContants.X_ACCESS_TOKEN);
-		if(StringUtils.isEmpty(token)){
-			throw new AuthenticationException("没有获取到token");
-		}
-		String userid = JwtUtil.getUsername(token);
-		if(StringUtils.isEmpty(userid)){
-			throw new AuthenticationException("无效的token");
-		}
-		if(JwtUtil.verfiyZxecgTokenExp(token,redisUtil)){
-			throw new AuthenticationException("token已失效，请重新获取");
-		}
+//		if(StringUtils.isEmpty(token)){
+//			throw new AuthenticationException("没有获取到token");
+//		}
+//		String userid = JwtUtil.getUsername(token);
+//		if(StringUtils.isEmpty(userid)){
+//			throw new AuthenticationException("无效的token");
+//		}
+//		if(JwtUtil.verfiyZxecgTokenExp(token,redisUtil)){
+//			throw new AuthenticationException("token已失效，请重新获取");
+//		}
+
+        JwtToken jwtToken = new JwtToken(token);
+        // 提交给realm进行登入，如果错误他会抛出异常并被捕获
+        getSubject(request, response).login(jwtToken);
+
 		// 如果没有抛出异常则代表登入成功，返回true
 		return true;
 	}

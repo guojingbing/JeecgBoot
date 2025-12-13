@@ -7,4 +7,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface SysUserMapper extends BaseMapper<CommSystemUser> {
     SysUserVO getSystemUserByUserNoOrPhone(@Param("userNo") String userNo, @Param("phone") String phone);
+     /**
+      * 根据用户ID查询系统用户
+      * @param userId
+      * @return
+      */
+     SysUserVO selectByUserId(@Param("userId") Long userId);
 }

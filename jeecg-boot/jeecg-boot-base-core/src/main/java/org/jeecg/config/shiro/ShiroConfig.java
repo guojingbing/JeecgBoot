@@ -5,23 +5,33 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.mgt.DefaultSubjectDAO;
 import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.crazycake.shiro.*;
 import org.jeecg.common.constant.CommonConstant;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.JeecgBaseConfig;
 import org.jeecg.config.shiro.filters.*;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -264,10 +274,34 @@ public class ShiroConfig {
     //update-end---author:chenrui ---date:20240126  for：【QQYUN-7932】AI助手------------
 
     @Bean("securityManager")
-    public DefaultWebSecurityManager securityManager(ShiroRealm myRealm) {
+    public DefaultWebSecurityManager securityManager(List<Realm> realms) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        securityManager.setRealm(myRealm);
+//        securityManager.setRealm(myRealm);
 
+//        // 创建类路径扫描器
+//        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+//        // 添加过滤条件：只扫描继承自AuthorizingRealm的类
+//        scanner.addIncludeFilter(new AssignableTypeFilter(AuthorizingRealm.class));
+//        // 扫描指定包路径（可根据需要调整）
+//        Set<BeanDefinition> beanDefinitions = scanner.findCandidateComponents("org.jeecg");
+//        // 输出结果
+//        System.out.println("继承自AuthorizingRealm的类：");
+//        // 设置多个Realm
+//        List<Realm> realms = new ArrayList<>();
+//        for (BeanDefinition beanDefinition : beanDefinitions) {
+//            String className=beanDefinition.getBeanClassName();
+//            System.out.println(className);
+//            try {
+//                // 加载类
+//                Class<?> clazz = Class.forName(className);
+////                Realm realm=(Realm)clazz.newInstance();
+//                Realm realm = (Realm) SpringContextUtils.getBean(clazz);
+//                realms.add(realm);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+        securityManager.setRealms(realms);
         /*
          * 关闭shiro自带的session，详情见文档
          * http://shiro.apache.org/session-management.html#SessionManagement-

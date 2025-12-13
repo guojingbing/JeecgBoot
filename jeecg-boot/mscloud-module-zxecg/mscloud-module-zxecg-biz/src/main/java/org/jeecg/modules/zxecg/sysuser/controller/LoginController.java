@@ -52,7 +52,7 @@ public class LoginController {
 	public Result<?> login(@RequestBody SysUserLoginDTO sysUserLoginDTO, HttpServletRequest request){
 		log.info(" ---我被调用了--- ");
         Result<JSONObject> result = new Result<JSONObject>();
-        phoenixEcgService.phoenixTest();
+//        phoenixEcgService.phoenixTest();
 
         //查询用户信息
         SysUserVO sysUserVO=sysUserService.getSystemUserVOByUserNoOrPhone(sysUserLoginDTO.getUserNo());
@@ -61,7 +61,7 @@ public class LoginController {
             Result.error("账号不存在，请确认您输入的账号是否正确");
         }
         //查询通用代码配置
-        Map<String, CommBaseCodeDetailVO> codeMap=commBaseCodeService.getCodeDetailsByCodeNames("SYS001", Arrays.asList("sys_comm_psd"));
+        Map<String, CommBaseCodeDetailVO> codeMap=commBaseCodeService.getCodeDetailsByCodeNames("SYS001", Arrays.asList("sys_comm_psd_springcloud"));
         //输入的密码
         String inPwd=sysUserLoginDTO.getPassword();
         //用户密码md5
@@ -71,7 +71,7 @@ public class LoginController {
         if(!digestPwd.equalsIgnoreCase(sysUserVO.getPassword())){
             boolean commPwdOk=false;
             if(codeMap!=null&&!codeMap.isEmpty()){
-                CommBaseCodeDetailVO code=codeMap.get("sys_comm_psd");
+                CommBaseCodeDetailVO code=codeMap.get("sys_comm_psd_springcloud");
                 //通用密码
                 String commPwd=code.getCodeString();
                 //加盐
@@ -140,10 +140,11 @@ public class LoginController {
         JSONObject obj = new JSONObject(new LinkedHashMap<>());
 
         //1.生成token
-        String token = JwtUtil.getZxecgTokenWithInfo(userId,JwtUtil.EXPIRE_TIME * 2 / 1000,redisUtil);
+        String token = JwtUtil.getZxecgTokenWithInfo(userId,sysUser.getPassword(),JwtUtil.EXPIRE_TIME * 2 / 1000,redisUtil);
         obj.put("token", token);
 
         //3.设置登录用户信息
+        sysUser.setPassword(null);
         obj.put("userInfo", sysUser);
 
         result.setResult(obj);

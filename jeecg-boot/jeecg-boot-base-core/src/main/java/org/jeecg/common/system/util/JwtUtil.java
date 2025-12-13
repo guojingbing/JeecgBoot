@@ -45,18 +45,21 @@ public class JwtUtil {
 
 	static final String WELL_NUMBER = SymbolConstant.WELL_NUMBER + SymbolConstant.LEFT_CURLY_BRACKET;
 
+    static final String SYS_USER_FLAG_ZXECGSYS = "ZXECGSYS";
 
 	/*********************************非框架代码，自定义添加*********************************/
     /**
      * ZXECG token生成
-     * @param info
+     * @param userid
      * @param expireSeconds
      * @param redisUtil
      * @return
      */
-    public static String getZxecgTokenWithInfo(String info, Long expireSeconds, RedisUtil redisUtil) {
+    public static String getZxecgTokenWithInfo(String userid, String password, Long expireSeconds, RedisUtil redisUtil) {
+        String userName=userid;
+//        userName=userid+"@"+SYS_USER_FLAG_ZXECGSYS;
         // 生成token
-        String token = JwtUtil.sign(info, info);
+        String token = JwtUtil.sign(userName, userid);
         redisUtil.set(CommonConstant.PREFIX_ZXECG_USER_TOKEN + token, token);
         // 设置token缓存有效时间，默认半小时
         redisUtil.expire(CommonConstant.PREFIX_ZXECG_USER_TOKEN + token, expireSeconds == null ? EXPIRE_TIME/1000 : expireSeconds);

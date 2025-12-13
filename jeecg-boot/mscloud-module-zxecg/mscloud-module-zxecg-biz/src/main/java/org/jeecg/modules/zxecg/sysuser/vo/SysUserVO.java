@@ -17,7 +17,6 @@ public class SysUserVO {
     private String userAvatarAddr;
     private String userSignPic;
     private Integer psdModified;
-    @JsonIgnore
     private String password;
     private boolean isUse;
 }
