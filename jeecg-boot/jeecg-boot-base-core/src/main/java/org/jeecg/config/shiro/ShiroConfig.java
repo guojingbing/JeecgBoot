@@ -105,7 +105,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/getLoginQrcode/**", "anon"); //登录二维码
         filterChainDefinitionMap.put("/sys/getQrcodeToken/**", "anon"); //监听扫码
         filterChainDefinitionMap.put("/sys/checkAuth", "anon"); //授权接口排除
-
+        filterChainDefinitionMap.put("/openapi/call/**", "anon"); // 开放平台接口排除
 
         //update-begin--Author:scott Date:20221116 for：排除静态资源后缀
         filterChainDefinitionMap.put("/", "anon");
@@ -122,6 +122,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/**/*.ttf", "anon");
         filterChainDefinitionMap.put("/**/*.woff", "anon");
         filterChainDefinitionMap.put("/**/*.woff2", "anon");
+
         filterChainDefinitionMap.put("/**/*.glb", "anon");
         filterChainDefinitionMap.put("/**/*.wasm", "anon");
         //update-end--Author:scott Date:20221116 for：排除静态资源后缀
@@ -149,7 +150,11 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/drag/share/view/**", "anon");
         filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getAllChartData", "anon");
         filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getTotalData", "anon");
+        filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getMapDataByCode", "anon");
+        filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getTotalDataByCompId", "anon");
         filterChainDefinitionMap.put("/drag/mock/json/**", "anon");
+        filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getDictByCodes", "anon");
+        filterChainDefinitionMap.put("/drag/onlDragDatasetHead/queryAllById", "anon");
         filterChainDefinitionMap.put("/jimubi/view", "anon");
         filterChainDefinitionMap.put("/jimubi/share/view/**", "anon");
 
@@ -163,9 +168,14 @@ public class ShiroConfig {
 
         //websocket排除
         filterChainDefinitionMap.put("/websocket/**", "anon");//系统通知和公告
-        filterChainDefinitionMap.put("/iagentWebsocket/**", "anon");//智能体websocket
         filterChainDefinitionMap.put("/newsWebsocket/**", "anon");//CMS模块
         filterChainDefinitionMap.put("/vxeSocket/**", "anon");//JVxeTable无痕刷新示例
+        //App vue3版本查询版本接口
+        filterChainDefinitionMap.put("/sys/version/app3version", "anon");
+        //仪表盘（按钮通信）
+        filterChainDefinitionMap.put("/dragChannelSocket/**","anon");
+        //App vue3版本查询版本接口
+        filterChainDefinitionMap.put("/sys/version/app3version", "anon");
 
         //性能监控——安全隐患泄露TOEKN（durid连接池也有）
         //filterChainDefinitionMap.put("/actuator/**", "anon");
@@ -256,6 +266,7 @@ public class ShiroConfig {
         registration.addUrlPatterns("/airag/chat/send");
         registration.addUrlPatterns("/airag/app/debug");
         registration.addUrlPatterns("/airag/app/prompt/generate");
+        registration.addUrlPatterns("/airag/chat/receive/**");
         //支持异步
         registration.setAsyncSupported(true);
         registration.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ASYNC);

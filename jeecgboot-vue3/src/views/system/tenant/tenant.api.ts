@@ -33,6 +33,13 @@ enum Api {
   saveUser = '/sys/tenant/user/add',
   editUser = '/sys/tenant/user/edit',
 
+  //新增、编辑用户租户
+  saveUser = '/sys/user/addTenantUser',
+  editUser = '/sys/user/editTenantUser',
+  //根据租户id和用户获取用户的产品包列表和当前用户下的产品包id
+  listPackByTenantUserId = '/sys/tenant/listPackByTenantUserId',
+
+
   //设置租户区域权限
   setTenantAreas = '/sys/area/auth/tenant',
 }
@@ -125,7 +132,7 @@ export const getTenantUserList = (params) => {
 export const leaveTenant = (params, handleSuccess) => {
   Modal.confirm({
     title: '请离',
-    content: '是否请离该用户',
+    content: '是否将此用户请离当前租户',
     okText: '确认',
     cancelText: '取消',
     onOk: () => {
@@ -266,6 +273,14 @@ export const saveOrUpdateTenantUser = (params, isUpdate) => {
   let url = isUpdate ? Api.editUser : Api.saveUser;
   return defHttp.post({ url: url, params },{ joinParamsToUrl: true });
 };
+/**
+ * 根据租户id和用户获取用户的产品包列表和当前用户下的产品包id
+ *
+ * @param params
+ */
+export const listPackByTenantUserId = (params) => {
+  return defHttp.get({ url: Api.listPackByTenantUserId, params });
+}
 
 /**
  * 用户角色接口

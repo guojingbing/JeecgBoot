@@ -21,6 +21,16 @@
               <DepartUserInfoTab :data="departData" />
             </div>
           </a-tab-pane>
+          <a-tab-pane tab="职级汇报关系" key="rank">
+            <div style="padding: 0 20px 20px">
+              <DepartRankRelation :data="departData" />
+            </div>
+          </a-tab-pane>
+          <a-tab-pane tab="用户列表" key="user">
+            <div style="padding: 0 20px 20px">
+              <DepartUserList :data="departData" :key="reRender"></DepartUserList>
+            </div>
+          </a-tab-pane>
         </a-tabs>
         <div v-show="departData == null" style="padding-top: 40px">
           <a-empty description="尚未选择部门" />
@@ -37,6 +47,8 @@
   import DepartFormTab from './components/DepartFormTab.vue';
   import DepartRuleTab from './components/DepartRuleTab.vue';
   import DepartUserInfoTab from './components/DepartUserInfoTab.vue';
+  import DepartRankRelation from './components/DepartRankRelation.vue';
+  import DepartUserList from './components/DepartUserList.vue';
 
   const { prefixCls } = useDesign('depart-manage');
   provide('prefixCls', prefixCls);
@@ -47,10 +59,15 @@
   // 当前选中的部门信息
   const departData = ref({});
   const rootTreeData = ref<any[]>([]);
+  const reRender = ref(-1);
 
   // 左侧树选择后触发
   function onTreeSelect(data) {
     console.log('onTreeSelect: ', data);
+    if (reRender.value == -1) {
+      // 重新渲染组件
+      reRender.value = Math.random();
+    }
     departData.value = data;
   }
 

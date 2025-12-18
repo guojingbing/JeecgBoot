@@ -10,22 +10,22 @@ spring:
   sql:
     init:
       platform: mysql
-db:
-  num: 1
-  password:
-    '0': ${MYSQL-PWD:Zxyl2016!@#!@#}
-  url:
-    '0': jdbc:mysql://${MYSQL-HOST:rm-cn-g4t3flbn1000gsbo.rwlb.zhangbei.rds.aliyuncs.com}:${MYSQL-PORT:3306}/${MYSQL-DB:mscloud-nacos}?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-  user:
-    '0': ${MYSQL-USER:zxdb}
 #db:
 #  num: 1
 #  password:
-#    '0': ${MYSQL-PWD:jingbing0363@}
+#    '0': ${MYSQL-PWD:Zxyl2016!@#!@#}
 #  url:
-#    '0': jdbc:mysql://${MYSQL-HOST:jeecg-boot-mysql}:${MYSQL-PORT:3306}/${MYSQL-DB:mscloud-nacos}?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+#    '0': jdbc:mysql://${MYSQL-HOST:rm-cn-g4t3flbn1000gsbo.rwlb.zhangbei.rds.aliyuncs.com}:${MYSQL-PORT:3306}/${MYSQL-DB:mscloud-nacos}?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
 #  user:
-#    '0': ${MYSQL-USER:root}
+#    '0': ${MYSQL-USER:zxdb}
+db:
+  num: 1
+  password:
+    '0': ${MYSQL-PWD:jingbing0363@}
+  url:
+    '0': jdbc:mysql://${MYSQL-HOST:jeecg-boot-mysql}:${MYSQL-PORT:3306}/${MYSQL-DB:mscloud-nacos}?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+  user:
+    '0': ${MYSQL-USER:root}
 management:
   metrics:
     export:

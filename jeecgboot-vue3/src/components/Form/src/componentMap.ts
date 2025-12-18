@@ -44,6 +44,7 @@ import JSelectRole from './jeecg/components/JSelectRole.vue';
 import JImageUpload from './jeecg/components/JImageUpload.vue';
 import JDictSelectTag from './jeecg/components/JDictSelectTag.vue';
 import JSelectDept from './jeecg/components/JSelectDept.vue';
+import JSelectDepartPost from './jeecg/components/JSelectDepartPost.vue';
 import JAreaSelect from './jeecg/components/JAreaSelect.vue';
 import JEditor from './jeecg/components/JEditor.vue';
 // import JMarkdownEditor from './jeecg/components/JMarkdownEditor.vue';
@@ -66,6 +67,7 @@ import JEllipsis from './jeecg/components/JEllipsis.vue';
 import JSelectUserByDept from './jeecg/components/JSelectUserByDept.vue';
 import JSelectUserByDepartment from './jeecg/components/JSelectUserByDepartment.vue';
 import JLinkTableCard from './jeecg/components/JLinkTableCard/JLinkTableCard.vue';
+
 import JUpload from './jeecg/components/JUpload/JUpload.vue';
 import JSearchSelect from './jeecg/components/JSearchSelect.vue';
 import JAddInput from './jeecg/components/JAddInput.vue';
@@ -76,6 +78,7 @@ import JRangeDate from './jeecg/components/JRangeDate.vue'
 import JRangeTime from './jeecg/components/JRangeTime.vue'
 import JInputSelect from './jeecg/components/JInputSelect.vue'
 import RoleSelectInput from './jeecg/components/roleSelect/RoleSelectInput.vue';
+import JSelectUserByDeptPost from './jeecg/components/JSelectUserByDeptPost.vue';
 import {DatePickerInFilter, CascaderPcaInFilter} from "@/components/InFilter";
 
 const componentMap = new Map<ComponentType, Component>();
@@ -173,6 +176,8 @@ componentMap.set('RangeDate', JRangeDate);
 componentMap.set('RangeTime', JRangeTime);
 componentMap.set('RoleSelect', RoleSelectInput);
 componentMap.set('JInputSelect', JInputSelect);
+componentMap.set('JSelectDepartPost', JSelectDepartPost);
+componentMap.set('JSelectUserByDeptPost', JSelectUserByDeptPost);
 
 
 
