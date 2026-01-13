@@ -3,6 +3,7 @@ package org.jeecg;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.quartz.QuartzAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.jeecg.common.constant.GlobalConstants;
@@ -11,7 +12,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
-@SpringBootApplication
+@SpringBootApplication(exclude = { QuartzAutoConfiguration.class })
 @EnableFeignClients(basePackages = {"org.jeecg"})
 public class MscloudCustCloudApplication implements CommandLineRunner {
     @Autowired

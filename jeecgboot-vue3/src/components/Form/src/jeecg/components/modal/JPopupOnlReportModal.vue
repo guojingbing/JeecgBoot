@@ -58,11 +58,17 @@
         @row-click="clickThenCheck"
         @change="handleChangeInTable"
       >
-        <template #tableTitle></template>
-         <template #bodyCell="{text, column}">
+        <template #tableTitle>
+          <a-button type="primary" v-auth="'lttl:shipping:po:add'" @click="openNavigateToAddPageModal"
+            preIcon="ant-design:plus-outlined"> 新增</a-button>
+          <TestDynamicImportModal @register="regModal" @ok="callBack" :pageUrl="'/lttl/base/station'" :modalTitle="添加页"
+            :width="1000" :showJumpButton="true" />
+        </template>
+        <template #bodyCell="{ text, column }">
           <template v-if="column.fieldType === 'Image'">
             <span v-if="!text" style="font-size: 12px; font-style: italic">无图片</span>
-            <img v-else :src="getImgView(text)" alt="图片不存在" class="cellIamge" @click="viewOnlineCellImage($event, text)" />
+            <img v-else :src="getImgView(text)" alt="图片不存在" class="cellIamge"
+              @click="viewOnlineCellImage($event, text)" />
           </template>
         </template>
       </BasicTable>
@@ -80,6 +86,10 @@
   import { getFileAccessHttpUrl } from '/@/utils/common/compUtils';
   import { createImgPreview } from '/@/components/Preview/index';
 
+  import TestDynamicImportModal from './TestDynamicImportModal.vue';
+  import { useModal } from '/@/components/Modal';
+  import { router } from "/@/router";
+
   export default defineComponent({
     name: 'JPopupOnlReportModal',
     components: {
@@ -89,10 +99,14 @@
       BasicTable: createAsyncComponent(() => import('/@/components/Table/src/BasicTable.vue'), {
         loading: true,
       }),
+      TestDynamicImportModal,
     },
     props: ['multi', 'code', 'sorter', 'groupId', 'param','showAdvancedButton', 'getFormValues', 'selected', 'rowkey'],
     emits: ['ok', 'register'],
     setup(props, { emit }) {
+      //注册model
+      const [regModal, { openModal }] = useModal();
+
       const { createMessage } = useMessage();
       const labelCol = reactive({
         xs: { span: 24 },
@@ -144,6 +158,18 @@
       ] = usePopBiz(getBindValue,tableRef);
 
       const showSearchFlag = computed(() => unref(queryInfo) && unref(queryInfo).length > 0);
+
+      function openNavigateToAddPageModal() {
+        openModal(true);
+        const url='/lttl/base/station';
+        console.log('navigateToAddPage', url);
+        // router.push(url);
+      }
+
+      function callBack(rows) {
+        console.log('callBack', rows);
+      }
+
       /**
        *监听code
        */
@@ -284,6 +310,7 @@
           createImgPreview({ imageList: imgList });
         }
       }
+
       // update-begin--author:liaozhiyang---date:20250415--for：【issues/3656】popupdict回显
       watchEffect(() => {
         if (props.selected && props.rowkey) {
@@ -325,6 +352,9 @@
         searchReset,
         getImgView,
         viewOnlineCellImage,
+        openNavigateToAddPageModal,
+        regModal,
+        callBack,
       };
     },
   });
@@ -350,5 +380,9 @@
     font-size: 12px;
     font-style: italic;
     cursor: pointer;
+  }
+
+  .ant-form-item {
+    margin-bottom: 8px !important;
   }
 </style>

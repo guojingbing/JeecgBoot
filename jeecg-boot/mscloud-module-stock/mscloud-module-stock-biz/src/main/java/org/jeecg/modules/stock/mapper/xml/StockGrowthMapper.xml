@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.stock.mapper.StockGrowthMapper">
+    <select id="selectEntities" parameterType="java.lang.String" resultType="org.jeecg.modules.stock.entity.StockGrowth">
+		SELECT *
+		FROM  stock_growth
+		WHERE 1=1
+        <if test="code!=null and code!=''">
+			AND code = #{code}
+        </if>
+		<if test="year!=null">
+			AND year = #{year}
+		</if>
+		<if test="quarter!=null">
+			AND quarter = #{quarter}
+		</if>
+		ORDER BY year DESC,quarter DESC
+	</select>
+
+	<select id="selectListMap" parameterType="java.lang.String" resultType="java.util.HashMap">
+		SELECT *
+		FROM  stock_growth
+		WHERE 1=1
+		<if test="code!=null and code!=''">
+			AND code = #{code}
+		</if>
+		<if test="year!=null">
+			AND year = #{year}
+		</if>
+		<if test="quarter!=null">
+			AND quarter = #{quarter}
+		</if>
+		ORDER BY year DESC,quarter DESC
+	</select>
+
+	<select id="loadList4API" resultType="java.util.HashMap">
+		SELECT
+		a.code,
+		a.code_name codeName,
+		a.ipo_date ipoDate,
+		a.out_date out_date,
+		a.type,
+		a.stock_status stockStatus
+		FROM
+		stock_info a
+		WHERE
+		1 = 1
+		<if test="type!=null">
+			AND
+			a.type = #{type}
+		</if>
+		<if test="key!=null and key!=''">
+			AND (code like '%${key}%' OR code_name like '%${key}%')
+		</if>
+	</select>
+
+	<!--关联查询股票最新季频成长能力-->
+	<select id="curGrowth" resultType="java.util.HashMap">
+	SELECT
+	tmpa.*,
+	tmpb.*
+	FROM
+	(
+	SELECT
+	a.*,
+	b.pub_date
+	FROM
+	stock_info a
+	LEFT JOIN ( SELECT CODE, max( DATE_FORMAT( pub_date, '%Y-%m-%d' ) ) pub_date FROM stock_growth GROUP BY CODE ) b ON a.CODE = b.CODE
+	WHERE
+	a.type = 1
+	AND a.stock_status = 1
+	) tmpa
+	LEFT JOIN stock_growth tmpb ON tmpa.CODE = tmpb.CODE
+	AND tmpa.pub_date = DATE_FORMAT( tmpb.pub_date, '%Y-%m-%d' )
+	</select>
+</mapper>

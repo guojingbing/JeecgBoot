@@ -676,6 +676,10 @@ public class oConvertUtils {
 		Class<?> clazz = object.getClass();
 		List<Field> fieldList = new ArrayList<>();
 		while (clazz != null) {
+            // 跳过JDK核心类的字段，避免Java 9+模块系统限制
+            if (clazz.getName().startsWith("java.") || clazz.getName().startsWith("javax.")) {
+                break;
+            }
 			fieldList.addAll(new ArrayList<>(Arrays.asList(clazz.getDeclaredFields())));
 			clazz = clazz.getSuperclass();
 		}

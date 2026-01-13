@@ -96,6 +96,7 @@
         <module>mscloud-module-zxecg</module>
         <module>mscloud-module-zxbase</module>
         <module>mscloud-module-lttl</module>
+        <module>mscloud-module-stock</module>
     </modules>
 
 	<repositories>
@@ -233,6 +234,25 @@
 				<artifactId>mscloud-module-cust-cloud-api</artifactId>
 				<version>${jeecgboot.version}</version>
 			</dependency>
+
+            <!-- stock模块 -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>mscloud-module-stock-biz</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
+            <!-- stock单体 api -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>mscloud-module-stock-local-api</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
+            <!-- stock微服务 api -->
+            <dependency>
+                <groupId>org.jeecgframework.boot</groupId>
+                <artifactId>mscloud-module-stock-cloud-api</artifactId>
+                <version>${jeecgboot.version}</version>
+            </dependency>
 
             <!-- IAGENT模块 -->
             <dependency>

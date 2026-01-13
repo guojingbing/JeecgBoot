@@ -183,8 +183,8 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/capi/wxmp/u/sendata", "anon");
         filterChainDefinitionMap.put("/capi/wxmp/u/info", "anon");
         filterChainDefinitionMap.put("/capi/wxmp/u/werundata", "anon");
-        filterChainDefinitionMap.put("/capi/u/login", "anon");
-        filterChainDefinitionMap.put("/capi/u/logout", "anon");
+        filterChainDefinitionMap.put("/capi/wxmp/u/login", "anon");
+        filterChainDefinitionMap.put("/capi/wxmp/u/logout", "anon");
 
         //iagent测试接口
         filterChainDefinitionMap.put("/iagent/test/**", "anon");

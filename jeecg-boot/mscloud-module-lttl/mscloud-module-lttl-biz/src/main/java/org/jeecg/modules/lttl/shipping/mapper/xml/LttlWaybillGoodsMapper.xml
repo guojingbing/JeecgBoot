@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.lttl.shipping.mapper.LttlWaybillGoodsMapper">
+
+    <delete id="deleteByMainId" parameterType="java.lang.String">
+        DELETE
+        FROM lttl_waybill_goods
+        WHERE waybill_id = #{mainId}    </delete>
+
+    <select id="selectByMainId" parameterType="java.lang.String"
+            resultType="org.jeecg.modules.lttl.shipping.entity.LttlWaybillGoods">
+        SELECT *
+        FROM lttl_waybill_goods
+        WHERE waybill_id = #{mainId}    </select>
+</mapper>

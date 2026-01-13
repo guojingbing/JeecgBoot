@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.jeecg.modules.stock.mapper.StockAdjFactorMapper">
+    <select id="selectRange" parameterType="java.lang.String" resultType="org.jeecg.modules.stock.entity.StockAdjFactor">
+		SELECT *
+		FROM  stock_adj_factor
+		WHERE 1=1
+		<if test="startDate!=null and startDate!=''">
+			AND <![CDATA[ DATE_FORMAT(trade_date,'%Y%m%d')>=#{startDate} ]]>
+		</if>
+		<if test="endDate!=null and endDate!=''">
+			AND <![CDATA[ DATE_FORMAT(trade_date,'%Y%m%d')<=#{endDate} ]]>
+		</if>
+		<if test="codes!=null and codes!=''">
+			AND code IN(#{codes})
+		</if>
+	</select>
+
+	<select id="loadList4API" resultType="java.util.HashMap">
+		SELECT
+		a.code,
+		a.code_name codeName,
+		a.ipo_date ipoDate,
+		a.out_date out_date,
+		a.type,
+		a.stock_status stockStatus
+		FROM
+		stock_info a
+		WHERE
+		1 = 1
+		<if test="type!=null">
+			AND
+			a.type = #{type}
+		</if>
+		<if test="key!=null and key!=''">
+			AND (code like '%${key}%' OR code_name like '%${key}%')
+		</if>
+	</select>
+</mapper>
